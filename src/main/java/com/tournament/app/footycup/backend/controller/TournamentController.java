@@ -1,47 +1,70 @@
 package com.tournament.app.footycup.backend.controller;
 
+import com.tournament.app.footycup.backend.model.Tournament;
+import com.tournament.app.footycup.backend.repository.TournamentRepository;
+import com.tournament.app.footycup.backend.service.TournamentService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.NoSuchElementException;
 
 @RestController
 @RequestMapping("/tournaments")
 public class TournamentController {
-    private static final Map<Integer, Map<String, String>> tournaments = new
-            HashMap<>() {{
-                put(1, Map.of("id", "1", "name", "Dunajec Winter Cup", "startDate", "15.03.2025"));
-                put(2, Map.of("id", "2", "name", "Glinik Winter Cup", "startDate", "20.03.2025"));
-            }};
+    private final TournamentService tournamentService;
+    private final TournamentRepository tournamentRepository;
+
+    public TournamentController(TournamentService tournamentService, TournamentRepository tournamentRepository) {
+        this.tournamentService = tournamentService;
+        this.tournamentRepository = tournamentRepository;
+    }
 
     @GetMapping
-    public ResponseEntity<Object> getTournaments() {
-        return ResponseEntity.ok(tournaments.values());
+    public ResponseEntity<List<Tournament>> getAllTournaments() {
+        List<Tournament> tournaments = tournamentService.getAllTournaments();
+        return ResponseEntity.ok(tournaments);
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<Object> getTournamentById(@PathVariable int id) {
-        if(!tournaments.containsKey(id)) {
-            return  ResponseEntity.status(404).body(Map.of("error","Tournament not found"));
+    public ResponseEntity<Object> getTournamentById(@PathVariable("id") Long id) {
+        Tournament tournament = tournamentService.getTournamentById(id);
+
+        if(tournament==null) {
+            return  ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body(Map.of("error","Tournament not found"));
         }
-        return ResponseEntity.ok(tournaments.get(id));
+
+        return ResponseEntity.ok(tournament);
     }
 
-    @PostMapping("/add")
-    public ResponseEntity<Object> addTournament(@RequestParam int id, @RequestParam String name, @RequestParam String startDate) {
-        if(!tournaments.containsValue(id) || (!tournaments.containsValue(name) && !tournaments.containsValue(startDate))) {
-            return ResponseEntity.status(400).body(Map.of("error", "Tournament already exists"));
+    @PostMapping("/addTournament")
+    public ResponseEntity<Object> addTournament(@RequestBody Tournament tournament) {
+        Tournament newTournament = tournamentService.addTournament(tournament);
+        return new ResponseEntity<>(newTournament, HttpStatus.CREATED);
+    }
+
+    @PutMapping("/updateTournament")
+    public ResponseEntity<?> updateTournament(@RequestBody Tournament tournament) {
+        try {
+            Tournament updatedTournament = tournamentService.updateTournament(tournament);
+            return ResponseEntity.ok(updatedTournament);
+        } catch (NoSuchElementException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body(Map.of("error", "Tournament not found"));
         }
+    }
 
-        Map<String, String> tournamentData = new HashMap<>();
-        tournamentData.put("id", String.valueOf(id));
-        tournamentData.put("name", name);
-        tournamentData.put("startDate", startDate);
-
-        tournaments.put(id, tournamentData);
-
-        return new ResponseEntity<>("Tournament added successfully", HttpStatus.CREATED);
+    @DeleteMapping("/deleteTournament/{id}")
+    public ResponseEntity<?> deleteTournament(@PathVariable("id") Long id) {
+        try {
+            tournamentService.deleteTournament(id);
+            return ResponseEntity.ok(Map.of("message", "Tournament deleted successfully"));
+        } catch (NoSuchElementException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body(Map.of("error", "Tournament not found"));
+        }
     }
 }
