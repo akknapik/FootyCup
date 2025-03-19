@@ -1,5 +1,6 @@
 package com.tournament.app.footycup.backend.controller;
 
+import com.tournament.app.footycup.backend.dto.UserDto;
 import com.tournament.app.footycup.backend.model.User;
 import com.tournament.app.footycup.backend.repository.UserRepository;
 import com.tournament.app.footycup.backend.service.UserService;
@@ -23,14 +24,14 @@ public class UserController {
     }
 
     @GetMapping
-    public ResponseEntity<List<User>> getAllUsers() {
-        List<User> users = userService.findAllUsers();
+    public ResponseEntity<List<UserDto>> getAllUsers() {
+        List<UserDto> users = userService.getAllUsers();
         return ResponseEntity.ok(users);
     }
 
     @GetMapping("/{id}")
     public ResponseEntity<?> getUserById(@PathVariable("id") long id) {
-        User user = userService.findUserById(id);
+        UserDto user = userService.getUserById(id);
 
         if(user==null) {
             return  ResponseEntity.status(HttpStatus.NOT_FOUND)
@@ -41,15 +42,15 @@ public class UserController {
     }
 
     @PostMapping("/addUser")
-    public ResponseEntity<User> addUser(@RequestBody User user) {
-        User newUser = userService.addUser(user);
+    public ResponseEntity<UserDto> addUser(@RequestBody User user) {
+        UserDto newUser = userService.addUser(user);
         return new ResponseEntity<>(newUser, HttpStatus.CREATED);
     }
 
     @PutMapping("/updateUser")
     public ResponseEntity<?> updateUser(@RequestBody User user) {
         try {
-            User updatedUser = userService.updateUser(user);
+            UserDto updatedUser = userService.updateUser(user);
             return ResponseEntity.ok(updatedUser);
         } catch (NoSuchElementException e) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND)

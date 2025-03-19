@@ -1,8 +1,10 @@
 package com.tournament.app.footycup.backend.controller;
 
 import com.tournament.app.footycup.backend.dto.TournamentDto;
+import com.tournament.app.footycup.backend.dto.UserDto;
 import com.tournament.app.footycup.backend.model.Tournament;
 import com.tournament.app.footycup.backend.model.User;
+import com.tournament.app.footycup.backend.repository.UserRepository;
 import com.tournament.app.footycup.backend.service.TournamentService;
 import com.tournament.app.footycup.backend.service.UserService;
 import org.springframework.http.HttpStatus;
@@ -17,11 +19,13 @@ import java.util.NoSuchElementException;
 @RequestMapping("/tournaments")
 public class TournamentController {
     private final TournamentService tournamentService;
+    private final UserRepository userRepository;
     private final UserService userService;
 
-    public TournamentController(TournamentService tournamentService ,
+    public TournamentController(TournamentService tournamentService, UserRepository userRepository,
                                 UserService userService) {
         this.tournamentService = tournamentService;
+        this.userRepository = userRepository;
         this.userService = userService;
     }
 
@@ -45,7 +49,7 @@ public class TournamentController {
 
     @GetMapping("/byOrganizer/{id}")
     public ResponseEntity<?> getTournamentsByOrganizerId(@PathVariable("id") Long id) {
-        User existingUser = userService.findUserById(id);
+        UserDto existingUser = userService.getUserById(id);
         if(existingUser == null) {
             return  ResponseEntity.status(HttpStatus.NOT_FOUND)
                     .body(Map.of("error","Organizer not found"));
@@ -56,7 +60,10 @@ public class TournamentController {
 
     @PostMapping("/addTournament")
     public ResponseEntity<Object> addTournament(@RequestBody TournamentDto tournamentDto) {
-        if(userService.findUserById(tournamentDto.getOrganizer().getId()) == null) {
+        User organizer = userRepository.findById(tournamentDto.getOrganizer().getId())
+                .orElse(null);
+
+        if(organizer == null) {
             return  ResponseEntity.status(HttpStatus.NOT_FOUND)
                     .body(Map.of("error","Organizer not found"));
         }
@@ -65,7 +72,7 @@ public class TournamentController {
         tournament.setName(tournamentDto.getName());
         tournament.setStartDate(tournamentDto.getStartDate());
         tournament.setEndDate(tournamentDto.getEndDate());
-        tournament.setOrganizer(userService.findUserById(tournamentDto.getOrganizer().getId()));
+        tournament.setOrganizer(organizer);
 
         Tournament newTournament = tournamentService.addTournament(tournament);
         return new ResponseEntity<>(newTournament, HttpStatus.CREATED);
