@@ -24,12 +24,13 @@ public class Tournament implements Serializable {
 
     private LocalDate endDate;
 
-    @Column(nullable = false, updatable = false)
-    private Long id_organizer;
+    @ManyToOne(fetch = FetchType.EAGER)
+    @JoinColumn(name = "id_organizer", nullable = false, updatable = false)
+    private User organizer;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
-    private TournamentStatus status;
+    private TournamentStatus status = TournamentStatus.UPCOMING;
 
     @Column(nullable = false, updatable = false)
     private LocalDateTime createdAt = LocalDateTime.now();
@@ -47,7 +48,7 @@ public class Tournament implements Serializable {
                       String name,
                       LocalDate startDate,
                       LocalDate endDate,
-                      Long id_organizer,
+                      User organizer,
                       TournamentStatus status,
                       LocalDateTime createdAt,
                       LocalDateTime updatedAt,
@@ -56,7 +57,7 @@ public class Tournament implements Serializable {
         this.name = name;
         this.startDate = startDate;
         this.endDate = endDate;
-        this.id_organizer = id_organizer;
+        this.organizer = organizer;
         this.status = status;
         this.createdAt = createdAt;
         this.updatedAt = updatedAt;
@@ -66,7 +67,7 @@ public class Tournament implements Serializable {
     public Tournament(String name,
                       LocalDate startDate,
                       LocalDate endDate,
-                      Long id_organizer,
+                      User organizer,
                       TournamentStatus status,
                       LocalDateTime createdAt,
                       LocalDateTime updatedAt,
@@ -74,7 +75,7 @@ public class Tournament implements Serializable {
         this.name = name;
         this.startDate = startDate;
         this.endDate = endDate;
-        this.id_organizer = id_organizer;
+        this.organizer = organizer;
         this.status = status;
         this.createdAt = createdAt;
         this.updatedAt = updatedAt;
@@ -113,12 +114,12 @@ public class Tournament implements Serializable {
         this.endDate = endDate;
     }
 
-    public Long getId_organizer() {
-        return id_organizer;
+    public User getOrganizer() {
+        return organizer;
     }
 
-    public void setId_organizer(Long id_organizer) {
-        this.id_organizer = id_organizer;
+    public void setOrganizer(User organizer) {
+        this.organizer = organizer;
     }
 
     public TournamentStatus getStatus() {
@@ -160,7 +161,7 @@ public class Tournament implements Serializable {
                 ", name='" + name + '\'' +
                 ", startDate=" + startDate +
                 ", endDate=" + endDate +
-                ", id_organizer=" + id_organizer +
+                ", organizer=" + organizer +
                 ", status=" + status +
                 ", createdAt=" + createdAt +
                 ", updatedAt=" + updatedAt +
