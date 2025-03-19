@@ -42,11 +42,8 @@ public class TournamentService {
     }
 
     public TournamentDto updateTournament(Tournament tournament) {
-        Tournament existingTournament = tournamentRepository.findTournamentById(tournament.getId());
-        if(existingTournament == null) {
-            throw new NoSuchElementException();
-        }
-
+        Tournament existingTournament = tournamentRepository.findById(tournament.getId())
+                .orElseThrow(() -> new NoSuchElementException());
 
         if (tournament.getName() != null) existingTournament.setName(tournament.getName());
         if (tournament.getStartDate() != null) existingTournament.setStartDate(tournament.getStartDate());
