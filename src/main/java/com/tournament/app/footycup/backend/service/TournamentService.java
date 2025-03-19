@@ -1,5 +1,6 @@
 package com.tournament.app.footycup.backend.service;
 
+import com.tournament.app.footycup.backend.dto.TournamentDto;
 import com.tournament.app.footycup.backend.model.Tournament;
 import com.tournament.app.footycup.backend.repository.TournamentRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -9,6 +10,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 @Service
 public class TournamentService {
@@ -24,17 +26,27 @@ public class TournamentService {
         return tournamentRepository.save(tournament);
     }
 
-    public List<Tournament> getAllTournaments() {
-        return tournamentRepository.findAll();
+    public List<TournamentDto> getAllTournaments() {
+        List<Tournament> tournaments = tournamentRepository.findAll();
+        return tournaments.stream().map(TournamentDto::new).collect(Collectors.toList());
     }
 
-    public Tournament getTournamentById(Long id) {
-        return tournamentRepository.findTournamentById(id);
+    public TournamentDto getTournamentById(Long id) {
+        Tournament tournament = tournamentRepository.findTournamentById(id);
+        return new TournamentDto(tournament);
     }
 
-    public Tournament updateTournament(Tournament tournament) {
-        Tournament existingTournament = tournamentRepository.findById(tournament.getId())
-                .orElseThrow(() -> new NoSuchElementException("Tournament not found"));
+    public List<TournamentDto> getTournamentsByOrganizer(Long organizerId) {
+        List<Tournament> tournaments = tournamentRepository.findAllByOrganizerId(organizerId);
+        return tournaments.stream().map(TournamentDto::new).collect(Collectors.toList());
+    }
+
+    public TournamentDto updateTournament(Tournament tournament) {
+        Tournament existingTournament = tournamentRepository.findTournamentById(tournament.getId());
+        if(existingTournament == null) {
+            throw new NoSuchElementException();
+        }
+
 
         if (tournament.getName() != null) existingTournament.setName(tournament.getName());
         if (tournament.getStartDate() != null) existingTournament.setStartDate(tournament.getStartDate());
@@ -42,12 +54,12 @@ public class TournamentService {
         if (tournament.getStatus() != null) existingTournament.setStatus(tournament.getStatus());
         existingTournament.setUpdatedAt(LocalDateTime.now());
 
-        return tournamentRepository.save(existingTournament);
+        return new TournamentDto(tournamentRepository.save(existingTournament));
     }
 
     public void deleteTournament(Long id) {
         if (!tournamentRepository.existsById(id)) {
-            throw new NoSuchElementException("Tournament not found");
+            throw new NoSuchElementException();
         }
 
         tournamentRepository.deleteById(id);
