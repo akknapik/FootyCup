@@ -24,23 +24,23 @@ public class Player {
     private Team team;
 
     @Column(nullable = false, updatable = false)
-    private String tournamentCode;
+    private String playerCode;
 
     public Player() {
     }
 
-    public Player(Long id, Integer number, String tournamentCode, String name, LocalDate birthDate, Team team) {
+    public Player(Long id, Integer number, String playerCode, String name, LocalDate birthDate, Team team) {
         this.id = id;
         this.number = number;
-        this.tournamentCode = tournamentCode;
+        this.playerCode = playerCode;
         this.name = name;
         this.birthDate = birthDate;
         this.team = team;
     }
 
-    public Player(Integer number, String tournamentCode, String name, LocalDate birthDate, Team team) {
+    public Player(Integer number, String playerCode, String name, LocalDate birthDate, Team team) {
         this.number = number;
-        this.tournamentCode = tournamentCode;
+        this.playerCode = playerCode;
         this.name = name;
         this.birthDate = birthDate;
         this.team = team;
@@ -78,12 +78,12 @@ public class Player {
         this.name = name;
     }
 
-    public String getTournamentCode() {
-        return tournamentCode;
+    public String getPlayerCode() {
+        return playerCode;
     }
 
-    public void setTournamentCode(String tournamentCode) {
-        this.tournamentCode = tournamentCode;
+    public void setPlayerCode(String playerCode) {
+        this.playerCode = playerCode;
     }
 
     public Team getTeam() {

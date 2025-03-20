@@ -1,6 +1,7 @@
 package com.tournament.app.footycup.backend.model;
 
 import com.fasterxml.jackson.annotation.JsonManagedReference;
+import com.tournament.app.footycup.backend.dto.TournamentDto;
 import jakarta.persistence.*;
 
 import java.util.ArrayList;
@@ -19,6 +20,10 @@ public class Team {
     @Column(nullable = false)
     private String coach;
 
+    @ManyToOne
+    @JoinColumn(name = "tournament_id", nullable = false, updatable = false)
+    private Tournament tournament;
+
     private int numberOfPlayer = 0;
 
     @OneToMany(mappedBy = "team", orphanRemoval = true)
@@ -31,21 +36,22 @@ public class Team {
     public Team() {
     }
 
-    public Team(Long id, String name, String coach, int numberOfPlayer, List<Player> playerList, String teamCode) {
+    public Team(Long id, String name, String coach, Tournament tournament, int numberOfPlayer, List<Player> playerList, String teamCode) {
         this.id = id;
         this.name = name;
         this.coach = coach;
+        this.tournament = tournament;
         this.numberOfPlayer = numberOfPlayer;
         this.playerList = playerList;
         this.teamCode = teamCode;
     }
 
-    public Team(String name, String coach, int numberOfPlayer, List<Player> playerList, String teamCode) {
+    public Team(String name, String coach, Tournament tournament, int numberOfPlayer, List<Player> playerList) {
         this.name = name;
         this.coach = coach;
+        this.tournament = tournament;
         this.numberOfPlayer = numberOfPlayer;
         this.playerList = playerList;
-        this.teamCode = teamCode;
     }
 
     public Long getId() {
@@ -90,6 +96,14 @@ public class Team {
 
     public String getTeamCode() {
         return teamCode;
+    }
+
+    public Tournament getTournament() {
+        return tournament;
+    }
+
+    public void setTournament(Tournament tournament) {
+        this.tournament = tournament;
     }
 
     public void setTeamCode(String teamCode) {
