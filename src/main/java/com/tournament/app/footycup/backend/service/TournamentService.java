@@ -9,6 +9,7 @@ import org.springframework.stereotype.Service;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.NoSuchElementException;
+import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
@@ -32,7 +33,7 @@ public class TournamentService {
     }
 
     public TournamentDto getTournamentById(Long id) {
-        Tournament tournament = tournamentRepository.findTournamentById(id);
+        Optional<Tournament> tournament = tournamentRepository.findById(id);
         return new TournamentDto(tournament);
     }
 

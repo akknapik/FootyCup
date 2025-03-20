@@ -6,6 +6,7 @@ import com.tournament.app.footycup.backend.model.Tournament;
 import java.io.Serializable;
 import java.time.LocalDate;
 import java.util.Objects;
+import java.util.Optional;
 
 /**
  * DTO for {@link com.tournament.app.footycup.backend.model.Tournament}
@@ -37,6 +38,9 @@ public class TournamentDto implements Serializable {
         this.endDate = tournament.getEndDate();
         this.organizer = new UserDto(tournament.getOrganizer());
         this.status = tournament.getStatus();
+    }
+
+    public TournamentDto(Optional<Tournament> tournament) {
     }
 
     public Long getId() {
