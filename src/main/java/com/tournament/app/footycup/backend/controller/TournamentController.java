@@ -1,5 +1,4 @@
 package com.tournament.app.footycup.backend.controller;
-
 import com.tournament.app.footycup.backend.dto.TournamentDto;
 import com.tournament.app.footycup.backend.dto.UserDto;
 import com.tournament.app.footycup.backend.model.Tournament;
@@ -60,9 +59,13 @@ public class TournamentController {
 
     @PostMapping("/addTournament")
     public ResponseEntity<Object> addTournament(@RequestBody TournamentDto tournamentDto) {
+        if(tournamentDto.getOrganizer() == null || tournamentDto.getName() == null || tournamentDto.getStartDate() == null || tournamentDto.getEndDate() == null) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Map.of("error", "Missing required fields"));
+        }
+
+
         User organizer = userRepository.findById(tournamentDto.getOrganizer().getId())
                 .orElse(null);
-
         if(organizer == null) {
             return  ResponseEntity.status(HttpStatus.NOT_FOUND)
                     .body(Map.of("error","Organizer not found"));
@@ -75,11 +78,15 @@ public class TournamentController {
         tournament.setOrganizer(organizer);
 
         Tournament newTournament = tournamentService.addTournament(tournament);
-        return new ResponseEntity<>(newTournament, HttpStatus.CREATED);
+        return ResponseEntity.status(HttpStatus.CREATED).body(new TournamentDto(newTournament));
     }
 
     @PutMapping("/updateTournament")
     public ResponseEntity<?> updateTournament(@RequestBody Tournament tournament) {
+        if(tournament.getId() == null) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Map.of("error", "Tournament ID is required"));
+        }
+
         try {
             TournamentDto updatedTournament = tournamentService.updateTournament(tournament);
             return ResponseEntity.ok(updatedTournament);
@@ -93,7 +100,8 @@ public class TournamentController {
     public ResponseEntity<?> deleteTournament(@PathVariable("id") Long id) {
         try {
             tournamentService.deleteTournament(id);
-            return ResponseEntity.ok(Map.of("message", "Tournament deleted successfully"));
+            return ResponseEntity.status(HttpStatus.NO_CONTENT).body(Map.of("message", "Tournament deleted " +
+                    "successfully"));
         } catch (NoSuchElementException e) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND)
                     .body(Map.of("error", "Tournament not found"));
