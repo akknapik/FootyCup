@@ -4,7 +4,6 @@ import com.fasterxml.jackson.annotation.JsonBackReference;
 import jakarta.persistence.*;
 
 import java.time.LocalDate;
-import java.util.Date;
 
 @Entity
 @Table(name = "players")
@@ -13,7 +12,7 @@ public class Player {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    private int number;
+    private Integer number;
 
     private String name;
 
@@ -30,7 +29,7 @@ public class Player {
     public Player() {
     }
 
-    public Player(Long id, int number, String tournamentCode, String name, LocalDate birthDate, Team team) {
+    public Player(Long id, Integer number, String tournamentCode, String name, LocalDate birthDate, Team team) {
         this.id = id;
         this.number = number;
         this.tournamentCode = tournamentCode;
@@ -39,7 +38,7 @@ public class Player {
         this.team = team;
     }
 
-    public Player(int number, String tournamentCode, String name, LocalDate birthDate, Team team) {
+    public Player(Integer number, String tournamentCode, String name, LocalDate birthDate, Team team) {
         this.number = number;
         this.tournamentCode = tournamentCode;
         this.name = name;
@@ -55,11 +54,11 @@ public class Player {
         this.id = id;
     }
 
-    public int getNumber() {
+    public Integer getNumber() {
         return number;
     }
 
-    public void setNumber(int number) {
+    public void setNumber(Integer number) {
         this.number = number;
     }
 
