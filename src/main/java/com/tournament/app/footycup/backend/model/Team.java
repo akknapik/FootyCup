@@ -26,26 +26,26 @@ public class Team {
     private List<Player> playerList = new ArrayList<>();
 
     @Column(nullable = false, updatable = false)
-    private String tournamentCode;
+    private String teamCode;
 
     public Team() {
     }
 
-    public Team(Long id, String name, String coach, int numberOfPlayer, List<Player> playerList, String tournamentCode) {
+    public Team(Long id, String name, String coach, int numberOfPlayer, List<Player> playerList, String teamCode) {
         this.id = id;
         this.name = name;
         this.coach = coach;
         this.numberOfPlayer = numberOfPlayer;
         this.playerList = playerList;
-        this.tournamentCode = tournamentCode;
+        this.teamCode = teamCode;
     }
 
-    public Team(String name, String coach, int numberOfPlayer, List<Player> playerList, String tournamentCode) {
+    public Team(String name, String coach, int numberOfPlayer, List<Player> playerList, String teamCode) {
         this.name = name;
         this.coach = coach;
         this.numberOfPlayer = numberOfPlayer;
         this.playerList = playerList;
-        this.tournamentCode = tournamentCode;
+        this.teamCode = teamCode;
     }
 
     public Long getId() {
@@ -88,11 +88,11 @@ public class Team {
         this.playerList = playerList;
     }
 
-    public String getTournamentCode() {
-        return tournamentCode;
+    public String getTeamCode() {
+        return teamCode;
     }
 
-    public void setTournamentCode(String tournamentCode) {
-        this.tournamentCode = tournamentCode;
+    public void setTeamCode(String teamCode) {
+        this.teamCode = teamCode;
     }
 }
