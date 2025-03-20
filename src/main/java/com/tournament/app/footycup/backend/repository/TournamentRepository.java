@@ -6,6 +6,5 @@ import org.springframework.data.jpa.repository.support.JpaRepositoryImplementati
 import java.util.List;
 
 public interface TournamentRepository extends JpaRepositoryImplementation<Tournament, Long> {
-    Tournament findTournamentById(Long id);
     List<Tournament> findAllByOrganizerId(Long organizerId);
 }
