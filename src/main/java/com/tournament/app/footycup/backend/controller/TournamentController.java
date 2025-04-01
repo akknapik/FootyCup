@@ -1,5 +1,4 @@
 package com.tournament.app.footycup.backend.controller;
-import com.tournament.app.footycup.backend.dto.TournamentDto;
 import com.tournament.app.footycup.backend.dto.UserDto;
 import com.tournament.app.footycup.backend.model.Tournament;
 import com.tournament.app.footycup.backend.model.User;
@@ -29,15 +28,15 @@ public class TournamentController {
     }
 
     @GetMapping
-    public ResponseEntity<List<TournamentDto>> getAllTournaments() {
-        List<TournamentDto> tournaments = tournamentService.getAllTournaments();
+    public ResponseEntity<List<Tournament>> getAllTournaments() {
+        List<Tournament> tournaments = tournamentService.getAllTournaments();
         return ResponseEntity.ok(tournaments);
     }
 
     @GetMapping("/{id}")
     public ResponseEntity<Object> getTournamentById(@PathVariable("id") Long id) {
         try {
-            TournamentDto tournament = tournamentService.getTournamentById(id);
+            Tournament tournament = tournamentService.getTournamentById(id);
             return ResponseEntity.ok(tournament);
         } catch (NoSuchElementException e) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND)
@@ -52,32 +51,25 @@ public class TournamentController {
             return  ResponseEntity.status(HttpStatus.NOT_FOUND)
                     .body(Map.of("error","Organizer not found"));
         }
-        List<TournamentDto> tournaments = tournamentService.getTournamentsByOrganizer(id);
+        List<Tournament> tournaments = tournamentService.getTournamentsByOrganizer(id);
         return ResponseEntity.ok(tournaments);
     }
 
     @PostMapping("/addTournament")
-    public ResponseEntity<Object> addTournament(@RequestBody TournamentDto tournamentDto) {
-        if(tournamentDto.getOrganizer() == null || tournamentDto.getName() == null || tournamentDto.getStartDate() == null || tournamentDto.getEndDate() == null) {
+    public ResponseEntity<Object> addTournament(@RequestBody Tournament tournament) {
+        if(tournament.getOrganizer() == null || tournament.getName() == null || tournament.getStartDate() == null || tournament.getEndDate() == null) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Map.of("error", "Missing required fields"));
         }
 
-
-        User organizer = userRepository.findById(tournamentDto.getOrganizer().getId())
+        User organizer = userRepository.findById(tournament.getOrganizer().getId())
                 .orElse(null);
         if(organizer == null) {
             return  ResponseEntity.status(HttpStatus.NOT_FOUND)
                     .body(Map.of("error","Organizer not found"));
         }
 
-        Tournament tournament = new Tournament();
-        tournament.setName(tournamentDto.getName());
-        tournament.setStartDate(tournamentDto.getStartDate());
-        tournament.setEndDate(tournamentDto.getEndDate());
-        tournament.setOrganizer(organizer);
-
         Tournament newTournament = tournamentService.addTournament(tournament);
-        return ResponseEntity.status(HttpStatus.CREATED).body(new TournamentDto(newTournament));
+        return ResponseEntity.status(HttpStatus.CREATED).body(newTournament);
     }
 
     @PutMapping("/updateTournament")
@@ -87,7 +79,7 @@ public class TournamentController {
         }
 
         try {
-            TournamentDto updatedTournament = tournamentService.updateTournament(tournament);
+            Tournament updatedTournament = tournamentService.updateTournament(tournament);
             return ResponseEntity.ok(updatedTournament);
         } catch (NoSuchElementException e) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND)
