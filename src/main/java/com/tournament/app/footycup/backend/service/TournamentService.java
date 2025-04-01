@@ -9,8 +9,6 @@ import org.springframework.stereotype.Service;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.NoSuchElementException;
-import java.util.Optional;
-import java.util.UUID;
 import java.util.stream.Collectors;
 
 @Service
@@ -23,7 +21,6 @@ public class TournamentService {
     }
 
     public Tournament addTournament(Tournament tournament) {
-        tournament.setTournamentCode(UUID.randomUUID().toString());
         return tournamentRepository.save(tournament);
     }
 
@@ -33,7 +30,9 @@ public class TournamentService {
     }
 
     public TournamentDto getTournamentById(Long id) {
-        Optional<Tournament> tournament = tournamentRepository.findById(id);
+        Tournament tournament = tournamentRepository.findById(id)
+                .orElseThrow(() -> new NoSuchElementException());
+
         return new TournamentDto(tournament);
     }
 

@@ -15,27 +15,23 @@ public class User implements Serializable {
     private String lastname;
     private String email;
     private String password;
-    @Column(nullable = false, updatable = false)
-    private String userCode;
 
     public User() {
     }
 
-    public User(Long id, String firstname, String lastname, String email, String password, String userCode) {
+    public User(Long id, String firstname, String lastname, String email, String password) {
         this.id = id;
         this.firstname = firstname;
         this.lastname = lastname;
         this.email = email;
         this.password = password;
-        this.userCode = userCode;
     }
 
-    public User(String firstname, String lastname, String email, String password, String userCode) {
+    public User(String firstname, String lastname, String email, String password) {
         this.firstname = firstname;
         this.lastname = lastname;
         this.email = email;
         this.password = password;
-        this.userCode = userCode;
     }
 
     public Long getId() {
@@ -78,14 +74,6 @@ public class User implements Serializable {
         this.password = password;
     }
 
-    public String getUserCode() {
-        return userCode;
-    }
-
-    public void setUserCode(String userCode) {
-        this.userCode = userCode;
-    }
-
     @Override
     public String toString() {
         return "User{" +
@@ -94,7 +82,6 @@ public class User implements Serializable {
                 ", lastname='" + lastname + '\'' +
                 ", email='" + email + '\'' +
                 ", password='" + password + '\'' +
-                ", userCode='" + userCode + '\'' +
                 '}';
     }
 }

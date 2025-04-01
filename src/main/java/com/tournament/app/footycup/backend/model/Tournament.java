@@ -38,9 +38,6 @@ public class Tournament implements Serializable {
     @Column(nullable = false)
     private LocalDateTime updatedAt = LocalDateTime.now();
 
-    @Column(nullable = false, updatable = false)
-    private String tournamentCode;
-
     public Tournament() {
     }
 
@@ -51,8 +48,7 @@ public class Tournament implements Serializable {
                       User organizer,
                       TournamentStatus status,
                       LocalDateTime createdAt,
-                      LocalDateTime updatedAt,
-                      String tournamentCode) {
+                      LocalDateTime updatedAt) {
         this.id = id;
         this.name = name;
         this.startDate = startDate;
@@ -61,7 +57,6 @@ public class Tournament implements Serializable {
         this.status = status;
         this.createdAt = createdAt;
         this.updatedAt = updatedAt;
-        this.tournamentCode = tournamentCode;
     }
 
     public Tournament(String name,
@@ -70,8 +65,7 @@ public class Tournament implements Serializable {
                       User organizer,
                       TournamentStatus status,
                       LocalDateTime createdAt,
-                      LocalDateTime updatedAt,
-                      String tournamentCode) {
+                      LocalDateTime updatedAt) {
         this.name = name;
         this.startDate = startDate;
         this.endDate = endDate;
@@ -79,7 +73,6 @@ public class Tournament implements Serializable {
         this.status = status;
         this.createdAt = createdAt;
         this.updatedAt = updatedAt;
-        this.tournamentCode = tournamentCode;
     }
 
     public Long getId() {
@@ -146,14 +139,6 @@ public class Tournament implements Serializable {
         this.updatedAt = updatedAt;
     }
 
-    public String getTournamentCode() {
-        return tournamentCode;
-    }
-
-    public void setTournamentCode(String tournamentCode) {
-        this.tournamentCode = tournamentCode;
-    }
-
     @Override
     public String toString() {
         return "Tournament{" +
@@ -165,7 +150,6 @@ public class Tournament implements Serializable {
                 ", status=" + status +
                 ", createdAt=" + createdAt +
                 ", updatedAt=" + updatedAt +
-                ", tournamentCode='" + tournamentCode + '\'' +
                 '}';
     }
 }

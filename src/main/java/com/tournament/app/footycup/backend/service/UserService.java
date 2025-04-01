@@ -21,7 +21,6 @@ public class UserService {
     }
 
     public UserDto addUser(User user) {
-        user.setUserCode(UUID.randomUUID().toString());
         return new UserDto(userRepository.save(user));
     }
 
@@ -31,7 +30,10 @@ public class UserService {
     }
 
     public UserDto getUserById(Long id) {
-        return new UserDto(userRepository.findUserById(id));
+        User user = userRepository.findById(id)
+                .orElseThrow(() -> new NoSuchElementException());
+
+        return new UserDto(user);
     }
 
     public UserDto updateUser(User user) {
@@ -42,7 +44,6 @@ public class UserService {
         if (user.getLastname() != null) existingUser.setLastname(user.getLastname());
         if (user.getEmail() != null) existingUser.setEmail(user.getEmail());
         if (user.getPassword() != null) existingUser.setPassword(user.getPassword());
-        if (user.getUserCode() != null) existingUser.setUserCode(user.getUserCode());
 
         return new UserDto(userRepository.save(existingUser));
     }

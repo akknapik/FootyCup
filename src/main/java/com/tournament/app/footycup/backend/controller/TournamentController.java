@@ -36,14 +36,13 @@ public class TournamentController {
 
     @GetMapping("/{id}")
     public ResponseEntity<Object> getTournamentById(@PathVariable("id") Long id) {
-        TournamentDto tournament = tournamentService.getTournamentById(id);
-
-        if(tournament==null) {
-            return  ResponseEntity.status(HttpStatus.NOT_FOUND)
-                    .body(Map.of("error","Tournament not found"));
+        try {
+            TournamentDto tournament = tournamentService.getTournamentById(id);
+            return ResponseEntity.ok(tournament);
+        } catch (NoSuchElementException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body(Map.of("error", "Tournament not found"));
         }
-
-        return ResponseEntity.ok(tournament);
     }
 
     @GetMapping("/byOrganizer/{id}")

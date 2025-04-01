@@ -30,15 +30,14 @@ public class UserController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<?> getUserById(@PathVariable("id") long id) {
-        UserDto user = userService.getUserById(id);
-
-        if(user==null) {
-            return  ResponseEntity.status(HttpStatus.NOT_FOUND)
-                    .body(Map.of("error","User not found"));
+    public ResponseEntity<?> getUserById(@PathVariable("id") Long id) {
+        try {
+            UserDto user = userService.getUserById(id);
+            return ResponseEntity.ok(user);
+        } catch (NoSuchElementException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body(Map.of("error", "User not found"));
         }
-
-        return ResponseEntity.ok(user);
     }
 
     @PostMapping("/addUser")
@@ -62,7 +61,8 @@ public class UserController {
     public ResponseEntity<?> deleteUser(@PathVariable("id") Long id) {
         try {
             userService.deleteUser(id);
-            return ResponseEntity.ok(Map.of("message", "User deleted successfully"));
+            return ResponseEntity.status(HttpStatus.NO_CONTENT).body(Map.of("message", "User deleted " +
+                    "successfully"));
         } catch (NoSuchElementException e) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND)
                     .body(Map.of("error", "User not found"));
