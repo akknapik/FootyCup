@@ -36,8 +36,8 @@ public class UserService {
         return new UserDto(user);
     }
 
-    public UserDto updateUser(User user) {
-        User existingUser = userRepository.findById(user.getId())
+    public UserDto updateUser(Long id, User user) {
+        User existingUser = userRepository.findById(id)
                 .orElseThrow(() -> new NoSuchElementException());
 
         if (user.getFirstname() != null) existingUser.setFirstname(user.getFirstname());

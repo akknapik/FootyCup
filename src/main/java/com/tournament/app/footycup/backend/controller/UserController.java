@@ -40,16 +40,16 @@ public class UserController {
         }
     }
 
-    @PostMapping("/addUser")
+    @PostMapping
     public ResponseEntity<UserDto> addUser(@RequestBody User user) {
         UserDto newUser = userService.addUser(user);
         return new ResponseEntity<>(newUser, HttpStatus.CREATED);
     }
 
-    @PutMapping("/updateUser")
-    public ResponseEntity<?> updateUser(@RequestBody User user) {
+    @PutMapping("/{id}}")
+    public ResponseEntity<?> updateUser(@PathVariable("id") Long id, @RequestBody User user) {
         try {
-            UserDto updatedUser = userService.updateUser(user);
+            UserDto updatedUser = userService.updateUser(id, user);
             return ResponseEntity.ok(updatedUser);
         } catch (NoSuchElementException e) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND)
@@ -57,7 +57,7 @@ public class UserController {
         }
     }
 
-    @DeleteMapping("/deleteUser/{id}")
+    @DeleteMapping("/{id}")
     public ResponseEntity<?> deleteUser(@PathVariable("id") Long id) {
         try {
             userService.deleteUser(id);
