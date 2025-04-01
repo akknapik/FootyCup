@@ -2,11 +2,11 @@ package com.tournament.app.footycup.backend.model;
 
 
 import com.tournament.app.footycup.backend.enums.TournamentStatus;
+import com.tournament.app.footycup.backend.enums.TournamentSystem;
 import jakarta.persistence.*;
 
 import java.io.Serializable;
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "tournaments")
@@ -22,7 +22,10 @@ public class Tournament implements Serializable {
     @Column(nullable = false)
     private LocalDate startDate;
 
+    @Column(nullable = false)
     private LocalDate endDate;
+
+    private String location;
 
     @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "id_organizer", nullable = false, updatable = false)
@@ -32,31 +35,29 @@ public class Tournament implements Serializable {
     @Column(nullable = false)
     private TournamentStatus status = TournamentStatus.UPCOMING;
 
+    @Enumerated(EnumType.STRING)
+    private TournamentSystem system;
+
+
+
     public Tournament() {
     }
 
-    public Tournament(Long id,
-                      String name,
-                      LocalDate startDate,
-                      LocalDate endDate,
-                      User organizer,
-                      TournamentStatus status) {
+    public Tournament(Long id, String name, LocalDate startDate, LocalDate endDate, String location, User organizer, TournamentStatus status) {
         this.id = id;
         this.name = name;
         this.startDate = startDate;
         this.endDate = endDate;
+        this.location = location;
         this.organizer = organizer;
         this.status = status;
     }
 
-    public Tournament(String name,
-                      LocalDate startDate,
-                      LocalDate endDate,
-                      User organizer,
-                      TournamentStatus status) {
+    public Tournament(String name, LocalDate startDate, LocalDate endDate, String location, User organizer, TournamentStatus status) {
         this.name = name;
         this.startDate = startDate;
         this.endDate = endDate;
+        this.location = location;
         this.organizer = organizer;
         this.status = status;
     }
@@ -107,6 +108,22 @@ public class Tournament implements Serializable {
 
     public void setStatus(TournamentStatus status) {
         this.status = status;
+    }
+
+    public String getLocation() {
+        return location;
+    }
+
+    public void setLocation(String location) {
+        this.location = location;
+    }
+
+    public TournamentSystem getSystem() {
+        return system;
+    }
+
+    public void setSystem(TournamentSystem system) {
+        this.system = system;
     }
 
     @Override
