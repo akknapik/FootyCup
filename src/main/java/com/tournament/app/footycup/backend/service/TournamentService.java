@@ -6,7 +6,6 @@ import com.tournament.app.footycup.backend.repository.TournamentRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.time.LocalDateTime;
 import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.stream.Collectors;
@@ -49,7 +48,6 @@ public class TournamentService {
         if (tournament.getStartDate() != null) existingTournament.setStartDate(tournament.getStartDate());
         if (tournament.getEndDate() != null) existingTournament.setStartDate(tournament.getEndDate());
         if (tournament.getStatus() != null) existingTournament.setStatus(tournament.getStatus());
-        existingTournament.setUpdatedAt(LocalDateTime.now());
 
         return new TournamentDto(tournamentRepository.save(existingTournament));
     }

@@ -32,12 +32,6 @@ public class Tournament implements Serializable {
     @Column(nullable = false)
     private TournamentStatus status = TournamentStatus.UPCOMING;
 
-    @Column(nullable = false, updatable = false)
-    private LocalDateTime createdAt = LocalDateTime.now();
-
-    @Column(nullable = false)
-    private LocalDateTime updatedAt = LocalDateTime.now();
-
     public Tournament() {
     }
 
@@ -46,33 +40,25 @@ public class Tournament implements Serializable {
                       LocalDate startDate,
                       LocalDate endDate,
                       User organizer,
-                      TournamentStatus status,
-                      LocalDateTime createdAt,
-                      LocalDateTime updatedAt) {
+                      TournamentStatus status) {
         this.id = id;
         this.name = name;
         this.startDate = startDate;
         this.endDate = endDate;
         this.organizer = organizer;
         this.status = status;
-        this.createdAt = createdAt;
-        this.updatedAt = updatedAt;
     }
 
     public Tournament(String name,
                       LocalDate startDate,
                       LocalDate endDate,
                       User organizer,
-                      TournamentStatus status,
-                      LocalDateTime createdAt,
-                      LocalDateTime updatedAt) {
+                      TournamentStatus status) {
         this.name = name;
         this.startDate = startDate;
         this.endDate = endDate;
         this.organizer = organizer;
         this.status = status;
-        this.createdAt = createdAt;
-        this.updatedAt = updatedAt;
     }
 
     public Long getId() {
@@ -123,22 +109,6 @@ public class Tournament implements Serializable {
         this.status = status;
     }
 
-    public LocalDateTime getCreatedAt() {
-        return createdAt;
-    }
-
-    public void setCreatedAt(LocalDateTime createdAt) {
-        this.createdAt = createdAt;
-    }
-
-    public LocalDateTime getUpdatedAt() {
-        return updatedAt;
-    }
-
-    public void setUpdatedAt(LocalDateTime updatedAt) {
-        this.updatedAt = updatedAt;
-    }
-
     @Override
     public String toString() {
         return "Tournament{" +
@@ -148,8 +118,6 @@ public class Tournament implements Serializable {
                 ", endDate=" + endDate +
                 ", organizer=" + organizer +
                 ", status=" + status +
-                ", createdAt=" + createdAt +
-                ", updatedAt=" + updatedAt +
                 '}';
     }
 }
