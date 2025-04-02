@@ -5,7 +5,17 @@
   "projects": {
     "frontend": {
       "projectType": "application",
-      "schematics": {},
+      "schematics": {
+        "@schematics/angular:component": {
+          "standalone": false
+        },
+        "@schematics/angular:directive": {
+          "standalone": false
+        },
+        "@schematics/angular:pipe": {
+          "standalone": false
+        }
+      },
       "root": "",
       "sourceRoot": "src",
       "prefix": "app",
@@ -56,6 +66,7 @@
           "defaultConfiguration": "production"
         },
         "serve": {
+          "options": {"proxyConfig": "proxy.conf.json"},
           "builder": "@angular-devkit/build-angular:dev-server",
           "configurations": {
             "production": {
