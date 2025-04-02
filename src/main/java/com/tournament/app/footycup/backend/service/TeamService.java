@@ -11,7 +11,6 @@ import org.springframework.stereotype.Service;
 import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Optional;
-import java.util.UUID;
 
 @Service
 public class TeamService {
@@ -25,7 +24,6 @@ public class TeamService {
     }
 
     public Team addTeam(Team team) {
-        team.setTeamCode(UUID.randomUUID().toString());
         return teamRepository.save(team);
     }
 

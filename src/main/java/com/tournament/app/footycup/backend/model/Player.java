@@ -23,24 +23,19 @@ public class Player {
     @JsonBackReference
     private Team team;
 
-    @Column(nullable = false, updatable = false)
-    private String playerCode;
-
     public Player() {
     }
 
-    public Player(Long id, Integer number, String playerCode, String name, LocalDate birthDate, Team team) {
+    public Player(Long id, Integer number, String name, LocalDate birthDate, Team team) {
         this.id = id;
         this.number = number;
-        this.playerCode = playerCode;
         this.name = name;
         this.birthDate = birthDate;
         this.team = team;
     }
 
-    public Player(Integer number, String playerCode, String name, LocalDate birthDate, Team team) {
+    public Player(Integer number, String name, LocalDate birthDate, Team team) {
         this.number = number;
-        this.playerCode = playerCode;
         this.name = name;
         this.birthDate = birthDate;
         this.team = team;
@@ -78,13 +73,7 @@ public class Player {
         this.name = name;
     }
 
-    public String getPlayerCode() {
-        return playerCode;
-    }
 
-    public void setPlayerCode(String playerCode) {
-        this.playerCode = playerCode;
-    }
 
     public Team getTeam() {
         return team;
