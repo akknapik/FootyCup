@@ -1,0 +1,6 @@
+<h2>Logowanie</h2>
+<form (ngSubmit)="login()" #loginForm="ngForm">
+  <input [(ngModel)]="form.email" name="email" placeholder="Email" type="email" required />
+  <input [(ngModel)]="form.password" name="password" placeholder="Hasło" type="password" required />
+  <button type="submit">Zaloguj</button>
+</form>
