@@ -20,7 +20,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
-@RequestMapping(path = "/api")
+@RequestMapping("")
 @AllArgsConstructor
 public class AuthController {
 
@@ -31,18 +31,23 @@ public class AuthController {
 
     @PostMapping("/register")
     public ResponseEntity<String> register(@RequestBody RegistrationRequest request) {
-        if(userRepository.findByEmail(request.getEmail()).isPresent()) {
-            return ResponseEntity.badRequest().body("Email already in use");
+        try {
+            if (userRepository.findByEmail(request.getEmail()).isPresent()) {
+                return ResponseEntity.badRequest().body("Email already in use");
+            }
+
+            User user = new User();
+            user.setEmail(request.getEmail());
+            user.setPassword(passwordEncoder.encode(request.getPassword()));
+            user.setFirstname(request.getFirstname());
+            user.setLastname(request.getLastname());
+
+            userRepository.save(user);
+            return ResponseEntity.ok("User registered");
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Registration failed");
         }
-
-        User user = new User();
-        user.setEmail(request.getEmail());
-        user.setPassword(passwordEncoder.encode(request.getPassword()));
-        user.setFirstname(request.getFirstname());
-        user.setLastname(request.getLastname());
-
-        userRepository.save(user);
-        return ResponseEntity.ok("User registered");
     }
 
     @PostMapping("/login")
@@ -55,8 +60,6 @@ public class AuthController {
             String token = tokenService.generateToken(request.getEmail());
             return ResponseEntity.ok(new AuthResponse(token));
         } catch (AuthenticationException e) {
-            e.printStackTrace(); // <-- dodaj to na chwilę
-
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }
     }
