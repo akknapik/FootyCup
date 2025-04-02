@@ -1,6 +1,7 @@
 package com.tournament.app.footycup.backend.service;
 
 import com.tournament.app.footycup.backend.model.Tournament;
+import com.tournament.app.footycup.backend.model.User;
 import com.tournament.app.footycup.backend.repository.TournamentRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -30,8 +31,12 @@ public class TournamentService {
                 .orElseThrow(() -> new NoSuchElementException());
     }
 
-    public List<Tournament> getTournamentsByOrganizer(Long organizerId) {
+    public List<Tournament> getTournamentsByOrganizerId(Long organizerId) {
         return tournamentRepository.findAllByOrganizerId(organizerId);
+    }
+
+    public List<Tournament> getTournamentsByOrganizer(User organizer) {
+        return tournamentRepository.findByOrganizer(organizer);
     }
 
     public Tournament updateTournament(Tournament tournament) {
