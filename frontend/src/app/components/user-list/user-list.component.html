@@ -1,0 +1,21 @@
+<!-- src/app/components/user-list/user-list.component.html -->
+<h2>Lista użytkowników</h2>
+
+<table>
+  <thead>
+    <tr>
+      <th>ID</th>
+      <th>Imię użytkownika</th>
+      <th>Nazwisko użytkownika</th>
+      <th>Email</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr *ngFor="let user of users">
+      <td>{{ user.id }}</td>
+      <td>{{ user.firstname }}</td>
+      <td>{{ user.lastname }}</td>
+      <td>{{ user.email }}</td>
+    </tr>
+  </tbody>
+</table>
