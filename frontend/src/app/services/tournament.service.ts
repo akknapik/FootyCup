@@ -13,4 +13,16 @@ export class TournamentService {
   createTournament(data: any) {
     return this.http.post('/api/tournaments', data);
   }
+
+  getTournamentById(id: number) {
+    return this.http.get<any>(`/api/tournaments/${id}`);
+  }
+  
+  updateTournament(id: number, data: any) {
+    return this.http.put(`/api/tournaments/${id}`, data);
+  }
+
+  deleteTournament(id: number) {
+    return this.http.delete(`/api/tournaments/${id}`);
+  }
 }

@@ -7,6 +7,10 @@
       <th>End date</th>
       <th>Location</th>
       <th>Status</th>
+      <th>
+        <button (click)="loadTournaments()">Refresh</button>
+        <button (click)="goToCreate()">Create</button>
+      </th>
     </tr>
   </thead>
   <tbody>
@@ -16,6 +20,10 @@
       <td>{{ t.endDate | date }}</td>
       <td>{{ t.location }}</td>
       <td>{{ t.status }}</td>
+      <td>
+        <button><a [routerLink]="['/tournaments', t.id, 'edit']">Edit</a></button>
+        <button (click)="deleteTournament(t.id)">Delete</button>
+      </td>
     </tr>
   </tbody>
 </table>

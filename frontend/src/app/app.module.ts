@@ -11,6 +11,7 @@ import { FormsModule } from '@angular/forms';
 import { MyTournamentsComponent } from './pages/my-tournaments/my-tournaments.component';
 import { TokenInterceptor } from './interceptors/token.interceptor';
 import { AddTournamentComponent } from './pages/add-tournament/add-tournament.component';
+import { EditTournamentComponent } from './pages/edit-tournament/edit-tournament.component';
 
 @NgModule({
   declarations: [
@@ -19,7 +20,8 @@ import { AddTournamentComponent } from './pages/add-tournament/add-tournament.co
     LoginComponent,
     RegisterComponent,
     MyTournamentsComponent,
-    AddTournamentComponent
+    AddTournamentComponent,
+    EditTournamentComponent
   ],
   imports: [
     BrowserModule,
