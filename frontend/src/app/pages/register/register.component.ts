@@ -1,5 +1,6 @@
 import { Component } from '@angular/core';
 import { AuthService } from '../../services/auth.service';
+import { Router } from '@angular/router';
 
 @Component({
   selector: 'app-register',
@@ -15,16 +16,14 @@ export class RegisterComponent {
     password: ''
   };
 
-  constructor(private auth: AuthService) { }
+  constructor(private auth: AuthService, private router: Router) { }
 
   register() {
     this.auth.register(this.form).subscribe({
       next: (res) => {
-        console.log('Rejestracja OK:', res);
-        alert('Zarejestrowano!');
+        this.router.navigate(['/login']);
       },
       error: err => {
-        console.error('Błąd rejestracji:', err);
         alert(err?.error || 'Błąd rejestracji');
       }
     });

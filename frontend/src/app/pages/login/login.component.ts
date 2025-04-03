@@ -1,5 +1,6 @@
 import { Component } from '@angular/core';
 import { AuthService } from '../../services/auth.service';
+import { Router } from '@angular/router';
 
 @Component({
   selector: 'app-login',
@@ -13,11 +14,13 @@ export class LoginComponent {
     password: ''
   };
 
-  constructor(private auth: AuthService) { }
+  constructor(private auth: AuthService, private router: Router) { }
 
   login() {
     this.auth.login(this.form).subscribe({
-      next: () => alert('Login successful!'),
+      next: () =>  {
+        this.router.navigate(['/tournaments/my']);
+      },
       error: err => alert('Login failed') 
     });
   }
