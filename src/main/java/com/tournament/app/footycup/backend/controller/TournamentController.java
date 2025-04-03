@@ -6,14 +6,11 @@ import com.tournament.app.footycup.backend.repository.TournamentRepository;
 import com.tournament.app.footycup.backend.repository.UserRepository;
 import com.tournament.app.footycup.backend.service.TournamentService;
 import com.tournament.app.footycup.backend.service.UserService;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-import java.util.Map;
-import java.util.NoSuchElementException;
 
 @RestController
 @RequestMapping("/tournaments")
@@ -52,75 +49,26 @@ public class TournamentController {
         return ResponseEntity.ok(tournamentRepository.save(tournament));
     }
 
-//    @GetMapping
-//    public ResponseEntity<List<Tournament>> getAllTournaments() {
-//        List<Tournament> tournaments = tournamentService.getAllTournaments();
-//        return ResponseEntity.ok(tournaments);
-//    }
-//
-//    @GetMapping("/{id}")
-//    public ResponseEntity<Object> getTournamentById(@PathVariable("id") Long id) {
-//        try {
-//            Tournament tournament = tournamentService.getTournamentById(id);
-//            return ResponseEntity.ok(tournament);
-//        } catch (NoSuchElementException e) {
-//            return ResponseEntity.status(HttpStatus.NOT_FOUND)
-//                    .body(Map.of("error", "Tournament not found"));
-//        }
-//    }
-//
-//    @GetMapping("/byOrganizer/{id}")
-//    public ResponseEntity<?> getTournamentsByOrganizerId(@PathVariable("id") Long id) {
-//        UserDto existingUser = userService.getUserById(id);
-//        if(existingUser == null) {
-//            return  ResponseEntity.status(HttpStatus.NOT_FOUND)
-//                    .body(Map.of("error","Organizer not found"));
-//        }
-//        List<Tournament> tournaments = tournamentService.getTournamentsByOrganizerId(id);
-//        return ResponseEntity.ok(tournaments);
-//    }
-
-    @PostMapping("/addTournament")
-    public ResponseEntity<Object> addTournament(@RequestBody Tournament tournament) {
-        if(tournament.getOrganizer() == null || tournament.getName() == null || tournament.getStartDate() == null || tournament.getEndDate() == null) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Map.of("error", "Missing required fields"));
-        }
-
-        User organizer = userRepository.findById(tournament.getOrganizer().getId())
-                .orElse(null);
-        if(organizer == null) {
-            return  ResponseEntity.status(HttpStatus.NOT_FOUND)
-                    .body(Map.of("error","Organizer not found"));
-        }
-
-        Tournament newTournament = tournamentService.addTournament(tournament);
-        return ResponseEntity.status(HttpStatus.CREATED).body(newTournament);
+    @GetMapping("/{id}")
+    public ResponseEntity<Tournament> getById(@PathVariable Long id, Authentication authentication) {
+        User user = (User) authentication.getPrincipal();
+        Tournament tournament = tournamentService.getTournamentById(id, user);
+        return ResponseEntity.ok(tournament);
     }
 
-    @PutMapping("/updateTournament")
-    public ResponseEntity<?> updateTournament(@RequestBody Tournament tournament) {
-        if(tournament.getId() == null) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Map.of("error", "Tournament ID is required"));
-        }
-
-        try {
-            Tournament updatedTournament = tournamentService.updateTournament(tournament);
-            return ResponseEntity.ok(updatedTournament);
-        } catch (NoSuchElementException e) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                    .body(Map.of("error", "Tournament not found"));
-        }
+    @PutMapping("/{id}")
+    public ResponseEntity<Tournament> update(@PathVariable Long id,
+                                             @RequestBody Tournament updatedData,
+                                             Authentication authentication) {
+        User user = (User) authentication.getPrincipal();
+        Tournament updated = tournamentService.updateTournament(id, updatedData, user);
+        return ResponseEntity.ok(updated);
     }
 
-    @DeleteMapping("/deleteTournament/{id}")
-    public ResponseEntity<?> deleteTournament(@PathVariable("id") Long id) {
-        try {
-            tournamentService.deleteTournament(id);
-            return ResponseEntity.status(HttpStatus.NO_CONTENT).body(Map.of("message", "Tournament deleted " +
-                    "successfully"));
-        } catch (NoSuchElementException e) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                    .body(Map.of("error", "Tournament not found"));
-        }
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> deleteTournament(@PathVariable Long id, Authentication authentication) {
+        User user = (User) authentication.getPrincipal();
+        tournamentService.deleteTournament(id, user);
+        return ResponseEntity.noContent().build();
     }
 }

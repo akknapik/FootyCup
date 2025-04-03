@@ -4,6 +4,7 @@ import com.tournament.app.footycup.backend.model.Tournament;
 import com.tournament.app.footycup.backend.model.User;
 import com.tournament.app.footycup.backend.repository.TournamentRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -18,46 +19,35 @@ public class TournamentService {
         this.tournamentRepository = tournamentRepository;
     }
 
-    public Tournament addTournament(Tournament tournament) {
+    public Tournament getTournamentById(Long id, User user) {
+        Tournament tournament = tournamentRepository.findById(id)
+                .orElseThrow(() -> new NoSuchElementException("Nie znaleziono turnieju"));
+
+        if (!tournament.getOrganizer().getId().equals(user.getId())) {
+            throw new AccessDeniedException("Brak dostępu do turnieju");
+        }
+
+        return tournament;
+    }
+
+    public Tournament updateTournament(Long id, Tournament updatedData, User user) {
+        Tournament tournament = getTournamentById(id, user);
+
+        tournament.setName(updatedData.getName());
+        tournament.setStartDate(updatedData.getStartDate());
+        tournament.setEndDate(updatedData.getEndDate());
+        tournament.setLocation(updatedData.getLocation());
+
         return tournamentRepository.save(tournament);
-    }
-
-    public List<Tournament> getAllTournaments() {
-        return tournamentRepository.findAll();
-    }
-
-    public Tournament getTournamentById(Long id) {
-        return tournamentRepository.findById(id)
-                .orElseThrow(() -> new NoSuchElementException());
-    }
-
-    public List<Tournament> getTournamentsByOrganizerId(Long organizerId) {
-        return tournamentRepository.findAllByOrganizerId(organizerId);
     }
 
     public List<Tournament> getTournamentsByOrganizer(User organizer) {
         return tournamentRepository.findByOrganizer(organizer);
     }
 
-    public Tournament updateTournament(Tournament tournament) {
-        Tournament existingTournament = tournamentRepository.findById(tournament.getId())
-                .orElseThrow(() -> new NoSuchElementException());
 
-        if (tournament.getName() != null) existingTournament.setName(tournament.getName());
-        if (tournament.getStartDate() != null) existingTournament.setStartDate(tournament.getStartDate());
-        if (tournament.getEndDate() != null) existingTournament.setEndDate(tournament.getEndDate());
-        if (tournament.getLocation() != null) existingTournament.setLocation(tournament.getLocation());
-        if (tournament.getStatus() != null) existingTournament.setStatus(tournament.getStatus());
-        if (tournament.getSystem() != null) existingTournament.setSystem(tournament.getSystem());
-
-        return tournamentRepository.save(existingTournament);
-    }
-
-    public void deleteTournament(Long id) {
-        if (!tournamentRepository.existsById(id)) {
-            throw new NoSuchElementException();
-        }
-
-        tournamentRepository.deleteById(id);
+    public void deleteTournament(Long id, User user) {
+        Tournament tournament = getTournamentById(id, user);
+        tournamentRepository.delete(tournament);
     }
 }
