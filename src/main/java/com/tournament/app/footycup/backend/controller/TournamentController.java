@@ -2,6 +2,7 @@ package com.tournament.app.footycup.backend.controller;
 import com.tournament.app.footycup.backend.dto.UserDto;
 import com.tournament.app.footycup.backend.model.Tournament;
 import com.tournament.app.footycup.backend.model.User;
+import com.tournament.app.footycup.backend.repository.TournamentRepository;
 import com.tournament.app.footycup.backend.repository.UserRepository;
 import com.tournament.app.footycup.backend.service.TournamentService;
 import com.tournament.app.footycup.backend.service.UserService;
@@ -20,12 +21,14 @@ public class TournamentController {
     private final TournamentService tournamentService;
     private final UserRepository userRepository;
     private final UserService userService;
+    private final TournamentRepository tournamentRepository;
 
     public TournamentController(TournamentService tournamentService, UserRepository userRepository,
-                                UserService userService) {
+                                UserService userService, TournamentRepository tournamentRepository) {
         this.tournamentService = tournamentService;
         this.userRepository = userRepository;
         this.userService = userService;
+        this.tournamentRepository = tournamentRepository;
     }
 
     @GetMapping("/my")
@@ -35,33 +38,47 @@ public class TournamentController {
         return ResponseEntity.ok(myTournaments);
     }
 
-    @GetMapping
-    public ResponseEntity<List<Tournament>> getAllTournaments() {
-        List<Tournament> tournaments = tournamentService.getAllTournaments();
-        return ResponseEntity.ok(tournaments);
+    @PostMapping
+    public ResponseEntity<Tournament> createTournament(@RequestBody Tournament request, Authentication authentication) {
+        User organizer = (User) authentication.getPrincipal();
+
+        Tournament tournament = new Tournament();
+        tournament.setName(request.getName());
+        tournament.setStartDate(request.getStartDate());
+        tournament.setEndDate(request.getEndDate());
+        tournament.setLocation(request.getLocation());
+        tournament.setOrganizer(organizer);
+
+        return ResponseEntity.ok(tournamentRepository.save(tournament));
     }
 
-    @GetMapping("/{id}")
-    public ResponseEntity<Object> getTournamentById(@PathVariable("id") Long id) {
-        try {
-            Tournament tournament = tournamentService.getTournamentById(id);
-            return ResponseEntity.ok(tournament);
-        } catch (NoSuchElementException e) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                    .body(Map.of("error", "Tournament not found"));
-        }
-    }
-
-    @GetMapping("/byOrganizer/{id}")
-    public ResponseEntity<?> getTournamentsByOrganizerId(@PathVariable("id") Long id) {
-        UserDto existingUser = userService.getUserById(id);
-        if(existingUser == null) {
-            return  ResponseEntity.status(HttpStatus.NOT_FOUND)
-                    .body(Map.of("error","Organizer not found"));
-        }
-        List<Tournament> tournaments = tournamentService.getTournamentsByOrganizerId(id);
-        return ResponseEntity.ok(tournaments);
-    }
+//    @GetMapping
+//    public ResponseEntity<List<Tournament>> getAllTournaments() {
+//        List<Tournament> tournaments = tournamentService.getAllTournaments();
+//        return ResponseEntity.ok(tournaments);
+//    }
+//
+//    @GetMapping("/{id}")
+//    public ResponseEntity<Object> getTournamentById(@PathVariable("id") Long id) {
+//        try {
+//            Tournament tournament = tournamentService.getTournamentById(id);
+//            return ResponseEntity.ok(tournament);
+//        } catch (NoSuchElementException e) {
+//            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+//                    .body(Map.of("error", "Tournament not found"));
+//        }
+//    }
+//
+//    @GetMapping("/byOrganizer/{id}")
+//    public ResponseEntity<?> getTournamentsByOrganizerId(@PathVariable("id") Long id) {
+//        UserDto existingUser = userService.getUserById(id);
+//        if(existingUser == null) {
+//            return  ResponseEntity.status(HttpStatus.NOT_FOUND)
+//                    .body(Map.of("error","Organizer not found"));
+//        }
+//        List<Tournament> tournaments = tournamentService.getTournamentsByOrganizerId(id);
+//        return ResponseEntity.ok(tournaments);
+//    }
 
     @PostMapping("/addTournament")
     public ResponseEntity<Object> addTournament(@RequestBody Tournament tournament) {

@@ -38,8 +38,6 @@ public class Tournament implements Serializable {
     @Enumerated(EnumType.STRING)
     private TournamentSystem system;
 
-
-
     public Tournament() {
     }
 
