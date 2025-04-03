@@ -1,0 +1,9 @@
+<h2>Nowy turniej</h2>
+<form (ngSubmit)="create()">
+  <input [(ngModel)]="form.name" name="name" placeholder="Nazwa" required />
+  <input [(ngModel)]="form.startDate" name="startDate" type="date" required />
+  <input [(ngModel)]="form.endDate" name="endDate" type="date" required />
+  <input [(ngModel)]="form.location" name="location" placeholder="Lokalizacja" />
+
+  <button type="submit">Dodaj turniej</button>
+</form>

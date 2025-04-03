@@ -1,6 +1,21 @@
 <h2>Moje Turnieje</h2>
-<ul>
-  <li *ngFor="let t of tournaments">
-    {{ t.name }} – {{ t.startDate }} → {{ t.endDate }} ({{ t.status }})
-  </li>
-</ul>
+<table>
+  <thead>
+    <tr>
+      <th>Name</th>
+      <th>Start date</th>
+      <th>End date</th>
+      <th>Location</th>
+      <th>Status</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr *ngFor="let t of tournaments">
+      <td>{{ t.name }}</td>
+      <td>{{ t.startDate | date }}</td>
+      <td>{{ t.endDate | date }}</td>
+      <td>{{ t.location }}</td>
+      <td>{{ t.status }}</td>
+    </tr>
+  </tbody>
+</table>

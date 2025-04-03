@@ -9,4 +9,8 @@ export class TournamentService {
   getMyTournaments() {
     return this.http.get<Tournament[]>('/api/tournaments/my');
   }
+
+  createTournament(data: any) {
+    return this.http.post('/api/tournaments', data);
+  }
 }
