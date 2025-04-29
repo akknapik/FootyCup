@@ -1,0 +1,14 @@
+<h2>Szczegóły turnieju</h2>
+
+<div *ngIf="tournament">
+  <p><strong>Nazwa:</strong> {{ tournament.name }}</p>
+  <p><strong>Start:</strong> {{ tournament.startDate }}</p>
+  <p><strong>Koniec:</strong> {{ tournament.endDate }}</p>
+  <p><strong>Lokalizacja:</strong> {{ tournament.location }}</p>
+  <p><strong>Status:</strong> {{ tournament.status }}</p>
+
+
+  <button (click)="goToTeams()">📋 Lista zespołów</button>
+</div>
+
+<button (click)="goBack()">↩️ Powrót do moich turniejów</button>

@@ -1,6 +1,6 @@
 import { Component } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
-import { TournamentService } from '../../services/tournament.service';
+import { TournamentService } from '../../../services/tournament.service';
 
 @Component({
   selector: 'app-edit-tournament',

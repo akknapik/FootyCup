@@ -14,16 +14,18 @@
     </tr>
   </thead>
   <tbody>
-    <tr *ngFor="let t of tournaments">
+    <tr *ngFor="let t of tournaments" (click)="openDetails(t.id)" style="cursor: pointer;">
       <td>{{ t.name }}</td>
-      <td>{{ t.startDate | date }}</td>
-      <td>{{ t.endDate | date }}</td>
+      <td>{{ t.startDate }}</td>
+      <td>{{ t.endDate }}</td>
       <td>{{ t.location }}</td>
       <td>{{ t.status }}</td>
       <td>
-        <button><a [routerLink]="['/tournaments', t.id, 'edit']">Edit</a></button>
-        <button (click)="deleteTournament(t.id)">Delete</button>
+        <a [routerLink]="['/tournaments', t.id, 'edit']" (click)="$event.stopPropagation()">✏️ Edytuj</a> |
+        <button (click)="deleteTournament(t.id); $event.stopPropagation()">🗑️ Usuń</button>
       </td>
     </tr>
   </tbody>
 </table>
+
+

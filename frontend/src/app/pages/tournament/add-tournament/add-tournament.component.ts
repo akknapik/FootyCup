@@ -1,5 +1,5 @@
 import { Component } from '@angular/core';
-import { TournamentService } from '../../services/tournament.service';
+import { TournamentService } from '../../../services/tournament.service';
 import { Router } from '@angular/router';
 
 @Component({

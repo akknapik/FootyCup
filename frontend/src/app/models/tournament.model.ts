@@ -1,3 +1,5 @@
+import { User } from "./user.model";
+
 export interface Tournament {
     id: number;
     name: string;
@@ -6,10 +8,5 @@ export interface Tournament {
     location?: string;      
     status: 'UPCOMING' | 'ONGOING' | 'FINISHED';  
     system?: 'GROUP' | 'BRACKET' | 'MIXED'; 
-    organizer: {
-      id: number;
-      firstname: string;
-      lastname: string;
-      email: string;
-    };
+    organizer: User;
   }

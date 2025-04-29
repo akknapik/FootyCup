@@ -19,6 +19,17 @@ public class TournamentService {
         this.tournamentRepository = tournamentRepository;
     }
 
+    public Tournament createTournament(Tournament request, User organizer) {
+        Tournament tournament = new Tournament();
+        tournament.setName(request.getName());
+        tournament.setStartDate(request.getStartDate());
+        tournament.setEndDate(request.getEndDate());
+        tournament.setLocation(request.getLocation());
+        tournament.setOrganizer(organizer);
+
+        return tournamentRepository.save(tournament);
+    }
+
     public Tournament getTournamentById(Long id, User user) {
         Tournament tournament = tournamentRepository.findById(id)
                 .orElseThrow(() -> new NoSuchElementException("Nie znaleziono turnieju"));
@@ -33,10 +44,18 @@ public class TournamentService {
     public Tournament updateTournament(Long id, Tournament updatedData, User user) {
         Tournament tournament = getTournamentById(id, user);
 
-        tournament.setName(updatedData.getName());
-        tournament.setStartDate(updatedData.getStartDate());
-        tournament.setEndDate(updatedData.getEndDate());
-        tournament.setLocation(updatedData.getLocation());
+        if (updatedData.getName() != null) {
+            tournament.setName(updatedData.getName());
+        }
+        if (updatedData.getStartDate() != null) {
+            tournament.setStartDate(updatedData.getStartDate());
+        }
+        if (updatedData.getEndDate() != null) {
+            tournament.setEndDate(updatedData.getEndDate());
+        }
+        if (updatedData.getLocation() != null) {
+            tournament.setLocation(updatedData.getLocation());
+        }
 
         return tournamentRepository.save(tournament);
     }

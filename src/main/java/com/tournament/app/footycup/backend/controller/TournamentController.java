@@ -1,9 +1,6 @@
 package com.tournament.app.footycup.backend.controller;
-import com.tournament.app.footycup.backend.dto.UserDto;
 import com.tournament.app.footycup.backend.model.Tournament;
 import com.tournament.app.footycup.backend.model.User;
-import com.tournament.app.footycup.backend.repository.TournamentRepository;
-import com.tournament.app.footycup.backend.repository.UserRepository;
 import com.tournament.app.footycup.backend.service.TournamentService;
 import com.tournament.app.footycup.backend.service.UserService;
 import org.springframework.http.ResponseEntity;
@@ -16,16 +13,12 @@ import java.util.List;
 @RequestMapping("/tournaments")
 public class TournamentController {
     private final TournamentService tournamentService;
-    private final UserRepository userRepository;
     private final UserService userService;
-    private final TournamentRepository tournamentRepository;
 
-    public TournamentController(TournamentService tournamentService, UserRepository userRepository,
-                                UserService userService, TournamentRepository tournamentRepository) {
+    public TournamentController(TournamentService tournamentService,
+                                UserService userService) {
         this.tournamentService = tournamentService;
-        this.userRepository = userRepository;
         this.userService = userService;
-        this.tournamentRepository = tournamentRepository;
     }
 
     @GetMapping("/my")
@@ -38,15 +31,8 @@ public class TournamentController {
     @PostMapping
     public ResponseEntity<Tournament> createTournament(@RequestBody Tournament request, Authentication authentication) {
         User organizer = (User) authentication.getPrincipal();
-
-        Tournament tournament = new Tournament();
-        tournament.setName(request.getName());
-        tournament.setStartDate(request.getStartDate());
-        tournament.setEndDate(request.getEndDate());
-        tournament.setLocation(request.getLocation());
-        tournament.setOrganizer(organizer);
-
-        return ResponseEntity.ok(tournamentRepository.save(tournament));
+        Tournament tournament = tournamentService.createTournament(request, organizer);
+        return ResponseEntity.ok(tournament);
     }
 
     @GetMapping("/{id}")
