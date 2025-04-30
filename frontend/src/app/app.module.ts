@@ -8,10 +8,14 @@ import { HTTP_INTERCEPTORS, HttpClient, HttpClientModule } from '@angular/common
 import { LoginComponent } from './pages/login/login.component';
 import { RegisterComponent } from './pages/register/register.component';
 import { FormsModule } from '@angular/forms';
-import { MyTournamentsComponent } from './pages/my-tournaments/my-tournaments.component';
+import { MyTournamentsComponent } from './pages/tournament/my-tournaments/my-tournaments.component';
 import { TokenInterceptor } from './interceptors/token.interceptor';
-import { AddTournamentComponent } from './pages/add-tournament/add-tournament.component';
-import { EditTournamentComponent } from './pages/edit-tournament/edit-tournament.component';
+import { AddTournamentComponent } from './pages/tournament/add-tournament/add-tournament.component';
+import { EditTournamentComponent } from './pages/tournament/edit-tournament/edit-tournament.component';
+import { TournamentDetailsComponent } from './pages/tournament/tournament-details/tournament-details.component';
+import { TeamsComponent } from './pages/team/teams/teams.component';
+import { AddTeamComponent } from './pages/team/add-team/add-team.component';
+import { TeamDetailsComponent } from './pages/team/team-details/team-details.component';
 
 @NgModule({
   declarations: [
@@ -21,7 +25,11 @@ import { EditTournamentComponent } from './pages/edit-tournament/edit-tournament
     RegisterComponent,
     MyTournamentsComponent,
     AddTournamentComponent,
-    EditTournamentComponent
+    EditTournamentComponent,
+    TournamentDetailsComponent,
+    TeamsComponent,
+    AddTeamComponent,
+    TeamDetailsComponent
   ],
   imports: [
     BrowserModule,

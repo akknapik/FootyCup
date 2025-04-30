@@ -5,9 +5,6 @@ import com.tournament.app.footycup.backend.model.User;
 import java.io.Serializable;
 import java.util.Objects;
 
-/**
- * DTO for {@link com.tournament.app.footycup.backend.model.User}
- */
 public class UserDto implements Serializable {
     private Long id;
     private String firstname;
