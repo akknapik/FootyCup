@@ -1,6 +1,7 @@
 import { Component } from '@angular/core';
 import { TournamentService } from '../../../services/tournament.service';
 import { Route, Router } from '@angular/router';
+import { AuthService } from '../../../services/auth.service';
 
 @Component({
   selector: 'app-my-tournaments',
@@ -11,7 +12,7 @@ import { Route, Router } from '@angular/router';
 export class MyTournamentsComponent {
   tournaments: any[] = [];
 
-  constructor(private tournamentService: TournamentService, private router: Router) {}
+  constructor(private tournamentService: TournamentService, private router: Router, public auth: AuthService) {}
 
   ngOnInit(): void {
     this.loadTournaments();
