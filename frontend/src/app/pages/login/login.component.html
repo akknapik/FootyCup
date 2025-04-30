@@ -1,6 +1,47 @@
-<h2>Logowanie</h2>
-<form (ngSubmit)="login()" #loginForm="ngForm">
-  <input [(ngModel)]="form.email" name="email" placeholder="Email" type="email" required />
-  <input [(ngModel)]="form.password" name="password" placeholder="Hasło" type="password" required />
-  <button type="submit">Zaloguj</button>
-</form>
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1.0">
+  <title>Login | FootyCup</title>
+  <link rel="stylesheet" href="login.component.css">
+</head>
+<body>
+  <div class="login-container">
+    <div class="login-card">
+      <img src="assets/images/logo2_2.png" alt="FootyCup Logo" class="logo">
+      <form (ngSubmit)="login()" #loginForm="ngForm">
+        <div class="input-group">
+          <input
+            [(ngModel)]="form.email"
+            name="email"
+            placeholder="Email Address"
+            type="email"
+            required
+          />
+        </div>
+        <div class="input-group">
+          <input
+            [(ngModel)]="form.password"
+            name="password"
+            placeholder="Password"
+            type="password"
+            required
+          />
+        </div>
+  
+        <hr />
+  
+        <button type="submit" class="btn">Login</button>
+  
+        <hr />
+  
+        <p class="links">
+          <a href="#">Forgot Password?</a><br />
+          <a routerLink="/register">Create an account!</a>
+        </p>
+      </form>
+    </div>
+  </div>
+</body>
+</html>
