@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="pl">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FootyCup</title>
+    <link rel="stylesheet" href="add-player.component.css">
+  </head>
+  <body>
+    <div class="app-container">
+      <aside class="sidebar">
+        <div class="sidebar-header">
+          <img src="assets/images/logo1_3.png" alt="FootyCup Logo" class="sidebar-logo">
+        </div>
+        <nav class="sidebar-nav">
+          <a routerLink="/dashboard" class="nav-link active">Dashboard</a>
+          <a routerLink="/tournaments" class="nav-link">Tournaments</a>
+          <a routerLink="/settings"class="nav-link">Settings</a>
+        </nav>
+        <nav class="sidebar-footer">
+          <a routerLink="/aboutus">About us</a>
+          <a routerLink="/contact">Contact</a>
+        </nav>
+      </aside>
+
+      <div class="main">
+        <header class="header">
+          <div class="header-spacer"></div>
+          <div class="user-info">
+            <span *ngIf="auth.currentUser$ | async as user">
+              {{ user.firstname }} {{ user.lastname }}
+            </span>
+            <div class="avatar"></div>
+          </div>
+        </header>
+
+        <main class="content">
+          <h2>New player</h2>
+          <div class="form-card">
+            <form (ngSubmit)="create()">
+              <div class="input-group">
+                <input [(ngModel)]="form.number" name="number" placeholder="Number" required />
+              </div>
+              <div class="input-group">
+                <input [(ngModel)]="form.name" name="name" placeholder="Name" required />
+              </div>
+              <div class="input-group">
+                <input [(ngModel)]="form.birthDate" name="birthDate" placeholder="Date of birth" type="date"/>
+              </div>
+              
+              <div class="form-actions">
+                <button type="button" class="btn btn-cancel" (click)="cancel()">
+                  Cancel
+                </button> 
+                <button type="submit" class="btn btn-create">
+                  Add
+                </button>                 
+              </div>
+            </form>
+            
+          </div>
+        </main>
+
+        <footer class="footer">
+          <p>&copy; 2023 FootyCup. All rights reserved.</p>
+        </footer>
+      </div>
+    </div>
+  </body>
+</html>
+
+
+
