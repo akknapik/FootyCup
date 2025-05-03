@@ -1,9 +1,88 @@
-<h2>Nowy turniej</h2>
-<form (ngSubmit)="create()">
-  <input [(ngModel)]="form.name" name="name" placeholder="Nazwa" required />
-  <input [(ngModel)]="form.startDate" name="startDate" type="date" required />
-  <input [(ngModel)]="form.endDate" name="endDate" type="date" required />
-  <input [(ngModel)]="form.location" name="location" placeholder="Lokalizacja" />
+<!DOCTYPE html>
+<html lang="pl">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FootyCup</title>
+    <link rel="stylesheet" href="add-tournament.component.css">
+  </head>
+  <body>
+    <div class="app-container">
+      <aside class="sidebar">
+        <div class="sidebar-header">
+          <img src="assets/images/logo1_3.png" alt="FootyCup Logo" class="sidebar-logo">
+        </div>
+        <nav class="sidebar-nav">
+          <a routerLink="/dashboard" class="nav-link active">Dashboard</a>
+          <a routerLink="/tournaments" class="nav-link">Tournaments</a>
+          <a routerLink="/settings"class="nav-link">Settings</a>
+        </nav>
+        <nav class="sidebar-footer">
+          <a routerLink="/aboutus">About us</a>
+          <a routerLink="/contact">Contact</a>
+        </nav>
+      </aside>
 
-  <button type="submit">Dodaj turniej</button>
-</form>
+      <div class="main">
+        <header class="header">
+          <div class="header-spacer"></div>
+          <div class="user-info">
+            <span *ngIf="auth.currentUser$ | async as user">
+              {{ user.firstname }} {{ user.lastname }}
+            </span>
+            <div class="avatar"></div>
+          </div>
+        </header>
+
+        <main class="content">
+            <h2>New tournament</h2>
+            <div class="form-card">
+              <form (ngSubmit)="create()">
+                <div class="input-group">
+                  <input 
+                      [(ngModel)]="form.name" 
+                      name="name" 
+                      placeholder="Name" 
+                      required />
+                </div>
+                <div class="one-row">
+                  <div class="input-group">
+                    <input 
+                        [(ngModel)]="form.startDate" 
+                        name="startDate" 
+                        type="date" 
+                        required />
+                  </div>
+                  <div class="input-group">
+                    <input 
+                        [(ngModel)]="form.endDate" 
+                        name="endDate" 
+                        type="date" 
+                        required />
+                  </div>
+                </div>
+                <div class="input-group">
+                  <input 
+                      [(ngModel)]="form.location" 
+                      name="location" 
+                      placeholder="Location" />
+                </div>
+
+                <div class="form-actions">
+                  <button type="button" class="btn btn-cancel" (click)="router.navigate(['/tournaments/my'])">
+                    Cancel
+                  </button> 
+                  <button type="submit" class="btn btn-create">
+                    Create
+                  </button>                 
+                </div>
+                </form>
+            </div>
+          </main>
+          <footer class="footer">
+            <p>&copy; 2023 FootyCup. All rights reserved.</p>
+          </footer>
+      </div>
+    </div>
+  </body>
+</html>

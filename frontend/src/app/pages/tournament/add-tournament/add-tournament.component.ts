@@ -1,6 +1,7 @@
 import { Component } from '@angular/core';
 import { TournamentService } from '../../../services/tournament.service';
 import { Router } from '@angular/router';
+import { AuthService } from '../../../services/auth.service';
 
 @Component({
   selector: 'app-add-tournament',
@@ -16,7 +17,7 @@ export class AddTournamentComponent {
     location: '',
   };
 
-  constructor(private tournamentService: TournamentService, private router: Router) {}
+  constructor(private tournamentService: TournamentService, public router: Router, public auth: AuthService) {}
 
   create() {
     this.tournamentService.createTournament(this.form).subscribe({
