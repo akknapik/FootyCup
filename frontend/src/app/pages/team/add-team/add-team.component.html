@@ -1,0 +1,8 @@
+<h2>Nowy zespół</h2>
+<form (ngSubmit)="create()">
+  <input [(ngModel)]="form.name" name="name" placeholder="Nazwa" required />
+  <input [(ngModel)]="form.country" name="country" placeholder="Kraj" required />
+  <input [(ngModel)]="form.coachEmail" name="coachEmail" placeholder="Email trenera" type="email"/>
+
+  <button type="submit">Dodaj zespół</button>
+</form>

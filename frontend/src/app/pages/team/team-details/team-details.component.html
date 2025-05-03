@@ -1,0 +1,51 @@
+<h2>Edytuj drużynę</h2>
+
+<div>
+    <label>Nazwa:</label>
+    <input [(ngModel)]="team.name" placeholder="Nazwa drużyny" />
+</div>
+<div>
+    <label>Trener (email)</label>
+    <input [(ngModel)]="team.coach.email" placeholder="Trener (email)" />
+</div>
+<div>
+    <label>Kraj</label>
+    <input [(ngModel)]="team.country" placeholder="Kraj" />
+</div>
+
+<button (click)="updateTeam()">Zapisz</button>
+
+<hr/>
+
+<h3>Lista zawodników</h3>
+<table>
+    <thead>
+        <tr>
+            <th>Numer</th>
+            <th>Imię i nazwisko</th>
+            <th>Data urodzenia</th>
+            <th><button (click)="goToAddPlayer()">Dodaj</button>
+            </th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr *ngFor="let player of playerList" (click)="editPlayer(player)">
+            <td>{{ player.number }}</td>
+            <td>{{ player.name }}</td>
+            <td>{{ player.birthDate | date: 'dd/MM/yyyy' }}</td>
+            <td>
+                <button (click)="editPlayer(player); $event.stopPropagation()">✏️ Edytuj</button>
+                <button (click)="deletePlayer(player.id); $event.stopPropagation()">🗑️ Usuń</button>
+            </td>
+        </tr>
+    </tbody>
+</table>
+
+<div *ngIf="selectedPlayer">
+    <h4>Edycja zawodnika</h4>
+    <input [(ngModel)]="selectedPlayer.number" placeholder="Numer" type="number" />
+    <input [(ngModel)]="selectedPlayer.name" placeholder="Imię i nazwisko" />
+    <input [(ngModel)]="selectedPlayer.dateOfBirth" placeholder="Data urodzenia" type="date" />
+    <button (click)="updatePlayer()">Zapisz</button>
+    <button (click)="cancelEdit()">Anuluj</button>
+</div>

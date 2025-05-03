@@ -1,0 +1,25 @@
+<h2>Moje drużyny</h2>
+<table>
+    <thead>
+            <tr>
+                <th>Name</th>
+                <th>Coach</th>
+                <th>Country</th>
+                <th>Players</th>
+                <th>
+                    <button (click)="loadTeams()">Refresh</button>
+                    <button (click)="goToCreate()">Create</button>
+                </th>
+            </tr>
+    </thead>
+    <tbody>
+        <tr *ngFor="let t of teams" (click)="openDetails(t.id)" style="cursor: pointer;">
+            <td>{{ t.name }}</td>
+            <td>{{ t.coach?.firstname }} {{ t.coach?.lastname }}</td>
+            <td>{{ t.country }}</td>
+            <td>{{ t.playerList?.length }}</td>
+            <td>
+                <button (click)="deleteTeam(t.id); $event.stopPropagation()">🗑️ Usuń</button>
+            </td>
+        </tr>
+</table>

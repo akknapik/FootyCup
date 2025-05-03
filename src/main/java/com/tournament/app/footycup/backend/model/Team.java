@@ -24,8 +24,12 @@ public class Team {
     @Column(nullable = false)
     private String name;
 
-    @Column(nullable = false)
-    private String coach;
+    @ManyToOne(fetch = FetchType.EAGER)
+    @JoinColumn(name = "id_coach")
+    private User coach;
+
+    @Column
+    private String country;
 
     @ManyToOne
     @JoinColumn(name = "id_tournament", nullable = false, updatable = false)
