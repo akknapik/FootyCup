@@ -9,6 +9,7 @@ import com.tournament.app.footycup.backend.repository.TeamRepository;
 import com.tournament.app.footycup.backend.repository.TournamentRepository;
 import com.tournament.app.footycup.backend.repository.UserRepository;
 import com.tournament.app.footycup.backend.requests.TeamRequest;
+import lombok.AllArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
@@ -16,20 +17,13 @@ import org.springframework.stereotype.Service;
 import java.util.List;
 import java.util.NoSuchElementException;
 
+@AllArgsConstructor
 @Service
 public class TeamService {
     private final PlayerRepository playerRepository;
-    private TeamRepository teamRepository;
-    private TournamentRepository tournamentRepository;
-    private UserRepository userRepository;
-
-    @Autowired
-    public TeamService(PlayerRepository playerRepository, TeamRepository teamRepository, TournamentRepository tournamentRepository, UserRepository userRepository) {
-        this.playerRepository = playerRepository;
-        this.teamRepository = teamRepository;
-        this.tournamentRepository = tournamentRepository;
-        this.userRepository = userRepository;
-    }
+    private final TeamRepository teamRepository;
+    private final TournamentRepository tournamentRepository;
+    private final UserRepository userRepository;
 
     public Team getTeamById(Long tournamentId, Long id, User user) {
         Team team = teamRepository.findById(id)

@@ -24,4 +24,6 @@ public class Group {
     @ManyToOne
     @JoinColumn(name = "id_tournament", nullable = false, updatable = false)
     private Tournament tournament;
+
+
 }

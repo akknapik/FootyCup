@@ -22,12 +22,16 @@ public class BracketNode {
     @Column(nullable = false, updatable = false)
     private Long id;
 
-    @ManyToOne
-    @JoinColumn(name = "id_parent_node")
-    private BracketNode parentNode;
+    private Integer round;
+    private Integer position;
 
-    @OneToMany(mappedBy = "parentNode", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<BracketNode> children = new ArrayList<>();
+    @ManyToOne
+    @JoinColumn(name = "id_parent_home_node")
+    private BracketNode parentHomeNode;
+
+    @ManyToOne
+    @JoinColumn(name = "id_parent_away_node")
+    private BracketNode parentAwayNode;
 
     @OneToOne
     @JoinColumn(name = "id_match")
@@ -37,5 +41,4 @@ public class BracketNode {
     @JoinColumn(name = "id_tournament")
     private Tournament tournament;
 
-    private Integer positionInBracket;
 }

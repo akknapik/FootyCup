@@ -11,6 +11,8 @@ import lombok.Setter;
 
 import java.io.Serializable;
 import java.time.LocalDate;
+import java.util.HashMap;
+import java.util.Map;
 
 @Getter
 @Setter
@@ -46,34 +48,13 @@ public class Tournament implements Serializable {
     @Enumerated(EnumType.STRING)
     private TournamentSystem system;
 
-    public Tournament(Long id, String name, LocalDate startDate, LocalDate endDate, String location, User organizer, TournamentStatus status) {
-        this.id = id;
-        this.name = name;
-        this.startDate = startDate;
-        this.endDate = endDate;
-        this.location = location;
-        this.organizer = organizer;
-        this.status = status;
-    }
-
-    public Tournament(String name, LocalDate startDate, LocalDate endDate, String location, User organizer, TournamentStatus status) {
-        this.name = name;
-        this.startDate = startDate;
-        this.endDate = endDate;
-        this.location = location;
-        this.organizer = organizer;
-        this.status = status;
-    }
-
-    @Override
-    public String toString() {
-        return "Tournament{" +
-                "id=" + id +
-                ", name='" + name + '\'' +
-                ", startDate=" + startDate +
-                ", endDate=" + endDate +
-                ", organizer=" + organizer +
-                ", status=" + status +
-                '}';
-    }
+    @ElementCollection
+    @CollectionTable(name = "scoring_rules", joinColumns = @JoinColumn(name = "tournament_id"))
+    @MapKeyColumn(name = "result_type")
+    @Column(name = "points")
+    private Map<String, Integer> scoringRules = new HashMap<>(Map.of(
+            "WIN", 3,
+            "DRAW", 1,
+            "LOSS", 0
+    ));
 }

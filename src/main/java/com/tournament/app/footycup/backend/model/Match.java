@@ -1,5 +1,6 @@
 package com.tournament.app.footycup.backend.model;
 
+import com.tournament.app.footycup.backend.enums.MatchStatus;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -22,28 +23,29 @@ public class Match {
     private Long id;
 
     @ManyToOne
-    @JoinColumn(name = "id_home_team")
-    private Team home_team;
-
-    @ManyToOne
-    @JoinColumn(name = "id_away_team")
-    private Team away_team;
-
-    private LocalDate date;
-
-    private LocalTime time;
-
-    private int durationInMin;
-
-    @OneToOne
-    @JoinColumn(name = "id_result")
-    private Result result;
-
-    @ManyToOne
     @JoinColumn(name = "id_tournament")
     private Tournament tournament;
 
     @ManyToOne
-    @JoinColumn(name = "id_group")
-    private Group group;
+    @JoinColumn(name = "id_team_home")
+    private Team teamHome;
+
+    @ManyToOne
+    @JoinColumn(name = "id_team_away")
+    private Team teamAway;
+
+    private LocalDate matchDate;
+
+    private LocalTime matchTime;
+
+    @Enumerated(EnumType.STRING)
+    private MatchStatus status;
+
+    private int durationInMin;
+
+    private Integer homeScore;
+    private Integer awayScore;
+
+
+
 }

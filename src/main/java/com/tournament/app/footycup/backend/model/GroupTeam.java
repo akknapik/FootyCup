@@ -11,14 +11,22 @@ import lombok.Setter;
 @AllArgsConstructor
 @NoArgsConstructor
 @Entity
-public class Result {
+@Table(name = "group_teams")
+public class GroupTeam {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(nullable = false, updatable = false)
     private Long id;
-    private Integer home_team_result;
-    private Integer away_team_result;
 
-    @OneToOne(mappedBy = "result")
-    private Match match;
+    @ManyToOne
+    @JoinColumn(name = "id_group")
+    private Group group;
+
+    @ManyToOne
+    @JoinColumn(name = "id_team")
+    private Team team;
+
+    private Integer position;
+    private Integer points = 0;
+    private Integer goalsFor = 0;
+    private Integer goalsAgainst = 0;
 }
