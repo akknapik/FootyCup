@@ -11,6 +11,8 @@ import { TeamsComponent } from './pages/team/teams/teams.component';
 import { AddTeamComponent } from './pages/team/add-team/add-team.component';
 import { TeamDetailsComponent } from './pages/team/team-details/team-details.component';
 import { AddPlayerComponent } from './pages/team/add-player/add-player.component';
+import { FormatComponent } from './pages/format/format.component';
+import { MatchComponent } from './pages/match/match.component';
 
 const routes: Routes = [
   { path: 'register', component: RegisterComponent },
@@ -23,6 +25,8 @@ const routes: Routes = [
   { path: 'tournament/:tournamentId/teams/new', component: AddTeamComponent },
   { path: 'tournament/:tournamentId/teams/:teamId', component: TeamDetailsComponent },
   { path: 'tournament/:tournamentId/teams/:teamId/add-player', component: AddPlayerComponent },
+  { path: 'tournament/:tournamentId/format', component: FormatComponent },
+  { path: 'tournament/:tournamentId/matches', component: MatchComponent },
   { path: '**', redirectTo: 'login' }
 ];
 

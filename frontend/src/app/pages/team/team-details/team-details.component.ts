@@ -1,6 +1,7 @@
 import { Component } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { TeamService } from '../../../services/team.service';
+import { AuthService } from '../../../services/auth.service';
 
 @Component({
   selector: 'app-team-details',
@@ -15,7 +16,7 @@ export class TeamDetailsComponent {
   playerList: any[] = [];
   selectedPlayer: any = null;
 
-  constructor(private route: ActivatedRoute, private teamService: TeamService, private router: Router) {}
+  constructor(private route: ActivatedRoute, private teamService: TeamService, private router: Router, public auth: AuthService) {}
 
   ngOnInit(): void {
     this.route.paramMap.subscribe(params => {

@@ -1,6 +1,7 @@
 import { Component } from '@angular/core';
 import { TeamService } from '../../../services/team.service';
 import { Route, Router } from '@angular/router';
+import { AuthService } from '../../../services/auth.service';
 
 @Component({
   selector: 'app-teams',
@@ -12,7 +13,7 @@ export class TeamsComponent {
   teams: any[] = [];
   tournamentId!: number;
 
-  constructor(private teamService: TeamService, private router: Router) {}
+  constructor(private teamService: TeamService, private router: Router, public auth: AuthService) {}
 
   ngOnInit(): void {
     this.tournamentId = +this.router.url.split('/')[2]; 

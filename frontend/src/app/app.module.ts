@@ -17,6 +17,8 @@ import { TeamsComponent } from './pages/team/teams/teams.component';
 import { AddTeamComponent } from './pages/team/add-team/add-team.component';
 import { TeamDetailsComponent } from './pages/team/team-details/team-details.component';
 import { AddPlayerComponent } from './pages/team/add-player/add-player.component';
+import { FormatComponent } from './pages/format/format.component';
+import { MatchComponent } from './pages/match/match.component';
 
 @NgModule({
   declarations: [
@@ -31,7 +33,9 @@ import { AddPlayerComponent } from './pages/team/add-player/add-player.component
     TeamsComponent,
     AddTeamComponent,
     TeamDetailsComponent,
-    AddPlayerComponent
+    AddPlayerComponent,
+    FormatComponent,
+    MatchComponent
   ],
   imports: [
     BrowserModule,

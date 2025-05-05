@@ -1,8 +1,63 @@
-<h2>Nowy zespół</h2>
-<form (ngSubmit)="create()">
-  <input [(ngModel)]="form.name" name="name" placeholder="Nazwa" required />
-  <input [(ngModel)]="form.country" name="country" placeholder="Kraj" required />
-  <input [(ngModel)]="form.coachEmail" name="coachEmail" placeholder="Email trenera" type="email"/>
+<!DOCTYPE html>
+<html lang="pl">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard | FootyCup</title>
+    <link rel="stylesheet" href="add-team.component.css">
+  </head>
+  <body>
+    <div class="app-container">
+      <aside class="sidebar">
+        <div class="sidebar-header">
+          <img src="assets/images/logo1_3.png" alt="FootyCup Logo" class="sidebar-logo">
+        </div>
+        <nav class="sidebar-nav">
+          <a routerLink="/dashboard" class="nav-link">Dashboard</a>
+          <a routerLink="/tournaments/my" class="nav-link active">Tournaments</a>
+          <div *ngIf="tournamentId" class="submenu">
+            <a routerLink="/tournaments/{{ tournamentId }}" class="nav-link">General</a>
+            <a routerLink="/tournament/{{ tournamentId }}/teams" class="nav-link active">Teams</a>
+            <a routerLink="/tournament/{{ tournamentId }}/format" class="nav-link">Format</a>
+            <a routerLink="/tournament/{{ tournamentId }}/matches" class="nav-link">Matches</a>
+            <a routerLink="/tournament/{{ tournamentId }}/results" class="nav-link">Results</a>
+          </div>
 
-  <button type="submit">Dodaj zespół</button>
-</form>
+          <a routerLink="/settings"class="nav-link">Settings</a>
+        </nav>
+        <nav class="sidebar-footer">
+          <a routerLink="/aboutus">About us</a>
+          <a routerLink="/contact">Contact</a>
+        </nav>
+      </aside>
+
+      <div class="main">
+        <header class="header">
+          <div class="header-spacer"></div>
+          <div class="user-info">
+            <span *ngIf="auth.currentUser$ | async as user">
+              {{ user.firstname }} {{ user.lastname }}
+            </span>
+            <div class="avatar"></div>
+          </div>
+        </header>
+
+        <main class="content">
+          <h2>Nowy zespół</h2>
+          <form (ngSubmit)="create()">
+            <input [(ngModel)]="form.name" name="name" placeholder="Nazwa" required />
+            <input [(ngModel)]="form.country" name="country" placeholder="Kraj" required />
+            <input [(ngModel)]="form.coachEmail" name="coachEmail" placeholder="Email trenera" type="email"/>
+          
+            <button type="submit">Dodaj zespół</button>
+          </form>
+               
+        </main>
+
+        <footer class="footer">
+          <p>&copy; 2023 FootyCup. All rights reserved.</p>
+        </footer>
+      </div>
+    </div>
+  </body>
+</html>

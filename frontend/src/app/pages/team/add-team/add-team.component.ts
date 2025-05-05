@@ -2,6 +2,7 @@ import { Component } from '@angular/core';
 import { count } from 'rxjs';
 import { TeamService } from '../../../services/team.service';
 import { ActivatedRoute, Router } from '@angular/router';
+import { AuthService } from '../../../services/auth.service';
 
 @Component({
   selector: 'app-add-team',
@@ -17,7 +18,7 @@ export class AddTeamComponent {
     coachEmail: ''
 }
 
-constructor(private teamService: TeamService, private router: Router, private route: ActivatedRoute) {}
+constructor(private teamService: TeamService, private router: Router, private route: ActivatedRoute, public auth: AuthService) {}
   
   ngOnInit(): void {
     this.route.paramMap.subscribe(params => {
