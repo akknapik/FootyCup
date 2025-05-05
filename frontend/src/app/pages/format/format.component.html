@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="pl">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FootyCup</title>
+    <link rel="stylesheet" href="format.component.css">
+  </head>
+  <body>
+    <div class="app-container">
+      <aside class="sidebar">
+        <div class="sidebar-header">
+          <img src="assets/images/logo1_3.png" alt="FootyCup Logo" class="sidebar-logo">
+        </div>
+        <nav class="sidebar-nav">
+          <a routerLink="/dashboard" class="nav-link">Dashboard</a>
+          <a routerLink="/tournaments/my" class="nav-link active">Tournaments</a>
+          <div *ngIf="tournamentId" class="submenu">
+            <a routerLink="/tournaments/{{ tournamentId }}" class="nav-link">General</a>
+            <a routerLink="/tournament/{{ tournamentId }}/teams" class="nav-link">Teams</a>
+            <a routerLink="/tournament/{{ tournamentId }}/format" class="nav-link active">Format</a>
+            <a routerLink="/tournament/{{ tournamentId }}/matches" class="nav-link">Matches</a>
+            <a routerLink="/tournament/{{ tournamentId }}/results" class="nav-link">Results</a>
+          </div>
+
+          <a routerLink="/settings"class="nav-link">Settings</a>
+        </nav>
+        <nav class="sidebar-footer">
+          <a routerLink="/aboutus">About us</a>
+          <a routerLink="/contact">Contact</a>
+        </nav>
+      </aside>
+
+      <div class="main">
+        <header class="header">
+          <div class="header-spacer"></div>
+          <div class="user-info">
+            <span *ngIf="auth.currentUser$ | async as user">
+              {{ user.firstname }} {{ user.lastname }}
+            </span>
+            <div class="avatar"></div>
+          </div>
+        </header>
+
+        <main class="content">
+          <h2>Turniej – Format</h2>
+
+          <div *ngIf="!structureExists; else showStructure">
+            <p>Wybierz format turnieju:</p>
+            <button (click)="generateGroup()">⚽ Ligowy</button> <br>
+            <button (click)="generateBracket()">🏆 Pucharowy</button> <br>
+            <button (click)="generateMixed()">⚽ + 🏆 Mieszany</button> <br>
+          </div>
+
+          <ng-template #showStructure>
+            <button (click)="deleteStructures(tournamentId)">Usun</button>
+            <button (click)="assignTeamsRandomly(tournamentId)">Losowo przypisz zespoły</button>
+            <div *ngIf="groups.length > 0">
+              <h3>⚽ Grupy:</h3>
+              <div *ngFor="let group of groups">
+                <strong>{{ group.name }}</strong>
+                <table>
+                  <thead>
+                    <tr><th>Zespół</th></tr>
+                  </thead>
+                  <tbody>
+                    <tr *ngFor="let slot of group.groupTeams" (click)="editSlot(slot)">
+                      <td>
+                        <ng-container *ngIf="editedSlot?.id === slot.id; else showName">
+                          <select [(ngModel)]="slot.team" (change)="assignTeamToSlot(slot)">
+                            <option *ngFor="let team of availableTeams" [ngValue]="team">{{ team.name }}</option>
+                          </select>
+                        </ng-container>
+                        <ng-template #showName>
+                          {{ slot.team?.name || 'puste miejsce' }}
+                        </ng-template>
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+            
+            <div *ngIf="bracket.length > 0">
+              <h3>🏆 Drabinka:</h3>
+              <div *ngFor="let node of bracket">
+                <div>
+                  <strong>Runda {{ node.round }}</strong> | 
+                  {{ node.teamHome?.name || '???' }} vs {{ node.teamAway?.name || '???' }}
+                </div>
+              </div>
+            </div>
+            </ng-template>
+
+          <div *ngIf="loading">⏳ Przetwarzanie...</div>
+
+        </main>
+
+        <footer class="footer">
+          <p>&copy; 2023 FootyCup. All rights reserved.</p>
+        </footer>
+      </div>
+    </div>
+  </body>
+</html>

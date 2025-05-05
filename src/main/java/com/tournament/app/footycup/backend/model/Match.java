@@ -22,6 +22,9 @@ public class Match {
     @Column(nullable = false, updatable = false)
     private Long id;
 
+    @Column
+    private String name;
+
     @ManyToOne
     @JoinColumn(name = "id_tournament")
     private Tournament tournament;
@@ -46,6 +49,8 @@ public class Match {
     private Integer homeScore;
     private Integer awayScore;
 
-
+    @ManyToOne
+    @JoinColumn(name = "id_group")
+    private Group group;
 
 }

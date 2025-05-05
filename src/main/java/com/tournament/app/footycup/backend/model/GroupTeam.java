@@ -1,5 +1,6 @@
 package com.tournament.app.footycup.backend.model;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -19,6 +20,7 @@ public class GroupTeam {
 
     @ManyToOne
     @JoinColumn(name = "id_group")
+    @JsonBackReference
     private Group group;
 
     @ManyToOne

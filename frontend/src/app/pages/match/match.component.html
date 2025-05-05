@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="pl">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FootyCup</title>
+    <link rel="stylesheet" href="match.component.css">
+  </head>
+  <body>
+    <div class="app-container">
+      <aside class="sidebar">
+        <div class="sidebar-header">
+          <img src="assets/images/logo1_3.png" alt="FootyCup Logo" class="sidebar-logo">
+        </div>
+        <nav class="sidebar-nav">
+          <a routerLink="/dashboard" class="nav-link">Dashboard</a>
+          <a routerLink="/tournaments/my" class="nav-link active">Tournaments</a>
+          <div *ngIf="tournamentId" class="submenu">
+            <a routerLink="/tournaments/{{ tournamentId }}" class="nav-link">General</a>
+            <a routerLink="/tournament/{{ tournamentId }}/teams" class="nav-link">Teams</a>
+            <a routerLink="/tournament/{{ tournamentId }}/format" class="nav-link">Format</a>
+            <a routerLink="/tournament/{{ tournamentId }}/matches" class="nav-link active">Matches</a>
+            <a routerLink="/tournament/{{ tournamentId }}/results" class="nav-link">Results</a>
+          </div>
+
+          <a routerLink="/settings"class="nav-link">Settings</a>
+        </nav>
+        <nav class="sidebar-footer">
+          <a routerLink="/aboutus">About us</a>
+          <a routerLink="/contact">Contact</a>
+        </nav>
+      </aside>
+
+      <div class="main">
+        <header class="header">
+          <div class="header-spacer"></div>
+          <div class="user-info">
+            <span *ngIf="auth.currentUser$ | async as user">
+              {{ user.firstname }} {{ user.lastname }}
+            </span>
+            <div class="avatar"></div>
+          </div>
+        </header>
+
+        <main class="content">
+          
+          <table *ngIf="matches.length > 0">
+            <thead>
+              <tr>
+                <th>Nazwa</th>
+                <th>Drużyny</th>
+                <th>Status</th>
+                <th>Akcje</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let m of matches">
+                <td>{{ m.name }}</td>
+                <td>
+                  {{ m.teamHome?.name || 'Empty slot' }} vs {{ m.teamAway?.name || 'Empty slot' }}
+                </td>
+                <td>{{ m.status }}</td>
+                <td>
+                  <button (click)="deleteMatch(m.id)">🗑 Usuń</button>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+          
+            <div *ngIf="matches.length === 0" class="no-matches">
+                <p>Brak meczów do wyświetlenia.</p>  
+            </div>
+        </main>
+
+        <footer class="footer">
+          <p>&copy; 2023 FootyCup. All rights reserved.</p>
+        </footer>
+      </div>
+    </div>
+  </body>
+</html>

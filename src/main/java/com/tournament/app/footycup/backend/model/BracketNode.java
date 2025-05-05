@@ -33,7 +33,7 @@ public class BracketNode {
     @JoinColumn(name = "id_parent_away_node")
     private BracketNode parentAwayNode;
 
-    @OneToOne
+    @OneToOne(cascade = CascadeType.ALL, orphanRemoval = true)
     @JoinColumn(name = "id_match")
     private Match match;
 
