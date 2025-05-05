@@ -1,14 +1,75 @@
-<h2>Szczegóły turnieju</h2>
+<!DOCTYPE html>
+<html lang="pl">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard | FootyCup</title>
+    <link rel="stylesheet" href="tournament-details.component.css">
+  </head>
+  <body>
+    <div class="app-container">
+      <aside class="sidebar">
+        <div class="sidebar-header">
+          <img src="assets/images/logo1_3.png" alt="FootyCup Logo" class="sidebar-logo">
+        </div>
+        <nav class="sidebar-nav">
+          <a routerLink="/dashboard" class="nav-link">Dashboard</a>
+          <a routerLink="/tournaments/my" class="nav-link">Tournaments</a>
+          <div *ngIf="tournamentId" class="submenu">
+            <a routerLink="/tournaments/{{ tournamentId }}" class="nav-link active">General</a>
+            <a routerLink="/tournament/{{ tournamentId }}/teams" class="nav-link">Teams</a>
+            <a routerLink="/tournament/{{ tournamentId }}/format" class="nav-link">Format</a>
+            <a routerLink="/tournament/{{ tournamentId }}/matches" class="nav-link">Matches</a>
+            <a routerLink="/tournament/{{ tournamentId }}/results" class="nav-link">Results</a>
+          </div>
 
-<div *ngIf="tournament">
-  <p><strong>Nazwa:</strong> {{ tournament.name }}</p>
-  <p><strong>Start:</strong> {{ tournament.startDate }}</p>
-  <p><strong>Koniec:</strong> {{ tournament.endDate }}</p>
-  <p><strong>Lokalizacja:</strong> {{ tournament.location }}</p>
-  <p><strong>Status:</strong> {{ tournament.status }}</p>
+          <a routerLink="/settings"class="nav-link">Settings</a>
+        </nav>
+        <nav class="sidebar-footer">
+          <a routerLink="/aboutus">About us</a>
+          <a routerLink="/contact">Contact</a>
+        </nav>
+      </aside>
+
+      <div class="main">
+        <header class="header">
+          <div class="header-spacer"></div>
+          <div class="user-info">
+            <span *ngIf="auth.currentUser$ | async as user">
+              {{ user.firstname }} {{ user.lastname }}
+            </span>
+            <div class="avatar"></div>
+          </div>
+        </header>
+
+        <main class="content">
+          <h2>Szczegóły turnieju</h2>
+
+          <div *ngIf="tournament">
+            <p><strong>Nazwa:</strong> {{ tournament.name }}</p>
+            <p><strong>Start:</strong> {{ tournament.startDate }}</p>
+            <p><strong>Koniec:</strong> {{ tournament.endDate }}</p>
+            <p><strong>Lokalizacja:</strong> {{ tournament.location }}</p>
+            <p><strong>Status:</strong> {{ tournament.status }}</p>
 
 
-  <button (click)="goToTeams()">📋 Lista zespołów</button>
-</div>
+            <button (click)="goToTeams()">📋 Lista zespołów</button>
+          </div>
 
-<button (click)="goBack()">↩️ Powrót do moich turniejów</button>
+          <button (click)="goBack()">↩️ Powrót do moich turniejów</button>
+
+        </main>
+
+        <footer class="footer">
+          <p>&copy; 2023 FootyCup. All rights reserved.</p>
+        </footer>
+      </div>
+    </div>
+  </body>
+</html>
+
+
+
+
+
+

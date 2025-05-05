@@ -1,7 +1,6 @@
 package com.tournament.app.footycup.backend.controller;
 import com.tournament.app.footycup.backend.model.Tournament;
 import com.tournament.app.footycup.backend.model.User;
-import com.tournament.app.footycup.backend.service.StructureGenerationService;
 import com.tournament.app.footycup.backend.service.TournamentService;
 import com.tournament.app.footycup.backend.service.UserService;
 import org.springframework.http.ResponseEntity;
@@ -15,12 +14,10 @@ import java.util.List;
 public class TournamentController {
     private final TournamentService tournamentService;
     private final UserService userService;
-    private final StructureGenerationService structureGenerationService;
 
-    public TournamentController(TournamentService tournamentService, UserService userService, StructureGenerationService structureGenerationService) {
+    public TournamentController(TournamentService tournamentService, UserService userService) {
         this.tournamentService = tournamentService;
         this.userService = userService;
-        this.structureGenerationService = structureGenerationService;
     }
 
     @GetMapping("/my")
@@ -34,8 +31,6 @@ public class TournamentController {
     public ResponseEntity<Tournament> createTournament(@RequestBody Tournament request, Authentication authentication) {
         User organizer = (User) authentication.getPrincipal();
         Tournament tournament = tournamentService.createTournament(request, organizer);
-        structureGenerationService.generateGroupStructure(tournament.getId(), 4, 4, organizer);
-        structureGenerationService.generateBracketStructure(tournament.getId(), 8, organizer);
         return ResponseEntity.ok(tournament);
     }
 
