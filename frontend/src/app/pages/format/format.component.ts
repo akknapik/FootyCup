@@ -162,12 +162,12 @@ export class FormatComponent {
   }
   
   assignTeamToBracket(node: any, side: 'home' | 'away') {
-    const teamId = (side === 'home' ? node.teamHome?.id : node.teamAway?.id);
-    if (!teamId) return;
+    const team = side === 'home' ? node.teamHome : node.teamAway;
+    if (!team?.id) return;
   
     const homeTeam = side === 'home';
   
-    this.formatService.assignTeamToBracketNode(this.tournamentId, node.id, teamId, homeTeam).subscribe({
+    this.formatService.assignTeamToBracketNode(this.tournamentId, node.id, team.id, homeTeam).subscribe({
       next: () => {
         this.editedNode = null;
         this.editedSide = null;
@@ -176,6 +176,7 @@ export class FormatComponent {
       error: () => alert('Błąd przypisywania drużyny')
     });
   }
+  
   
   
   @HostListener('document:click', ['$event'])

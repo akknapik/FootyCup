@@ -40,4 +40,14 @@ export class MatchComponent {
       error: () => alert('Błąd usuwania meczu'),
     });
   }
+
+  generateGroupMatches() {
+    if (!confirm('Czy na pewno wygenerować mecze?')) return;
+    this.matchService.generateGroupMatches(this.tournamentId).subscribe({
+      next: () => {
+        this.loadMatches();
+      },
+      error: () => alert('Błąd generowania meczów'),
+    });
+  }
 }

@@ -20,6 +20,7 @@
             <a routerLink="/tournament/{{ tournamentId }}/teams" class="nav-link">Teams</a>
             <a routerLink="/tournament/{{ tournamentId }}/format" class="nav-link">Format</a>
             <a routerLink="/tournament/{{ tournamentId }}/matches" class="nav-link active">Matches</a>
+            <a routerLink="/tournament/{{ tournamentId }}/schedule" class="nav-link">Schedule</a>
             <a routerLink="/tournament/{{ tournamentId }}/results" class="nav-link">Results</a>
           </div>
 
@@ -43,7 +44,7 @@
         </header>
 
         <main class="content">
-          
+          <button (click)="generateGroupMatches()">Generate group matches</button>
           <table *ngIf="matches.length > 0">
             <thead>
               <tr>

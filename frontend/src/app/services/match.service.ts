@@ -18,9 +18,9 @@ export class MatchService {
     return this.http.get<Match>(`/api/tournament/${tournamentId}/matches/${matchId}`);
   }
 
-  generateGroupMatches(tournamentId: number, rematch: boolean): Observable<void>{
+  generateGroupMatches(tournamentId: number): Observable<void>{
     return this.http.post<void>(
-      `/api/tournament/${tournamentId}/matches?rematch=${rematch}`,
+      `/api/tournament/${tournamentId}/matches`,
       null
     );
   }

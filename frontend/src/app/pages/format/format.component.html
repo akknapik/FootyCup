@@ -20,6 +20,7 @@
             <a routerLink="/tournament/{{ tournamentId }}/teams" class="nav-link">Teams</a>
             <a routerLink="/tournament/{{ tournamentId }}/format" class="nav-link active">Format</a>
             <a routerLink="/tournament/{{ tournamentId }}/matches" class="nav-link">Matches</a>
+            <a routerLink="/tournament/{{ tournamentId }}/schedule" class="nav-link">Schedule</a>
             <a routerLink="/tournament/{{ tournamentId }}/results" class="nav-link">Results</a>
           </div>
 
@@ -72,7 +73,7 @@
                           </select>
                         </ng-container>
                         <ng-template #showName>
-                          {{ slot.team?.name || 'puste miejsce' }}
+                          {{ slot.team?.name || "Empty slot" }}
                         </ng-template>
                       </td>
                     </tr>
@@ -86,7 +87,30 @@
               <div *ngFor="let node of bracket">
                 <div>
                   <strong>Runda {{ node.round }}</strong> | 
-                  {{ node.teamHome?.name || '???' }} vs {{ node.teamAway?.name || '???' }}
+                
+                  <span (click)="editBracketTeam(node, 'home', $event)">
+                    <ng-container *ngIf="editedNode?.id === node.id && editedSide === 'home'; else showHome">
+                      <select [(ngModel)]="node.teamHome" (change)="assignTeamToBracket(node, 'home')">
+                        <option *ngFor="let team of availableTeams" [ngValue]="team">{{ team.name }}</option>
+                      </select>
+                    </ng-container>
+                    <ng-template #showHome>
+                      {{ node.match.teamHome?.name || "Empty slot" }}
+                    </ng-template>
+                  </span>
+                
+                  vs
+                
+                  <span (click)="editBracketTeam(node, 'away', $event)">
+                    <ng-container *ngIf="editedNode?.id === node.id && editedSide === 'away'; else showAway">
+                      <select [(ngModel)]="node.teamAway" (change)="assignTeamToBracket(node, 'away')">
+                        <option *ngFor="let team of availableTeams" [ngValue]="team">{{ team.name }}</option>
+                      </select>
+                    </ng-container>
+                    <ng-template #showAway>
+                      {{ node.match.teamAway?.name || "Empty slot" }}
+                    </ng-template>
+                  </span>
                 </div>
               </div>
             </div>
