@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="pl">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FootyCup</title>
+    <link rel="stylesheet" href="schedule.component.css">
+  </head>
+  <body>
+    <div class="app-container">
+      <aside class="sidebar">
+        <div class="sidebar-header">
+          <img src="assets/images/logo1_3.png" alt="FootyCup Logo" class="sidebar-logo">
+        </div>
+        <nav class="sidebar-nav">
+          <a routerLink="/dashboard" class="nav-link">Dashboard</a>
+          <a routerLink="/tournaments/my" class="nav-link active">Tournaments</a>
+          <div *ngIf="tournamentId" class="submenu">
+            <a routerLink="/tournaments/{{ tournamentId }}" class="nav-link">General</a>
+            <a routerLink="/tournament/{{ tournamentId }}/teams" class="nav-link">Teams</a>
+            <a routerLink="/tournament/{{ tournamentId }}/format" class="nav-link">Format</a>
+            <a routerLink="/tournament/{{ tournamentId }}/matches" class="nav-link active">Matches</a>
+            <a routerLink="/tournament/{{ tournamentId }}/schedule" class="nav-link">Schedule</a>
+            <a routerLink="/tournament/{{ tournamentId }}/results" class="nav-link">Results</a>
+          </div>
+
+          <a routerLink="/settings"class="nav-link">Settings</a>
+        </nav>
+        <nav class="sidebar-footer">
+          <a routerLink="/aboutus">About us</a>
+          <a routerLink="/contact">Contact</a>
+        </nav>
+      </aside>
+
+      <div class="main">
+        <header class="header">
+          <div class="header-spacer"></div>
+          <div class="user-info">
+            <span *ngIf="auth.currentUser$ | async as user">
+              {{ user.firstname }} {{ user.lastname }}
+            </span>
+            <div class="avatar"></div>
+          </div>
+        </header>
+
+        <main class="content">
+          <div class="controls">
+            <button (click)="onCreateSchedule('2025-05-06T09:00:00')">
+              Generuj harmonogram od 09:00
+            </button>
+            <button (click)="onAddBreak(15)">Dodaj przerwę 15 min</button>
+            <button (click)="onRecompute()">Przelicz czasy</button>
+          </div>
+          
+          <div class="schedule-container">
+            <!-- Wszystkie mecze -->
+            <div
+              class="matches-list"
+              cdkDropList
+              id="allMatchesList"                               
+              [cdkDropListData]="allMatches"
+              [cdkDropListConnectedTo]="['scheduleList']"      
+              (cdkDropListDropped)="drop($event)"
+            >
+              <h3>Wszystkie mecze</h3>
+              <table>
+                <tbody>
+                  <tr *ngFor="let m of allMatches" cdkDrag>
+                    <td>{{ m.teamHome?.name || '???' }}</td>
+                    <td>{{ m.teamAway?.name || '???' }}</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          
+            <div
+              class="schedule"
+              cdkDropList
+              id="scheduleList"                                
+              [cdkDropListData]="scheduleEntries"
+              [cdkDropListConnectedTo]="['allMatchesList']"   
+              (cdkDropListDropped)="drop($event)"
+            >
+              <h3>Harmonogram</h3>
+              <table>
+                <tbody>
+                  <tr *ngFor="let e of scheduleEntries" cdkDrag>
+                    <ng-container *ngIf="e.type === 'MATCH'">
+                      <td>
+                        <input
+                          type="time"
+                          [value]="e.startDateTime | date:'HH:mm'"
+                          (change)="updateTime(e, $any($event.target).value)"
+                        />
+                      </td>
+                      <td>{{ e.match?.teamHome?.name || '???' }}</td>
+                      <td>{{ e.match?.teamAway?.name || '???' }}</td>
+                    </ng-container>
+                    <ng-container *ngIf="e.type === 'BREAK'">
+                      <td></td>
+                      <td colspan="2">⏸ Przerwa ({{ e.durationInMin }} min)</td>
+                    </ng-container>
+                  </tr>
+                  <tr *ngIf="scheduleEntries.length === 0">
+                    <td colspan="3" class="empty-placeholder">
+                      Przeciągnij mecz tutaj, aby dodać go do harmonogramu
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+          
+        </main>
+
+        <footer class="footer">
+          <p>&copy; 2023 FootyCup. All rights reserved.</p>
+        </footer>
+      </div>
+    </div>
+  </body>
+</html>

@@ -86,7 +86,7 @@
               <h3>🏆 Drabinka:</h3>
               <div *ngFor="let node of bracket">
                 <div>
-                  <strong>Runda {{ node.round }}</strong> | 
+                  <strong>Runda {{ node.match.name }}</strong> | 
                 
                   <span (click)="editBracketTeam(node, 'home', $event)">
                     <ng-container *ngIf="editedNode?.id === node.id && editedSide === 'home'; else showHome">

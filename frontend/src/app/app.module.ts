@@ -19,6 +19,10 @@ import { TeamDetailsComponent } from './pages/team/team-details/team-details.com
 import { AddPlayerComponent } from './pages/team/add-player/add-player.component';
 import { FormatComponent } from './pages/format/format.component';
 import { MatchComponent } from './pages/match/match.component';
+import { ScheduleComponent } from './pages/schedule/schedule.component';
+import { DragDropModule } from '@angular/cdk/drag-drop';
+import { RouterModule } from '@angular/router';
+
 
 @NgModule({
   declarations: [
@@ -35,13 +39,16 @@ import { MatchComponent } from './pages/match/match.component';
     TeamDetailsComponent,
     AddPlayerComponent,
     FormatComponent,
-    MatchComponent
+    MatchComponent,
+    ScheduleComponent
   ],
   imports: [
     BrowserModule,
     HttpClientModule,
     AppRoutingModule,
-    FormsModule
+    FormsModule,
+    DragDropModule,
+    RouterModule 
   ],
   providers: [{
     provide: HTTP_INTERCEPTORS,

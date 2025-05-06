@@ -44,7 +44,7 @@ public class Match {
     @Enumerated(EnumType.STRING)
     private MatchStatus status;
 
-    private int durationInMin;
+    private int durationInMin = 15;
 
     private Integer homeScore;
     private Integer awayScore;

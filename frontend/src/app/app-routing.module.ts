@@ -13,20 +13,23 @@ import { TeamDetailsComponent } from './pages/team/team-details/team-details.com
 import { AddPlayerComponent } from './pages/team/add-player/add-player.component';
 import { FormatComponent } from './pages/format/format.component';
 import { MatchComponent } from './pages/match/match.component';
+import { ScheduleComponent } from './pages/schedule/schedule.component';
+import { AuthGuard } from './guards/auth.guard';
 
 const routes: Routes = [
   { path: 'register', component: RegisterComponent },
   { path: 'login', component: LoginComponent },
-  { path: 'tournaments/my', component: MyTournamentsComponent },
-  { path: 'tournaments/new', component: AddTournamentComponent },
-  { path: 'tournaments/:tournamentId/edit', component: EditTournamentComponent },
-  { path: 'tournaments/:tournamentId', component: TournamentDetailsComponent },
-  { path: 'tournament/:tournamentId/teams', component: TeamsComponent },
-  { path: 'tournament/:tournamentId/teams/new', component: AddTeamComponent },
-  { path: 'tournament/:tournamentId/teams/:teamId', component: TeamDetailsComponent },
-  { path: 'tournament/:tournamentId/teams/:teamId/add-player', component: AddPlayerComponent },
-  { path: 'tournament/:tournamentId/format', component: FormatComponent },
-  { path: 'tournament/:tournamentId/matches', component: MatchComponent },
+  { path: 'tournaments/my', component: MyTournamentsComponent, canActivate: [AuthGuard] },
+  { path: 'tournaments/new', component: AddTournamentComponent, canActivate: [AuthGuard] },
+  { path: 'tournaments/:tournamentId/edit', component: EditTournamentComponent, canActivate: [AuthGuard] },
+  { path: 'tournaments/:tournamentId', component: TournamentDetailsComponent, canActivate: [AuthGuard] },
+  { path: 'tournament/:tournamentId/teams', component: TeamsComponent, canActivate: [AuthGuard] },
+  { path: 'tournament/:tournamentId/teams/new', component: AddTeamComponent, canActivate: [AuthGuard] },
+  { path: 'tournament/:tournamentId/teams/:teamId', component: TeamDetailsComponent, canActivate: [AuthGuard] },
+  { path: 'tournament/:tournamentId/teams/:teamId/add-player', component: AddPlayerComponent, canActivate: [AuthGuard] },
+  { path: 'tournament/:tournamentId/format', component: FormatComponent, canActivate: [AuthGuard] },
+  { path: 'tournament/:tournamentId/matches', component: MatchComponent, canActivate: [AuthGuard] },
+  { path: 'tournament/:tournamentId/schedule', component: ScheduleComponent, canActivate: [AuthGuard] },
   { path: '**', redirectTo: 'login' }
 ];
 
