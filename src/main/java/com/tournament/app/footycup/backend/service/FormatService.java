@@ -5,7 +5,6 @@ import com.tournament.app.footycup.backend.model.*;
 import com.tournament.app.footycup.backend.repository.*;
 import lombok.AllArgsConstructor;
 import org.springframework.security.access.AccessDeniedException;
-import org.springframework.security.core.userdetails.MapReactiveUserDetailsService;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
@@ -160,7 +159,6 @@ public class FormatService{
             match.setTeamAway(team);
         }
         matchRepository.save(match);
-        System.out.println("Zapisano match: " + match.getId() + " teamHome=" + match.getTeamHome() + ", teamAway=" + match.getTeamAway());
     }
 
 

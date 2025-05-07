@@ -10,7 +10,6 @@ import com.tournament.app.footycup.backend.repository.TournamentRepository;
 import com.tournament.app.footycup.backend.repository.UserRepository;
 import com.tournament.app.footycup.backend.requests.TeamRequest;
 import lombok.AllArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 
@@ -27,24 +26,24 @@ public class TeamService {
 
     public Team getTeamById(Long tournamentId, Long id, User user) {
         Team team = teamRepository.findById(id)
-                .orElseThrow(() -> new NoSuchElementException("Nie znaleziono zespolu") );
+                .orElseThrow(() -> new NoSuchElementException("Team not found") );
 
         if(!team.getTournament().getId().equals(tournamentId)) {
-            throw new IllegalArgumentException("Nie znaleziono zespołu dla tego turnieju");
+            throw new IllegalArgumentException("Team for that tournament ID not found");
         }
 
         if(!team.getTournament().getOrganizer().getId().equals(user.getId()) && !team.getCoach().getId().equals(user.getId())) {
-            throw new AccessDeniedException("Brak dostępu do zespołu");
+            throw new AccessDeniedException("Lack of authorization");
         }
         return team;
     }
 
     public List<Team> getTeamsByTournamentId(Long tournamentId, User user) {
         Tournament tournament = tournamentRepository.findById(tournamentId)
-                .orElseThrow(() -> new NoSuchElementException("Nie znaleziono turnieju"));
+                .orElseThrow(() -> new NoSuchElementException("Tournament not found"));
 
         if(!tournament.getOrganizer().getId().equals(user.getId())) {
-            throw new AccessDeniedException("Brak dostępu do zespołu");
+            throw new AccessDeniedException("Lack of authorization");
         }
 
         List<Team> teams = teamRepository.findByTournamentId(tournamentId);
@@ -53,12 +52,12 @@ public class TeamService {
 
     public Team createTeam(Long tournamentId, TeamRequest request, User user) {
         Tournament tournament = tournamentRepository.findById(tournamentId)
-                .orElseThrow(() -> new NoSuchElementException("Nie znaleziono turnieju"));
+                .orElseThrow(() -> new NoSuchElementException("Tournament not found"));
         User coach = userRepository.findByEmail(request.getCoachEmail())
                 .orElseThrow(() -> new NoSuchElementException("Coach not found"));
 
         if(!tournament.getOrganizer().getId().equals(user.getId())) {
-            throw new AccessDeniedException("Brak dostępu do zespołu");
+            throw new AccessDeniedException("Lack of authorization");
         }
         Team team = new Team();
         team.setName(request.getName());

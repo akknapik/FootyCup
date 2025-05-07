@@ -3,21 +3,18 @@ package com.tournament.app.footycup.backend.service;
 import com.tournament.app.footycup.backend.model.Tournament;
 import com.tournament.app.footycup.backend.model.User;
 import com.tournament.app.footycup.backend.repository.TournamentRepository;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.AllArgsConstructor;
+import lombok.NoArgsConstructor;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.NoSuchElementException;
 
+@AllArgsConstructor
 @Service
 public class TournamentService {
     private final TournamentRepository tournamentRepository;
-
-    @Autowired
-    public TournamentService(TournamentRepository tournamentRepository) {
-        this.tournamentRepository = tournamentRepository;
-    }
 
     public Tournament createTournament(Tournament request, User organizer) {
         Tournament tournament = new Tournament();
@@ -32,10 +29,10 @@ public class TournamentService {
 
     public Tournament getTournamentById(Long id, User user) {
         Tournament tournament = tournamentRepository.findById(id)
-                .orElseThrow(() -> new NoSuchElementException("Nie znaleziono turnieju"));
+                .orElseThrow(() -> new NoSuchElementException("Tournament not found"));
 
         if (!tournament.getOrganizer().getId().equals(user.getId())) {
-            throw new AccessDeniedException("Brak dostępu do turnieju");
+            throw new AccessDeniedException("Lack of authorization");
         }
 
         return tournament;
