@@ -22,6 +22,7 @@ import { MatchComponent } from './pages/match/match.component';
 import { ScheduleComponent } from './pages/schedule/schedule.component';
 import { DragDropModule } from '@angular/cdk/drag-drop';
 import { RouterModule } from '@angular/router';
+import { ErrorService } from './interceptors/error.service';
 
 
 @NgModule({
@@ -54,7 +55,12 @@ import { RouterModule } from '@angular/router';
     provide: HTTP_INTERCEPTORS,
     useClass: TokenInterceptor,
     multi: true
-  }
+  },
+  {
+    provide: HTTP_INTERCEPTORS,
+    useClass: ErrorService,
+    multi: true
+}
   ],
   bootstrap: [AppComponent]
 })
