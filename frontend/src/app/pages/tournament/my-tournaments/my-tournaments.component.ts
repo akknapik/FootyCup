@@ -2,6 +2,7 @@ import { Component } from '@angular/core';
 import { TournamentService } from '../../../services/tournament.service';
 import { Route, Router } from '@angular/router';
 import { AuthService } from '../../../services/auth.service';
+import { NotificationService } from '../../../services/notification.service';
 
 @Component({
   selector: 'app-my-tournaments',
@@ -12,7 +13,7 @@ import { AuthService } from '../../../services/auth.service';
 export class MyTournamentsComponent {
   tournaments: any[] = [];
 
-  constructor(private tournamentService: TournamentService, private router: Router, public auth: AuthService) {}
+  constructor(private tournamentService: TournamentService, private router: Router, public auth: AuthService, private notification: NotificationService) {}
 
   ngOnInit(): void {
     this.loadTournaments();
@@ -21,7 +22,7 @@ export class MyTournamentsComponent {
   loadTournaments() {
     this.tournamentService.getMyTournaments().subscribe({
       next: (data) => this.tournaments = data,
-      error: () => alert('Błąd ładowania turniejów')
+      error: () => this.notification.showError('Error loading tournaments')
     });
   }
 
@@ -30,16 +31,20 @@ export class MyTournamentsComponent {
   }
 
   deleteTournament(tournamentId: number) {
-    if (confirm('Czy na pewno chcesz usunąć ten turniej?')) {
-      this.tournamentService.deleteTournament(tournamentId).subscribe({
-        next: () => {
-          alert('Turniej usunięty!');
-          this.loadTournaments();
-        },
-        error: () => alert('Błąd podczas usuwania turnieju')
+    this.notification.confirm('Are you sure you want to delete this tournament?')
+      .subscribe(confirmed => {
+        if (confirmed) {
+          this.tournamentService.deleteTournament(tournamentId).subscribe({
+            next: () => {
+              this.notification.showSuccess('Tournament deleted!');
+              this.loadTournaments();
+            },
+            error: () => this.notification.showError('Error deleting tournament')
+          });
+        }
       });
-    }
   }
+  
 
   openDetails(id: number): void {
     this.router.navigate(['/tournaments', id]);

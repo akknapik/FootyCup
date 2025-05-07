@@ -2,6 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { TournamentService } from '../../../services/tournament.service';
 import { AuthService } from '../../../services/auth.service';
+import { NotificationService } from '../../../services/notification.service';
 
 @Component({
   selector: 'app-tournament-details',
@@ -17,14 +18,15 @@ export class TournamentDetailsComponent implements OnInit {
     private route: ActivatedRoute,
     private tournamentService: TournamentService,
     private router: Router,
-    public auth: AuthService
+    public auth: AuthService, 
+    private notification: NotificationService
   ) {
     this.tournamentService.tournamentId$.subscribe((id) => {
       if (id) {
         this.tournamentId = +id;
         this.tournamentService.getTournamentById(this.tournamentId).subscribe({
           next: (data) => this.tournament = data,
-          error: () => alert('Błąd ładowania szczegółów turnieju')
+          error: () => this.notification.showError('Error loading tournament details')
         });
       }
     }
@@ -35,7 +37,7 @@ export class TournamentDetailsComponent implements OnInit {
     this.tournamentId = +this.route.snapshot.paramMap.get('tournamentId')!;
     this.tournamentService.getTournamentById(this.tournamentId).subscribe({
       next: (data) => this.tournament = data,
-      error: () => alert('Błąd ładowania szczegółów turnieju')
+      error: () => this.notification.showError('Error loading tournament details')
     });
   }
 

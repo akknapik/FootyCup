@@ -2,6 +2,7 @@ import { Component } from '@angular/core';
 import { TeamService } from '../../../services/team.service';
 import { ActivatedRoute, Router } from '@angular/router';
 import { AuthService } from '../../../services/auth.service';
+import { NotificationService } from '../../../services/notification.service';
 
 @Component({
   selector: 'app-add-player',
@@ -18,7 +19,7 @@ export class AddPlayerComponent {
     birthDate: ''
   }
 
-  constructor(private teamService: TeamService, private router: Router, private route: ActivatedRoute, public auth: AuthService) {}
+  constructor(private teamService: TeamService, private router: Router, private route: ActivatedRoute, public auth: AuthService, private notification: NotificationService) {}
 
   ngOnInit(): void {
     this.route.paramMap.subscribe(params => {
@@ -28,7 +29,7 @@ export class AddPlayerComponent {
         this.tournamentId = +id;
         this.teamId = +teamId;
       } else {
-        alert('Nie znaleziono identyfikatora turnieju lub drużyny');
+        this.notification.showError('Tournament or team ID not found!');
         this.router.navigate(['/tournament', 'my']);
       }
     });
@@ -37,10 +38,10 @@ export class AddPlayerComponent {
   create() {
     this.teamService.addPlayerToTeam(this.tournamentId, this.teamId, this.form).subscribe({
       next: () => {
-        alert('Zawodnik utworzony!');
+        this.notification.showSuccess('Player created!');
         this.router.navigate(['/tournament', this.tournamentId, 'teams', this.teamId]);
       },
-      error: () => alert('Błąd podczas tworzenia zawodnika')
+      error: () => this.notification.showError('Error while creating player!')
     });
   }
 

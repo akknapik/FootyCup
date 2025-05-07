@@ -5,3 +5,20 @@ html, body {
     height: 100%;
     font-family: 'Open Sans', sans-serif;
   }
+html, body { height: 100%; }
+body { margin: 0; font-family: Roboto, "Helvetica Neue", sans-serif; }
+
+.snackbar-error {
+  background-color: #ad1919;
+  color: white;
+}
+
+.snackbar-success {
+  background-color: #22a128;
+  color: white;
+}
+
+.snackbar-confirm {
+  background-color: #1976d2; 
+  color: #fff;
+}

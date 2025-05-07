@@ -4,6 +4,7 @@ import { ActivatedRoute } from '@angular/router';
 import { MatchService } from '../../services/match.service';
 import { Match } from '../../models/match.model';
 import { AuthService } from '../../services/auth.service';
+import { NotificationService } from '../../services/notification.service';
 
 @Component({
   selector: 'app-match',
@@ -16,7 +17,7 @@ export class MatchComponent {
   matches: Match[] = [];
   showGenerateButton = false;
   rematch = false;
-  constructor(private route: ActivatedRoute, private matchService: MatchService, public auth: AuthService) {}
+  constructor(private route: ActivatedRoute, private matchService: MatchService, public auth: AuthService, private notification: NotificationService) {}
 
   ngOnInit(): void {
     this.tournamentId = +this.route.snapshot.paramMap.get('tournamentId')!;
@@ -29,25 +30,31 @@ export class MatchComponent {
         console.log(data);
         this.matches = data;
       },
-      error: () => alert('Błąd ładowania meczów'),
+      error: () => this.notification.showError('Error loading matches!'),
     });
   }
 
   deleteMatch(matchId: number) {
-    if (!confirm('Czy na pewno usunąć mecz?')) return;
-    this.matchService.deleteMatch(this.tournamentId, matchId).subscribe({
-      next: () => this.loadMatches(),
-      error: () => alert('Błąd usuwania meczu'),
+    this.notification.confirm('Are you sure you want to delete this match?').subscribe((confirmed) => {
+      if (confirmed) {
+        this.matchService.deleteMatch(this.tournamentId, matchId).subscribe({
+          next: () => this.loadMatches(),
+          error: () => this.notification.showError('Error deleting match!'),
+        });
+      }
     });
   }
 
   generateGroupMatches() {
-    if (!confirm('Czy na pewno wygenerować mecze?')) return;
-    this.matchService.generateGroupMatches(this.tournamentId).subscribe({
-      next: () => {
-        this.loadMatches();
-      },
-      error: () => alert('Błąd generowania meczów'),
+    this.notification.confirm('Are you sure you want to generate group matches?').subscribe((confirmed) => {
+      if (confirmed) {
+        this.matchService.generateGroupMatches(this.tournamentId).subscribe({
+          next: () => {
+            this.loadMatches();
+          },
+          error: () => this.notification.showError('Error generating matches!'),
+        });
+      }
     });
   }
 }

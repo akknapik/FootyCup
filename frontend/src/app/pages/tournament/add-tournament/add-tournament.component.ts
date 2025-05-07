@@ -2,6 +2,7 @@ import { Component } from '@angular/core';
 import { TournamentService } from '../../../services/tournament.service';
 import { Router } from '@angular/router';
 import { AuthService } from '../../../services/auth.service';
+import { NotificationService } from '../../../services/notification.service';
 
 @Component({
   selector: 'app-add-tournament',
@@ -17,15 +18,15 @@ export class AddTournamentComponent {
     location: '',
   };
 
-  constructor(private tournamentService: TournamentService, public router: Router, public auth: AuthService) {}
+  constructor(private tournamentService: TournamentService, public router: Router, public auth: AuthService, private notification: NotificationService) {}
 
   create() {
     this.tournamentService.createTournament(this.form).subscribe({
       next: () => {
-        alert('Turniej utworzony!');
+        this.notification.showSuccess('Tournament created'),
         this.router.navigate(['/tournaments/my']);
       },
-      error: () => alert('Błąd podczas tworzenia turnieju')
+      error: () => this.notification.showError('Error while creating tournament')
     });
   }
 }

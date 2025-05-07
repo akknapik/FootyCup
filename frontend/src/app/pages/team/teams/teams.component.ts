@@ -1,7 +1,8 @@
 import { Component } from '@angular/core';
 import { TeamService } from '../../../services/team.service';
-import { Route, Router } from '@angular/router';
+import { ActivatedRoute, Route, Router } from '@angular/router';
 import { AuthService } from '../../../services/auth.service';
+import { NotificationService } from '../../../services/notification.service';
 
 @Component({
   selector: 'app-teams',
@@ -13,17 +14,17 @@ export class TeamsComponent {
   teams: any[] = [];
   tournamentId!: number;
 
-  constructor(private teamService: TeamService, private router: Router, public auth: AuthService) {}
+  constructor(private teamService: TeamService, private router: Router, private route: ActivatedRoute, public auth: AuthService, private notification: NotificationService) {}
 
   ngOnInit(): void {
-    this.tournamentId = +this.router.url.split('/')[2]; 
+    this.tournamentId = +this.route.snapshot.paramMap.get('tournamentId')!; 
     this.loadTeams();
   }
 
   loadTeams() {
     this.teamService.getTeams(this.tournamentId).subscribe({
       next: (data) => this.teams = data,
-      error: () => alert('Błąd ładowania drużyn')
+      error: () => this.notification.showError('Error loading teams')
     });
   }
 
@@ -32,15 +33,19 @@ export class TeamsComponent {
   }
 
   deleteTeam(teamId: number) {
-    if (confirm('Czy na pewno chcesz usunąć tę drużynę?')) {
-      this.teamService.deleteTeam(this.tournamentId, teamId).subscribe({
-        next: () => {
-          alert('Drużyna usunięta!');
-          this.loadTeams();
-        },
-        error: () => alert('Błąd podczas usuwania drużyny')
-      });
-    }
+    this.notification.confirm('Are you sure you want to delete this team?')
+      .subscribe(confirmed => {
+        if (confirmed) {
+          this.teamService.deleteTeam(this.tournamentId, teamId).subscribe({
+            next: () => {
+              this.notification.showSuccess('Team deleted!');
+              this.loadTeams();
+            },
+            error: () => this.notification.showError('Error deleting team')
+          });
+       }
+      }
+    );
   }
 
   openDetails(id: number): void {

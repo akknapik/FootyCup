@@ -3,6 +3,7 @@ import com.tournament.app.footycup.backend.requests.ErrorResponse;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.context.request.WebRequest;
 
 import java.nio.file.AccessDeniedException;
@@ -30,7 +31,16 @@ public class GlobalExceptionHandler {
     }
 
     @ExceptionHandler(value = {AccessDeniedException.class})
-    public ResponseEntity<ErrorResponse> handleAcceAccessDenied(AccessDeniedException ex, WebRequest request) {
+    public ResponseEntity<ErrorResponse> handleAccessDenied(AccessDeniedException ex, WebRequest request) {
+        return new ResponseEntity<>(new ErrorResponse(
+                HttpStatus.FORBIDDEN.value(),
+                ex.getMessage(),
+                LocalDateTime.now()
+        ), HttpStatus.FORBIDDEN);
+    }
+
+    @ExceptionHandler(value = {HttpClientErrorException.Unauthorized.class})
+    public ResponseEntity<ErrorResponse> handleUnauthorized(HttpClientErrorException.Unauthorized ex, WebRequest request) {
         return new ResponseEntity<>(new ErrorResponse(
                 HttpStatus.UNAUTHORIZED.value(),
                 ex.getMessage(),

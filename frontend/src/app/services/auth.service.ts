@@ -13,7 +13,11 @@ export class AuthService {
   constructor(private http: HttpClient) { 
     const token = this.getToken();
     if (token) {
-      this.loadCurrentUser().subscribe();
+      this.loadCurrentUser().subscribe({
+        error: () => {
+          this.logout();
+        }
+      });
     }
   }
 

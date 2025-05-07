@@ -58,7 +58,6 @@
                 <td>{{ t.location }}</td>
                 <td>{{ t.status }}</td>
                 <td>
-                  <a [routerLink]="['/tournaments', t.id, 'edit']" (click)="$event.stopPropagation()">✏️ Edytuj</a> |
                   <button (click)="deleteTournament(t.id); $event.stopPropagation()">🗑️ Usuń</button>
                 </td>
               </tr>

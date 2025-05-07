@@ -12,6 +12,7 @@ import { Match } from '../../models/match.model';
 import { forkJoin } from 'rxjs';
 import { MatchService } from '../../services/match.service';
 import { AuthService } from '../../services/auth.service';
+import { NotificationService } from '../../services/notification.service';
 
 @Component({
   selector: 'app-match',
@@ -31,7 +32,8 @@ export class ScheduleComponent implements OnInit {
     private route: ActivatedRoute,
     private scheduleService: ScheduleService,
     private matchService: MatchService,
-    public auth: AuthService
+    public auth: AuthService, 
+    private notification: NotificationService
   ) {}
 
   ngOnInit() {
@@ -81,20 +83,17 @@ export class ScheduleComponent implements OnInit {
     const prevData = event.previousContainer.data;
     const currData = event.container.data;
   
-    // 1) Reorder wewnątrz harmonogramu
     if (prevData === this.scheduleEntries && currData === this.scheduleEntries) {
       moveItemInArray(this.scheduleEntries, event.previousIndex, event.currentIndex);
       const ids = this.scheduleEntries.map(e => e.id);
       this.scheduleService.reorderEntries(this.tournamentId, this.scheduleId, ids)
         .subscribe(() => this.loadSchedule());
     }
-    // 2) Z allMatches do scheduleEntries
     else if (prevData === this.allMatches && currData === this.scheduleEntries) {
       const match = this.allMatches[event.previousIndex];
       this.scheduleService.addMatchToSchedule(this.tournamentId, this.scheduleId, match.id)
         .subscribe(() => this.loadSchedule());
     }
-    // 3) Z powrotem z harmonogramu do allMatches
     else if (prevData === this.scheduleEntries && currData === this.allMatches) {
       const entry = this.scheduleEntries[event.previousIndex];
       this.scheduleService.removeEntryFromSchedule(this.tournamentId, this.scheduleId, entry.id)

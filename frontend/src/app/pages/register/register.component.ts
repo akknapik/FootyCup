@@ -1,6 +1,7 @@
 import { Component } from '@angular/core';
 import { AuthService } from '../../services/auth.service';
 import { Router } from '@angular/router';
+import { NotificationService } from '../../services/notification.service';
 
 @Component({
   selector: 'app-register',
@@ -17,11 +18,11 @@ export class RegisterComponent {
     confirmPassword: ''
   };
 
-  constructor(private auth: AuthService, private router: Router) { }
+  constructor(private auth: AuthService, private router: Router, private notification: NotificationService) { }
 
   register() {
     if (this.form.password !== this.form.confirmPassword) {
-      alert('Passwords do not match!');
+      this.notification.showError('Passwords do not match!');
       return;
     }
     this.auth.register(this.form).subscribe({
@@ -29,7 +30,7 @@ export class RegisterComponent {
         this.router.navigate(['/login']);
       },
       error: err => {
-        alert(err?.error || 'Błąd rejestracji');
+        this.notification.showError(err?.error || 'Registration failed!');
       }
     });
   }

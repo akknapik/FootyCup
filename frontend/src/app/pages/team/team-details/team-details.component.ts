@@ -2,6 +2,7 @@ import { Component } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { TeamService } from '../../../services/team.service';
 import { AuthService } from '../../../services/auth.service';
+import { NotificationService } from '../../../services/notification.service';
 
 @Component({
   selector: 'app-team-details',
@@ -16,7 +17,7 @@ export class TeamDetailsComponent {
   playerList: any[] = [];
   selectedPlayer: any = null;
 
-  constructor(private route: ActivatedRoute, private teamService: TeamService, private router: Router, public auth: AuthService) {}
+  constructor(private route: ActivatedRoute, private teamService: TeamService, private router: Router, public auth: AuthService, private notification: NotificationService) {}
 
   ngOnInit(): void {
     this.route.paramMap.subscribe(params => {
@@ -27,7 +28,7 @@ export class TeamDetailsComponent {
         this.teamId = +teamId;
         this.loadTeamDetails();
       } else {
-        alert('Nie znaleziono identyfikatora turnieju lub drużyny');
+        this.notification.showError('Tournament or team ID not found!');
         this.router.navigate(['/tournaments/my']);
       }
     });
@@ -39,7 +40,7 @@ export class TeamDetailsComponent {
         this.team = data;
         this.playerList = data.playerList || [];  
       },
-      error: () => alert('Błąd ładowania szczegółów drużyny')
+      error: () => this.notification.showError('Error loading team details!')
     });
   }
 
@@ -52,10 +53,10 @@ export class TeamDetailsComponent {
 
     this.teamService.updateTeam(this.tournamentId, this.teamId, payload).subscribe({
       next: () => {
-        alert('Drużyna zaktualizowana!');
+        this.notification.showSuccess('Team updated!');
         this.loadTeamDetails();
       },
-      error: () => alert('Błąd podczas aktualizacji drużyny')
+      error: () => this.notification.showError('Error updating team!')
     });
   }
 
@@ -68,15 +69,17 @@ export class TeamDetailsComponent {
   }
 
   deletePlayer(playerId: number): void {
-    if (confirm('Czy na pewno chcesz usunąć tego zawodnika?')) {
+    this.notification.confirm('Are you sure you want to delete this player?').subscribe(confirmed => {
+      if (confirmed) {
       this.teamService.removePlayerFromTeam(this.tournamentId, this.teamId, playerId).subscribe({
         next: () => {
-          alert('Zawodnik usunięty!');
+          this.notification.showSuccess('Player deleted!');
           this.loadTeamDetails();
         },
-        error: () => alert('Błąd podczas usuwania zawodnika')
+        error: () => this.notification.showError('Error deleting player!')
       });
     }
+    });
   }
 
   editPlayer(player: any) {
@@ -87,11 +90,11 @@ export class TeamDetailsComponent {
     if (this.selectedPlayer) {
       this.teamService.updatePlayerInTeam(this.tournamentId, this.teamId, this.selectedPlayer.id, this.selectedPlayer).subscribe({
         next: () => {
-          alert('Zawodnik zaktualizowany!');
+          this.notification.showSuccess('Player updated!');
           this.loadTeamDetails();
           this.selectedPlayer = null; 
         },
-        error: () => alert('Błąd podczas aktualizacji zawodnika')
+        error: () => this.notification.showError('Error updating player!')
       });
     }
   }
