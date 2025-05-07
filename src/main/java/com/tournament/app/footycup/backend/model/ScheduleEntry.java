@@ -2,11 +2,9 @@ package com.tournament.app.footycup.backend.model;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.tournament.app.footycup.backend.enums.EntryType;
+import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 
 import java.time.LocalDateTime;
 
@@ -16,24 +14,32 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 @Entity
 @Table(name = "schedule_entries")
+@Schema(description = "Single entry in a schedule, either a match or a break")
 public class ScheduleEntry {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Schema(description = "Unique schedule entry ID", example = "10")
     private Long id;
 
+    @Schema(description = "Schedule this entry belongs to")
     @ManyToOne
     @JoinColumn(name = "id_schedule")
     @JsonBackReference
     private Schedule schedule;
 
+    @Schema(description = "Type of schedule entry (MATCH or BREAK)", example = "MATCH")
     @Enumerated(EnumType.STRING)
     private EntryType type;
 
+    @Schema(description = "Match associated with this schedule entry (if applicable)")
     @ManyToOne
     @JoinColumn(name = "id_match")
     private Match match;
 
+    @Schema(description = "Start time of this schedule entry", example = "2025-06-01T10:30:00")
     private LocalDateTime startDateTime;
 
+    @Schema(description = "Duration of this entry in minutes", example = "15")
     private int durationInMin;
 }

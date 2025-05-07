@@ -4,6 +4,12 @@ import com.tournament.app.footycup.backend.dto.UserDto;
 import com.tournament.app.footycup.backend.model.User;
 import com.tournament.app.footycup.backend.repository.UserRepository;
 import com.tournament.app.footycup.backend.service.UserService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
@@ -16,12 +22,19 @@ import java.util.NoSuchElementException;
 @RestController
 @RequestMapping("/me")
 public class UserController {
+
     private final UserService userService;
 
     public UserController(UserService userService, UserRepository userRepository) {
         this.userService = userService;
     }
 
+    @Operation(summary = "Get the currently authenticated user's details")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "User details retrieved successfully",
+                    content = @Content(mediaType = "application/json", schema = @Schema(implementation = UserDto.class))),
+            @ApiResponse(responseCode = "401", description = "Unauthorized", content = @Content)
+    })
     @GetMapping
     public ResponseEntity<UserDto> getUser(Authentication authentication) {
         User user = (User) authentication.getPrincipal();
@@ -29,8 +42,17 @@ public class UserController {
         return ResponseEntity.ok(userDto);
     }
 
+    @Operation(summary = "Update a user by ID")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "User updated successfully",
+                    content = @Content(mediaType = "application/json", schema = @Schema(implementation = UserDto.class))),
+            @ApiResponse(responseCode = "404", description = "User not found", content = @Content),
+            @ApiResponse(responseCode = "400", description = "Invalid input", content = @Content)
+    })
     @PutMapping("/{id}")
-    public ResponseEntity<?> updateUser(@PathVariable("id") Long id, @RequestBody User user) {
+    public ResponseEntity<?> updateUser(
+            @Parameter(description = "User ID") @PathVariable("id") Long id,
+            @RequestBody @Parameter(description = "Updated user data") User user) {
         try {
             UserDto updatedUser = userService.updateUser(id, user);
             return ResponseEntity.ok(updatedUser);
@@ -40,12 +62,18 @@ public class UserController {
         }
     }
 
+    @Operation(summary = "Delete a user by ID")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "204", description = "User deleted successfully"),
+            @ApiResponse(responseCode = "404", description = "User not found", content = @Content)
+    })
     @DeleteMapping("/{id}")
-    public ResponseEntity<?> deleteUser(@PathVariable("id") Long id) {
+    public ResponseEntity<?> deleteUser(
+            @Parameter(description = "User ID") @PathVariable("id") Long id) {
         try {
             userService.deleteUser(id);
-            return ResponseEntity.status(HttpStatus.NO_CONTENT).body(Map.of("message", "User deleted " +
-                    "successfully"));
+            return ResponseEntity.status(HttpStatus.NO_CONTENT)
+                    .body(Map.of("message", "User deleted successfully"));
         } catch (NoSuchElementException e) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND)
                     .body(Map.of("error", "User not found"));
