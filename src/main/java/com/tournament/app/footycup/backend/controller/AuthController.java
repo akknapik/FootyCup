@@ -5,6 +5,7 @@ import com.tournament.app.footycup.backend.repository.UserRepository;
 import com.tournament.app.footycup.backend.requests.AuthResponse;
 import com.tournament.app.footycup.backend.requests.LoginRequest;
 import com.tournament.app.footycup.backend.requests.RegistrationRequest;
+import com.tournament.app.footycup.backend.service.EmailProducer;
 import com.tournament.app.footycup.backend.service.TokenService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -30,6 +31,7 @@ public class AuthController {
     private final PasswordEncoder passwordEncoder;
     private final AuthenticationManager authManager;
     private final TokenService tokenService;
+    private final EmailProducer emailProducer;
 
     @Operation(summary = "Register a new user")
     @ApiResponses(value = {
@@ -58,6 +60,11 @@ public class AuthController {
             user.setLastname(request.getLastname());
 
             userRepository.save(user);
+
+            String subject = "Welcome in FootyCup!";
+            String content = "Hi " + user.getFirstname() + ", thank you for registering in our system!";
+            emailProducer.sendEmail(user.getEmail(), subject, content);
+
             return ResponseEntity.ok("User registered");
         } catch (Exception e) {
             e.printStackTrace();
