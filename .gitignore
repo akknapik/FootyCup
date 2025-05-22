@@ -1,10 +1,23 @@
-HELP.md
+# === Java / Maven ===
 target/
 !.mvn/wrapper/maven-wrapper.jar
 !**/src/main/**/target/
 !**/src/test/**/target/
 
-### STS ###
+# === Spring / Logs / Env ===
+*.log
+.env
+HELP.md
+application-local.properties
+application-secrets.properties
+
+# === IDE: IntelliJ IDEA ===
+.idea/
+*.iml
+*.ipr
+*.iws
+
+# === IDE: STS / Eclipse ===
 .apt_generated
 .classpath
 .factorypath
@@ -13,21 +26,21 @@ target/
 .springBeans
 .sts4-cache
 
-### IntelliJ IDEA ###
-.idea
-*.iws
-*.iml
-*.ipr
+# === IDE: Visual Studio Code ===
+.vscode/
 
-### NetBeans ###
-/nbproject/private/
-/nbbuild/
-/dist/
-/nbdist/
-/.nb-gradle/
+# === IDE: Visual Studio (C#/DB) ===
+.vs/
+
+# === Build directories ===
 build/
 !**/src/main/**/build/
 !**/src/test/**/build/
 
-### VS Code ###
-.vscode/
+# === Databases (SQLite etc.) ===
+*.sqlite
+*.sqlite-journal
+
+# === OS / Misc ===
+.DS_Store
+Thumbs.db
