@@ -239,6 +239,8 @@ public class FormatService{
 
         List<Group> groups = getGroups(tournamentId, user);
         for(Group group : groups) {
+            List<Match> matches = matchService.getGroupMatches(tournamentId, user, group.getId());
+            matchRepository.deleteAll(matches);
             groupRepository.delete(group);
         }
     }
@@ -251,12 +253,6 @@ public class FormatService{
         }
 
         List<BracketNode> bracketNodes = getBracketNodes(tournamentId, user);
-        for (BracketNode node : bracketNodes) {
-            if (node.getMatch() != null) {
-                matchRepository.delete(node.getMatch());
-            }
-        }
-
         bracketNodeRepository.deleteAll(bracketNodes);
     }
 

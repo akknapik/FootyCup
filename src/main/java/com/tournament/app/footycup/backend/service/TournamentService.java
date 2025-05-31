@@ -15,6 +15,7 @@ import java.util.NoSuchElementException;
 @Service
 public class TournamentService {
     private final TournamentRepository tournamentRepository;
+    private final ScheduleService scheduleService;
 
     public Tournament createTournament(Tournament request, User organizer) {
         Tournament tournament = new Tournament();
@@ -23,8 +24,9 @@ public class TournamentService {
         tournament.setEndDate(request.getEndDate());
         tournament.setLocation(request.getLocation());
         tournament.setOrganizer(organizer);
-
-        return tournamentRepository.save(tournament);
+        Tournament saved = tournamentRepository.save(tournament);
+        scheduleService.createEmptySchedules(saved.getId(), organizer);
+        return saved;
     }
 
     public Tournament getTournamentById(Long id, User user) {

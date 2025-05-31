@@ -10,4 +10,5 @@ export interface Match {
     status: string;
     homeScore: number | null;
     awayScore: number | null;
+    durationInMin: number;
 }

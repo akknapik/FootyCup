@@ -1,5 +1,6 @@
 package com.tournament.app.footycup.backend.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.tournament.app.footycup.backend.enums.MatchStatus;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.persistence.*;
@@ -33,6 +34,7 @@ public class Match {
     @Schema(description = "Tournament the match belongs to")
     @ManyToOne
     @JoinColumn(name = "id_tournament")
+    @JsonIgnore
     private Tournament tournament;
 
     @Schema(description = "Home team")

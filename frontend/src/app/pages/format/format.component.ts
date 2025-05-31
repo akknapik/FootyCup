@@ -25,6 +25,15 @@ export class FormatComponent {
   editedNode: any = null;
   editedSide: 'home' | 'away' | null = null;
 
+  groupCount: number = 2;
+  teamsPerGroup: number = 4;
+
+  bracketSize: number = 8;
+
+  mixedGroupCount: number = 2;
+  mixedTeamsPerGroup: number = 4;
+  mixedAdvancing: number = 4;
+
 
   constructor(private route: ActivatedRoute, private formatService: FormatService, private teamService: TeamService, public auth: AuthService, private notification: NotificationService) {}
 
@@ -45,55 +54,49 @@ export class FormatComponent {
   }
 
   generateGroup() {
-    const groupCount = 3;
-    const teamsPerGroup = 4;
-    this.loading = true;
-    this.formatService.generateGroupFormat(this.tournamentId, groupCount, teamsPerGroup).subscribe({
-      next: () => {
-        this.structureExists = true;
-        this.loading = false;
-        this.loadStructure();
-      },
-      error: () => {
-        this.notification.showError('Error generating group structure!');
-        this.loading = false;
-      }
-    });
-  }
+  this.loading = true;
+  this.formatService.generateGroupFormat(this.tournamentId, this.groupCount, this.teamsPerGroup).subscribe({
+    next: () => {
+      this.structureExists = true;
+      this.loading = false;
+      this.loadStructure();
+    },
+    error: () => {
+      this.notification.showError('Error generating group structure!');
+      this.loading = false;
+    }
+  });
+}
 
-  generateBracket() {
-    const totalTeams = 8;
-    this.loading = true;
-    this.formatService.generateBracketFormat(this.tournamentId, totalTeams).subscribe({
-      next: () => {
-        this.structureExists = true;
-        this.loading = false;
-        this.loadStructure();
-      },
-      error: () => {
-        this.notification.showError('Error generating bracket structure!');
-        this.loading = false;
-      }
-    });
-  }
+generateBracket() {
+  this.loading = true;
+  this.formatService.generateBracketFormat(this.tournamentId, this.bracketSize).subscribe({
+    next: () => {
+      this.structureExists = true;
+      this.loading = false;
+      this.loadStructure();
+    },
+    error: () => {
+      this.notification.showError('Error generating bracket structure!');
+      this.loading = false;
+    }
+  });
+}
 
-  generateMixed() {
-    const groupCount = 2;
-    const teamsPerGroup = 4;
-    const advancing = 4;
-    this.loading = true;
-    this.formatService.generateMixedFormat(this.tournamentId, groupCount, teamsPerGroup, advancing).subscribe({
-      next: () => {
-        this.structureExists = true;
-        this.loading = false;
-        this.loadStructure();
-      },
-      error: () => {
-        this.notification.showError('Error generating mixed structure!');
-        this.loading = false;
-      }
-    });
-  }
+generateMixed() {
+  this.loading = true;
+  this.formatService.generateMixedFormat(this.tournamentId, this.mixedGroupCount, this.mixedTeamsPerGroup, this.mixedAdvancing).subscribe({
+    next: () => {
+      this.structureExists = true;
+      this.loading = false;
+      this.loadStructure();
+    },
+    error: () => {
+      this.notification.showError('Error generating mixed structure!');
+      this.loading = false;
+    }
+  });
+}
 
   loadStructure() {
     this.formatService.getGroups(this.tournamentId).subscribe({

@@ -48,9 +48,49 @@
 
           <div *ngIf="!structureExists; else showStructure">
             <p>Wybierz format turnieju:</p>
-            <button (click)="generateGroup()">⚽ Ligowy</button> <br>
-            <button (click)="generateBracket()">🏆 Pucharowy</button> <br>
-            <button (click)="generateMixed()">⚽ + 🏆 Mieszany</button> <br>
+
+            <div class="form-card">
+              <h3>⚽ Ligowy</h3>
+              <div class="input-group">
+                <label>Liczba grup:</label>
+                <input type="number" [(ngModel)]="groupCount" name="groupCount" min="1" required />
+              </div>
+              <div class="input-group">
+                <label>Drużyn w grupie:</label>
+                <input type="number" [(ngModel)]="teamsPerGroup" name="teamsPerGroup" min="2" required />
+              </div>
+              <button (click)="generateGroup()">Generuj format ligowy</button>
+            </div>
+
+            <div class="form-card">
+              <h3>🏆 Pucharowy</h3>
+              <div class="input-group">
+                <label>Liczba drużyn:</label>
+                <select [(ngModel)]="bracketSize" name="bracketSize">
+                  <option *ngFor="let size of [2,4,8,16,32]" [value]="size">{{ size }}</option>
+                </select>
+              </div>
+              <button (click)="generateBracket()">Generuj drabinkę</button>
+            </div>
+
+            <div class="form-card">
+              <h3>⚽ + 🏆 Mieszany</h3>
+              <div class="input-group">
+                <label>Liczba grup:</label>
+                <input type="number" [(ngModel)]="mixedGroupCount" name="mixedGroupCount" min="1" required />
+              </div>
+              <div class="input-group">
+                <label>Drużyn w grupie:</label>
+                <input type="number" [(ngModel)]="mixedTeamsPerGroup" name="mixedTeamsPerGroup" min="2" required />
+              </div>
+              <div class="input-group">
+                <label>Drużyn awansujących:</label>
+                <select [(ngModel)]="mixedAdvancing" name="mixedAdvancing" required>
+                  <option *ngFor="let option of [2, 4, 8, 16, 32]" [value]="option">{{ option }}</option>
+                </select>
+              </div>
+              <button (click)="generateMixed()">Generuj format mieszany</button>
+            </div>
           </div>
 
           <ng-template #showStructure>

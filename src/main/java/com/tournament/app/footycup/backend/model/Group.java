@@ -32,7 +32,7 @@ public class Group {
     private Tournament tournament;
 
     @Schema(description = "List of teams in this group")
-    @OneToMany(mappedBy = "group", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @OneToMany(mappedBy = "group", cascade = CascadeType.ALL, fetch = FetchType.LAZY, orphanRemoval = true)
     @JsonManagedReference
     private List<GroupTeam> groupTeams = new ArrayList<>();
 }

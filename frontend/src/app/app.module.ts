@@ -25,6 +25,8 @@ import { ScheduleComponent } from './pages/schedule/schedule.component';
 import { DragDropModule } from '@angular/cdk/drag-drop';
 import { RouterModule } from '@angular/router';
 import { ErrorService } from './interceptors/error.service';
+import { CommonModule } from '@angular/common';
+import { ResultComponent } from './pages/result/result.component';
 
 
 @NgModule({
@@ -43,7 +45,8 @@ import { ErrorService } from './interceptors/error.service';
     AddPlayerComponent,
     FormatComponent,
     MatchComponent,
-    ScheduleComponent
+    ScheduleComponent,
+    ResultComponent
   ],
   imports: [
     BrowserModule,
@@ -51,6 +54,7 @@ import { ErrorService } from './interceptors/error.service';
     AppRoutingModule,
     FormsModule,
     DragDropModule,
+    CommonModule,
     RouterModule,
     BrowserAnimationsModule,
     MatSnackBarModule

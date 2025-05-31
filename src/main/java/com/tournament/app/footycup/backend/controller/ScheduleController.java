@@ -6,8 +6,6 @@ import com.tournament.app.footycup.backend.model.User;
 import com.tournament.app.footycup.backend.service.ScheduleService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
-import io.swagger.v3.oas.annotations.media.Content;
-import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import lombok.AllArgsConstructor;
@@ -26,49 +24,44 @@ public class ScheduleController {
 
     private final ScheduleService scheduleService;
 
-    @Operation(summary = "Get schedule for a tournament")
-    @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Schedule retrieved successfully",
-                    content = @Content(mediaType = "application/json", schema = @Schema(implementation = Schedule.class))),
-            @ApiResponse(responseCode = "404", description = "Schedule not found", content = @Content)
+    @Operation(summary = "Get all schedules in a tournament")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Schedules retrieved successfully")
     })
     @GetMapping
-    public ResponseEntity<Schedule> getSchedule(
+    public ResponseEntity<List<Schedule>> getSchedules(
             @Parameter(description = "Tournament ID") @PathVariable Long tournamentId,
             Authentication authentication) {
         User user = (User) authentication.getPrincipal();
-        Schedule schedule = scheduleService.getSchedule(tournamentId, user);
+        List<Schedule> schedules = scheduleService.getSchedules(tournamentId, user);
+        return ResponseEntity.ok(schedules);
+    }
+
+    @Operation(summary = "Get one schedule by ID")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Schedule retrieved successfully"),
+            @ApiResponse(responseCode = "404", description = "Schedule not found")
+    })
+    @GetMapping("/{scheduleId}")
+    public ResponseEntity<Schedule> getSchedule(
+            @Parameter(description = "Tournament ID") @PathVariable Long tournamentId,
+            @Parameter(description = "Schedule ID") @PathVariable Long scheduleId,
+            Authentication authentication) {
+        User user = (User) authentication.getPrincipal();
+        Schedule schedule = scheduleService.getScheduleById(tournamentId, scheduleId, user);
         return ResponseEntity.ok(schedule);
     }
 
-    @Operation(summary = "Create an empty schedule starting at a specific time")
-    @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Schedule created successfully"),
-            @ApiResponse(responseCode = "400", description = "Invalid input", content = @Content)
-    })
-    @PostMapping
-    public ResponseEntity<Void> createSchedule(
-            @Parameter(description = "Tournament ID") @PathVariable Long tournamentId,
-            @RequestParam("start")
-            @Parameter(description = "Start time of the schedule", example = "2025-05-08T14:00:00")
-            @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime start,
-            Authentication authentication) {
-        User user = (User) authentication.getPrincipal();
-        scheduleService.createEmptySchedule(tournamentId, start, user);
-        return ResponseEntity.ok().build();
-    }
-
     @Operation(summary = "Add a break to the schedule")
-    @ApiResponses(value = {
+    @ApiResponses({
             @ApiResponse(responseCode = "200", description = "Break added successfully"),
-            @ApiResponse(responseCode = "404", description = "Schedule not found", content = @Content)
+            @ApiResponse(responseCode = "404", description = "Schedule not found")
     })
     @PostMapping("/{scheduleId}/break")
     public ResponseEntity<Void> addBreak(
-            @Parameter(description = "Tournament ID") @PathVariable Long tournamentId,
-            @Parameter(description = "Schedule ID") @PathVariable Long scheduleId,
-            @RequestParam
-            @Parameter(description = "Break duration in minutes", example = "15") int duration,
+            @PathVariable Long tournamentId,
+            @PathVariable Long scheduleId,
+            @RequestParam int duration,
             Authentication authentication) {
         User user = (User) authentication.getPrincipal();
         scheduleService.addBreak(tournamentId, scheduleId, duration, user);
@@ -76,14 +69,10 @@ public class ScheduleController {
     }
 
     @Operation(summary = "Recompute schedule times")
-    @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Schedule recomputed successfully"),
-            @ApiResponse(responseCode = "404", description = "Schedule not found", content = @Content)
-    })
     @PostMapping("/{scheduleId}/recompute")
     public ResponseEntity<Void> recompute(
-            @Parameter(description = "Tournament ID") @PathVariable Long tournamentId,
-            @Parameter(description = "Schedule ID") @PathVariable Long scheduleId,
+            @PathVariable Long tournamentId,
+            @PathVariable Long scheduleId,
             Authentication authentication) {
         User user = (User) authentication.getPrincipal();
         scheduleService.computeSchedule(tournamentId, scheduleId, user);
@@ -91,15 +80,11 @@ public class ScheduleController {
     }
 
     @Operation(summary = "Reorder entries in the schedule")
-    @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Entries reordered successfully"),
-            @ApiResponse(responseCode = "404", description = "Schedule not found", content = @Content)
-    })
     @PutMapping("/{scheduleId}/order")
     public ResponseEntity<Void> reorder(
-            @Parameter(description = "Tournament ID") @PathVariable Long tournamentId,
-            @Parameter(description = "Schedule ID") @PathVariable Long scheduleId,
-            @RequestBody @Parameter(description = "Ordered list of schedule entry IDs") List<Long> orderedEntryIds,
+            @PathVariable Long tournamentId,
+            @PathVariable Long scheduleId,
+            @RequestBody List<Long> orderedEntryIds,
             Authentication authentication) {
         User user = (User) authentication.getPrincipal();
         scheduleService.reorderEntries(tournamentId, scheduleId, orderedEntryIds, user);
@@ -107,18 +92,12 @@ public class ScheduleController {
     }
 
     @Operation(summary = "Update start time of a schedule entry")
-    @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Entry time updated successfully"),
-            @ApiResponse(responseCode = "404", description = "Entry not found", content = @Content)
-    })
     @PutMapping("/{scheduleId}/{entryId}")
     public ResponseEntity<Void> updateEntryTime(
-            @Parameter(description = "Tournament ID") @PathVariable Long tournamentId,
-            @Parameter(description = "Schedule ID") @PathVariable Long scheduleId,
-            @Parameter(description = "Entry ID") @PathVariable Long entryId,
-            @RequestParam("start")
-            @Parameter(description = "New start time", example = "2025-05-08T16:00:00")
-            @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime newStart,
+            @PathVariable Long tournamentId,
+            @PathVariable Long scheduleId,
+            @PathVariable Long entryId,
+            @RequestParam("start") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime newStart,
             Authentication authentication) {
         User user = (User) authentication.getPrincipal();
         scheduleService.updateEntryTime(tournamentId, scheduleId, entryId, newStart, user);
@@ -126,16 +105,11 @@ public class ScheduleController {
     }
 
     @Operation(summary = "Add a match entry to the schedule")
-    @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Match entry added successfully"),
-            @ApiResponse(responseCode = "404", description = "Match or schedule not found", content = @Content)
-    })
     @PostMapping("/{scheduleId}/entry")
     public ResponseEntity<Void> addMatchEntry(
-            @Parameter(description = "Tournament ID") @PathVariable Long tournamentId,
-            @Parameter(description = "Schedule ID") @PathVariable Long scheduleId,
-            @RequestParam("matchId")
-            @Parameter(description = "Match ID to add") Long matchId,
+            @PathVariable Long tournamentId,
+            @PathVariable Long scheduleId,
+            @RequestParam("matchId") Long matchId,
             Authentication authentication) {
         User user = (User) authentication.getPrincipal();
         scheduleService.addMatch(tournamentId, scheduleId, matchId, user);
@@ -143,18 +117,36 @@ public class ScheduleController {
     }
 
     @Operation(summary = "Remove a schedule entry")
-    @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Entry removed successfully"),
-            @ApiResponse(responseCode = "404", description = "Entry not found", content = @Content)
-    })
     @DeleteMapping("/{scheduleId}/entry/{entryId}")
     public ResponseEntity<Void> removeEntry(
-            @Parameter(description = "Tournament ID") @PathVariable Long tournamentId,
-            @Parameter(description = "Schedule ID") @PathVariable Long scheduleId,
-            @Parameter(description = "Entry ID to remove") @PathVariable Long entryId,
+            @PathVariable Long tournamentId,
+            @PathVariable Long scheduleId,
+            @PathVariable Long entryId,
             Authentication authentication) {
         User user = (User) authentication.getPrincipal();
         scheduleService.removeEntry(tournamentId, scheduleId, entryId, user);
+        return ResponseEntity.ok().build();
+    }
+
+    @Operation(summary = "Get all used match id")
+    @GetMapping("/used-match")
+    public ResponseEntity<List<Long>> getUsedMatchIds(
+            @PathVariable Long tournamentId,
+            Authentication authentication) {
+        User user = (User) authentication.getPrincipal();
+        List<Long> ids = scheduleService.getAllScheduledMatchIds(tournamentId, user);
+        return ResponseEntity.ok(ids);
+    }
+
+    @Operation(summary = "Update start time of the schedule")
+    @PutMapping("/{scheduleId}/start-time")
+    public ResponseEntity<Void> updateScheduleStartTime(
+            @PathVariable Long tournamentId,
+            @PathVariable Long scheduleId,
+            @RequestParam("start") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime newStart,
+            Authentication authentication) {
+        User user = (User) authentication.getPrincipal();
+        scheduleService.updateScheduleStartTime(tournamentId, scheduleId, newStart, user);
         return ResponseEntity.ok().build();
     }
 }

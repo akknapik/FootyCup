@@ -44,6 +44,18 @@ public class MatchService {
         return match;
     }
 
+    public List<Match> getGroupMatches(Long tournamentId, User user, Long groupId) {
+        Tournament tournament = tournamentRepository.findById(tournamentId)
+                .orElseThrow(() -> new NoSuchElementException("Tournament not found"));
+        if(!tournament.getOrganizer().getId().equals(user.getId())) {
+            throw new IllegalArgumentException("Lack of authorization");
+        }
+        Group group = groupRepository.findById(groupId)
+                .orElseThrow(() -> new NoSuchElementException("Group not found"));
+        List<Match> matches = matchRepository.findByGroupId(groupId);
+        return matches;
+    }
+
     public void generateGroupMatches(Long tournamentId, User user) {
         Tournament tournament = tournamentRepository.findById(tournamentId)
                 .orElseThrow(() -> new NoSuchElementException("Tournament not found"));

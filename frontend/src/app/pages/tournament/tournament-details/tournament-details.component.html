@@ -14,12 +14,13 @@
         </div>
         <nav class="sidebar-nav">
           <a routerLink="/dashboard" class="nav-link">Dashboard</a>
-          <a routerLink="/tournaments/my" class="nav-link">Tournaments</a>
+          <a routerLink="/tournaments/my" class="nav-link active">Tournaments</a>
           <div *ngIf="tournamentId" class="submenu">
             <a routerLink="/tournaments/{{ tournamentId }}" class="nav-link active">General</a>
             <a routerLink="/tournament/{{ tournamentId }}/teams" class="nav-link">Teams</a>
             <a routerLink="/tournament/{{ tournamentId }}/format" class="nav-link">Format</a>
             <a routerLink="/tournament/{{ tournamentId }}/matches" class="nav-link">Matches</a>
+            <a routerLink="/tournament/{{ tournamentId }}/schedule" class="nav-link">Schedule</a>
             <a routerLink="/tournament/{{ tournamentId }}/results" class="nav-link">Results</a>
           </div>
 

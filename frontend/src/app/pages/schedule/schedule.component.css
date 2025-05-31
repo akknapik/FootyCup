@@ -231,4 +231,23 @@
   .cdk-drag-placeholder {
     opacity: 0.5;
   }
+
+  .tabs {
+  list-style: none;
+  padding: 0;
+  display: flex;
+  margin-bottom: 1rem;
+}
+.tabs li {
+  margin-right: 0.5rem;
+  padding: 0.5rem 1rem;
+  cursor: pointer;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+}
+.tabs li.active {
+  background-color: #007bff;
+  color: white;
+  border-color: #007bff;
+}
   
