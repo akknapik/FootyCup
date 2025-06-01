@@ -10,37 +10,35 @@ export class AuthService {
   private currentUserSubject = new BehaviorSubject<User|null>(null);
   currentUser$ = this.currentUserSubject.asObservable();
 
-  constructor(private http: HttpClient) { 
-    const token = this.getToken();
-    if (token) {
-      this.loadCurrentUser().subscribe({
-        error: () => {
-          this.logout();
-        }
-      });
+  constructor(private http: HttpClient) {
+  this.loadCurrentUser().subscribe({
+    error: () => {
+      this.currentUserSubject.next(null);
     }
-  }
+  });
+}
 
   register(data: any) {
     return this.http.post('/api/register', data, { responseType: 'text' });
   }
   
-  login(data: {email: string, password: string}) {
-    return this.http.post<{token: string }>('/api/login', data).pipe(
-      tap((response) => {
-        localStorage.setItem('token', response.token);
-      }),
-      tap(() => this.loadCurrentUser().subscribe())
-    );
-  }
+  login(data: { email: string, password: string }) {
+  return this.http.post('/api/login', data, { withCredentials: true }).pipe(
+    tap(() => this.loadCurrentUser().subscribe())
+  );
+}
 
   getToken() {
     return localStorage.getItem('token');
   }
 
   logout() {
-    localStorage.removeItem('token');
-  }
+  return this.http.post('/api/logout', {}, { withCredentials: true }).pipe(
+    tap(() => {
+      this.currentUserSubject.next(null);
+    })
+  );
+}
 
   loadCurrentUser() {
     return this.http.get<User>('/api/me').pipe(
@@ -51,7 +49,6 @@ export class AuthService {
   }
 
   isLoggedIn(): boolean {
-    const token = localStorage.getItem('token');
-    return !!token;
+    return !!this.currentUserSubject.value;
   }
 }

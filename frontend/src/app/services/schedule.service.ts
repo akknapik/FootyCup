@@ -9,11 +9,11 @@ export class ScheduleService {
   constructor(private http: HttpClient) {}
 
   getSchedulesList(tournamentId: number): Observable<Schedule[]> {
-    return this.http.get<Schedule[]>(`/api/tournament/${tournamentId}/schedule`);
+    return this.http.get<Schedule[]>(`/api/tournament/${tournamentId}/schedule`, { withCredentials: true });
   }
 
   getScheduleById(tournamentId: number, scheduleId: number): Observable<Schedule> {
-    return this.http.get<Schedule>(`/api/tournament/${tournamentId}/schedule/${scheduleId}`);
+    return this.http.get<Schedule>(`/api/tournament/${tournamentId}/schedule/${scheduleId}`, { withCredentials: true });
   }
 
   addBreak(tournamentId: number, scheduleId: number, durationInMin: number): Observable<Schedule> {
@@ -21,20 +21,22 @@ export class ScheduleService {
       .post<void>(
         `/api/tournament/${tournamentId}/schedule/${scheduleId}/break`,
         null,
-        { params: { duration: durationInMin.toString() } }
+        { params: { duration: durationInMin.toString(),
+          withCredentials: true 
+         } }
       )
       .pipe(switchMap(() => this.getScheduleById(tournamentId, scheduleId)));
   }
 
   recompute(tournamentId: number, scheduleId: number): Observable<Schedule> {
     return this.http
-      .post<void>(`/api/tournament/${tournamentId}/schedule/${scheduleId}/recompute`, null)
+      .post<void>(`/api/tournament/${tournamentId}/schedule/${scheduleId}/recompute`, null, { withCredentials: true })
       .pipe(switchMap(() => this.getScheduleById(tournamentId, scheduleId)));
   }
 
   reorderEntries(tournamentId: number, scheduleId: number, orderedEntryIds: number[]): Observable<Schedule> {
     return this.http
-      .put<void>(`/api/tournament/${tournamentId}/schedule/${scheduleId}/order`, orderedEntryIds)
+      .put<void>(`/api/tournament/${tournamentId}/schedule/${scheduleId}/order`, orderedEntryIds, { withCredentials: true })
       .pipe(switchMap(() => this.getScheduleById(tournamentId, scheduleId)));
   }
 
@@ -48,7 +50,7 @@ export class ScheduleService {
       .put<void>(
         `/api/tournament/${tournamentId}/schedule/${scheduleId}/${entryId}`,
         null,
-        { params: { start: newStartIso } }
+        { params: { start: newStartIso },  withCredentials: true  }
       )
       .pipe(switchMap(() => this.getScheduleById(tournamentId, scheduleId)));
   }
@@ -62,7 +64,7 @@ export class ScheduleService {
       .post<void>(
         `/api/tournament/${tournamentId}/schedule/${scheduleId}/entry`,
         null,
-        { params: { matchId: matchId.toString() } }
+        { params: { matchId: matchId.toString(),  withCredentials: true } }
       )
       .pipe(switchMap(() => this.getScheduleById(tournamentId, scheduleId)));
   }
@@ -73,12 +75,12 @@ export class ScheduleService {
     entryId: number
   ): Observable<Schedule> {
     return this.http
-      .delete<void>(`/api/tournament/${tournamentId}/schedule/${scheduleId}/entry/${entryId}`)
+      .delete<void>(`/api/tournament/${tournamentId}/schedule/${scheduleId}/entry/${entryId}`, { withCredentials: true })
       .pipe(switchMap(() => this.getScheduleById(tournamentId, scheduleId)));
   }
 
   getUsedMatchIds(tournamentId: number): Observable<number[]> {
-    return this.http.get<number[]>(`/api/tournament/${tournamentId}/schedule/used-match`);
+    return this.http.get<number[]>(`/api/tournament/${tournamentId}/schedule/used-match`, { withCredentials: true });
   }
 
   updateScheduleStartTime(
@@ -90,7 +92,7 @@ export class ScheduleService {
     .put<void>(
       `/api/tournament/${tournamentId}/schedule/${scheduleId}/start-time`,
       null,
-      { params: { start: newStartIso } }
+      { params: { start: newStartIso },  withCredentials: true  }
     )
     .pipe(switchMap(() => this.getScheduleById(tournamentId, scheduleId)));
 }

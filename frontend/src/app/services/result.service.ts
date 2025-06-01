@@ -13,14 +13,14 @@ export class ResultService {
     return this.http.put(`/api/tournament/${tournamentId}/results/${partialMatch.id}`, {
       homeScore: partialMatch.homeScore,
       awayScore: partialMatch.awayScore
-    });
+    }, { withCredentials: true });
   }
 
   getGroups(tournamentId: number): Observable<Group[]> {
-    return this.http.get<Group[]>(`/api/tournament/${tournamentId}/results/groups`);
+    return this.http.get<Group[]>(`/api/tournament/${tournamentId}/results/groups`, { withCredentials: true });
   }
 
   getBracket(tournamentId: number): Observable<BracketNode[]> {
-    return this.http.get<BracketNode[]>(`/api/tournament/${tournamentId}/results/bracket`);
+    return this.http.get<BracketNode[]>(`/api/tournament/${tournamentId}/results/bracket`, { withCredentials: true });
   }
 }

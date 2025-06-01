@@ -19,23 +19,23 @@ export class TournamentService {
   }
 
   getMyTournaments() {
-    return this.http.get<Tournament[]>('/api/tournaments/my');
+    return this.http.get<Tournament[]>('/api/tournaments/my', { withCredentials: true });
   }
 
   createTournament(data: any) {
-    return this.http.post('/api/tournaments', data);
+    return this.http.post('/api/tournaments', data, { withCredentials: true });
   }
 
   getTournamentById(id: number) {
-    return this.http.get<any>(`/api/tournaments/${id}`);
+    return this.http.get<any>(`/api/tournaments/${id}`, { withCredentials: true });
   }
   
   updateTournament(id: number, data: any) {
-    return this.http.put(`/api/tournaments/${id}`, data);
+    return this.http.put(`/api/tournaments/${id}`, data, { withCredentials: true });
   }
 
   deleteTournament(id: number) {
-    return this.http.delete(`/api/tournaments/${id}`);
+    return this.http.delete(`/api/tournaments/${id}`, { withCredentials: true });
   }
 
   get currentId(): string | null {
