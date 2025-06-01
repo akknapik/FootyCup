@@ -1,6 +1,8 @@
 package com.tournament.app.footycup.backend.model;
 
+import com.fasterxml.jackson.annotation.JsonIdentityInfo;
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.ObjectIdGenerators;
 import com.tournament.app.footycup.backend.enums.MatchStatus;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.persistence.*;
@@ -19,6 +21,7 @@ import java.time.LocalTime;
 @Entity
 @Table(name = "matches")
 @Schema(description = "Match entity representing a scheduled football match")
+@JsonIdentityInfo(generator = ObjectIdGenerators.PropertyGenerator.class, property = "id")
 public class Match {
 
     @Id

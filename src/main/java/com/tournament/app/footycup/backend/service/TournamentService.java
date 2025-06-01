@@ -1,5 +1,6 @@
 package com.tournament.app.footycup.backend.service;
 
+import com.tournament.app.footycup.backend.enums.TournamentStatus;
 import com.tournament.app.footycup.backend.model.Tournament;
 import com.tournament.app.footycup.backend.model.User;
 import com.tournament.app.footycup.backend.repository.TournamentRepository;
@@ -8,6 +9,7 @@ import lombok.NoArgsConstructor;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDate;
 import java.util.List;
 import java.util.NoSuchElementException;
 
@@ -60,7 +62,18 @@ public class TournamentService {
     }
 
     public List<Tournament> getTournamentsByOrganizer(User organizer) {
-        return tournamentRepository.findByOrganizer(organizer);
+        List<Tournament> tournaments = tournamentRepository.findByOrganizer(organizer);
+        LocalDate today = LocalDate.now();
+        for (Tournament t : tournaments) {
+            if (t.getEndDate().isBefore(today)) {
+                t.setStatus(TournamentStatus.FINISHED);
+            } else if (!t.getStartDate().isAfter(today) && !t.getEndDate().isBefore(today)) {
+                t.setStatus(TournamentStatus.ONGOING);
+            } else {
+                t.setStatus(TournamentStatus.UPCOMING);
+            }
+        }
+        return tournaments;
     }
 
 

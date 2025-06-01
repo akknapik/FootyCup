@@ -15,6 +15,7 @@ import { FormatComponent } from './pages/format/format.component';
 import { MatchComponent } from './pages/match/match.component';
 import { ScheduleComponent } from './pages/schedule/schedule.component';
 import { AuthGuard } from './guards/auth.guard';
+import { ResultComponent } from './pages/result/result.component';
 
 const routes: Routes = [
   { path: 'register', component: RegisterComponent },
@@ -30,6 +31,7 @@ const routes: Routes = [
   { path: 'tournament/:tournamentId/format', component: FormatComponent, canActivate: [AuthGuard] },
   { path: 'tournament/:tournamentId/matches', component: MatchComponent, canActivate: [AuthGuard] },
   { path: 'tournament/:tournamentId/schedule', component: ScheduleComponent, canActivate: [AuthGuard] },
+  { path: 'tournament/:tournamentId/results', component: ResultComponent, canActivate: [AuthGuard] },
   { path: '**', redirectTo: 'login' }
 ];
 

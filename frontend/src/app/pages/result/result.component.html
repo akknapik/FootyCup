@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="pl">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FootyCup</title>
+    <link rel="stylesheet" href="result.component.css">
+  </head>
+  <body>
+    <div class="app-container">
+      <aside class="sidebar">
+        <div class="sidebar-header">
+          <img src="assets/images/logo1_3.png" alt="FootyCup Logo" class="sidebar-logo">
+        </div>
+        <nav class="sidebar-nav">
+          <a routerLink="/dashboard" class="nav-link">Dashboard</a>
+          <a routerLink="/tournaments/my" class="nav-link active">Tournaments</a>
+          <div *ngIf="tournamentId" class="submenu">
+            <a routerLink="/tournaments/{{ tournamentId }}" class="nav-link">General</a>
+            <a routerLink="/tournament/{{ tournamentId }}/teams" class="nav-link">Teams</a>
+            <a routerLink="/tournament/{{ tournamentId }}/format" class="nav-link">Format</a>
+            <a routerLink="/tournament/{{ tournamentId }}/matches" class="nav-link">Matches</a>
+            <a routerLink="/tournament/{{ tournamentId }}/schedule" class="nav-link">Schedule</a>
+            <a routerLink="/tournament/{{ tournamentId }}/results" class="nav-link active">Results</a>
+          </div>
+
+          <a routerLink="/settings"class="nav-link">Settings</a>
+        </nav>
+        <nav class="sidebar-footer">
+          <a routerLink="/aboutus">About us</a>
+          <a routerLink="/contact">Contact</a>
+        </nav>
+      </aside>
+
+      <div class="main">
+        <header class="header">
+          <div class="header-spacer"></div>
+          <div class="user-info">
+            <span *ngIf="auth.currentUser$ | async as user">
+              {{ user.firstname }} {{ user.lastname }}
+            </span>
+            <div class="avatar"></div>
+          </div>
+        </header>
+
+        <main class="content">
+            <ul class="tabs">
+                <li (click)="activeTab = 'schedule'" [class.active]="activeTab === 'schedule'">Harmonogram</li>
+                <li (click)="onTabChange('groups')" [class.active]="activeTab === 'groups'">Grupy</li>
+                <li (click)="onTabChange('bracket')" [class.active]="activeTab === 'bracket'">Drabinka</li>
+            </ul>
+
+            <div *ngIf="activeTab === 'schedule'">
+                <ul class="tabs">
+                    <li
+                    *ngFor="let s of schedules"
+                    (click)="selectSchedule(s.id)"
+                    [class.active]="s.id === selectedScheduleId"
+                    >
+                    {{ s.startDateTime | date: 'yyyy-MM-dd' }}
+                    </li>
+                </ul>
+
+                <div class="schedule-container">
+                    <div class="schedule">
+                        <h3>Wyniki</h3>
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Godzina</th>
+                                    <th>Drużyna 1</th>
+                                    <th>Wynik</th>
+                                    <th>Drużyna 2</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr *ngFor="let e of scheduleEntries">
+                                    <ng-container *ngIf="e.type === 'MATCH' && e.match">
+                                        <td>{{ e.startDateTime | date: 'HH:mm' }}</td>
+                                        <td>{{ e.match.teamHome?.name }}</td>
+                                        <td>
+                                        <input
+                                            type="number"
+                                            [(ngModel)]="e.match.homeScore"
+                                            (blur)="onResultChange(e.match)"
+                                            min="0"
+                                        />
+                                        </td>
+                                        <td>{{ e.match.teamAway?.name }}</td>
+                                        <td>
+                                        <input
+                                            type="number"
+                                            [(ngModel)]="e.match.awayScore"
+                                            (blur)="onResultChange(e.match)"
+                                            min="0"
+                                        />
+                                        </td>
+                                    </ng-container>
+
+                                    <ng-container *ngIf="e.type === 'BREAK'">
+                                        <td>{{ e.startDateTime | date: 'HH:mm' }}</td>
+                                        <td colspan="4">⏸ Przerwa ({{ e.durationInMin }} min)</td>
+                                    </ng-container>
+                                </tr>
+
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <div *ngIf="activeTab === 'groups'">
+                <div *ngFor="let g of groups">
+                    <h3>{{ g.name }}</h3>
+                    <table>
+                    <thead>
+                        <tr><th>Drużyna</th><th>Punkty</th><th>Gole</th></tr>
+                    </thead>
+                    <tbody>
+                        <tr *ngFor="let gt of g.groupTeams">
+                        <td>{{ gt.team?.name }}</td>
+                        <td>{{ gt.points }}</td>
+                        <td>{{ gt.goalsFor }} : {{ gt.goalsAgainst }}</td>
+                        </tr>
+                    </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div *ngIf="activeTab === 'bracket'">
+                <div *ngFor="let node of bracket">
+                    <p>{{ node.match.teamHome?.name || '---' }} vs {{ node.match.teamAway?.name || '---' }}</p>
+                    <p>{{ node.match.homeScore }} : {{ node.match.awayScore }}</p>
+                </div>
+            </div>
+            </main>
+        <footer class="footer">
+          <p>&copy; 2023 FootyCup. All rights reserved.</p>
+        </footer>
+      </div>
+    </div>
+  </body>
+</html>

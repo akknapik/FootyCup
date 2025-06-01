@@ -2,10 +2,7 @@ package com.tournament.app.footycup.backend.service;
 
 import com.tournament.app.footycup.backend.enums.MatchStatus;
 import com.tournament.app.footycup.backend.model.*;
-import com.tournament.app.footycup.backend.repository.GroupRepository;
-import com.tournament.app.footycup.backend.repository.GroupTeamRepository;
-import com.tournament.app.footycup.backend.repository.MatchRepository;
-import com.tournament.app.footycup.backend.repository.TournamentRepository;
+import com.tournament.app.footycup.backend.repository.*;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -17,9 +14,9 @@ import java.util.Objects;
 @AllArgsConstructor
 public class MatchService {
     private final GroupRepository groupRepository;
-    private final GroupTeamRepository groupTeamRepository;
     private final MatchRepository matchRepository;
     private final TournamentRepository tournamentRepository;
+    private final BracketNodeRepository bracketNodeRepository;
 
     public List<Match> getMatches(Long tournamentId, User user) {
         Tournament tournament = tournamentRepository.findById(tournamentId)
@@ -113,4 +110,62 @@ public class MatchService {
         List<Match> matches = getMatches(tournamentId, user);
         matchRepository.deleteAll(matches);
     }
+
+    public void updateSingleMatchResult(Long tournamentId, Long matchId, Match updated, User user) {
+        Tournament tournament = tournamentRepository.findById(tournamentId)
+                .orElseThrow(() -> new IllegalArgumentException("Tournament not found"));
+        if(!tournament.getOrganizer().getId().equals(user.getId())) {
+            throw new IllegalArgumentException("Lack of authorization");
+        }
+
+        Match match = matchRepository.findById(matchId)
+                .orElseThrow(() -> new IllegalArgumentException("Match not found"));
+
+        if (!match.getTournament().getId().equals(tournamentId)) {
+            throw new IllegalArgumentException("Match does not belong to tournament");
+        }
+
+        match.setHomeScore(updated.getHomeScore());
+        match.setAwayScore(updated.getAwayScore());
+
+        matchRepository.save(match);
+        propagateWinner(match);
+    }
+
+    public void propagateWinner(Match finishedMatch) {
+        Team winner = determineWinner(finishedMatch);
+        if(winner == null) {
+            return;
+        }
+
+        BracketNode currentNode = bracketNodeRepository.findByMatch(finishedMatch);
+
+        List<BracketNode> nextNodes = bracketNodeRepository.findByParentHomeNodeOrParentAwayNode(currentNode,
+                currentNode);
+
+        for(BracketNode next : nextNodes) {
+            Match m = next.getMatch();
+
+            if(currentNode.equals(next.getParentHomeNode())) {
+                m.setTeamHome(winner);
+            }
+            if (currentNode.equals(next.getParentAwayNode())) {
+                m.setTeamAway(winner);
+            }
+
+            matchRepository.save(m);
+        }
+    }
+
+    private Team determineWinner(Match finishedMatch) {
+        if(finishedMatch.getHomeScore() > finishedMatch.getAwayScore()) {
+            return finishedMatch.getTeamHome();
+        } else if (finishedMatch.getAwayScore() > finishedMatch.getHomeScore()) {
+            return finishedMatch.getTeamAway();
+        }
+        else {
+            return null;
+        }
+    }
+
 }

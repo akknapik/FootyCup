@@ -1,6 +1,7 @@
 package com.tournament.app.footycup.backend.model;
 
 
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import com.tournament.app.footycup.backend.enums.TournamentStatus;
 import com.tournament.app.footycup.backend.enums.TournamentSystem;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -12,7 +13,9 @@ import lombok.Setter;
 
 import java.io.Serializable;
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 @Schema(description = "Tournament entity representing a football competition")
@@ -57,6 +60,10 @@ public class Tournament implements Serializable {
     @Schema(description = "Tournament system type", example = "GROUP_STAGE")
     @Enumerated(EnumType.STRING)
     private TournamentSystem system;
+
+    @OneToMany(mappedBy = "tournament", cascade = CascadeType.ALL, orphanRemoval = true)
+    @JsonManagedReference
+    private List<Schedule> schedules = new ArrayList<>();
 
     @Schema(description = "Scoring rules for the tournament (e.g. WIN = 3)")
     @ElementCollection

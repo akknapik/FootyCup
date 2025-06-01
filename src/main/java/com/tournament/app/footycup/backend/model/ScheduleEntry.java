@@ -1,6 +1,8 @@
 package com.tournament.app.footycup.backend.model;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import com.tournament.app.footycup.backend.enums.EntryType;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.persistence.*;

@@ -79,7 +79,6 @@
                         <td>{{ player.name }}</td>
                         <td>{{ player.birthDate | date: 'dd/MM/yyyy' }}</td>
                         <td>
-                            <button (click)="editPlayer(player); $event.stopPropagation()">✏️ Edytuj</button>
                             <button (click)="deletePlayer(player.id); $event.stopPropagation()">🗑️ Usuń</button>
                         </td>
                     </tr>

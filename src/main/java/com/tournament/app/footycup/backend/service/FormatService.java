@@ -267,42 +267,6 @@ public class FormatService{
         deleteBracket(tournamentId, user);
     }
 
-    public void propagateWinner(Match finishedMatch) {
-        Team winner = determineWinner(finishedMatch);
-        if(winner == null) {
-            return;
-        }
-
-        BracketNode currentNode = bracketNodeRepository.findByMatch(finishedMatch);
-
-        List<BracketNode> nextNodes = bracketNodeRepository.findByParentHomeNodeOrParentAwayNode(currentNode,
-                currentNode);
-
-        for(BracketNode next : nextNodes) {
-            Match m = next.getMatch();
-
-            if(currentNode.equals(next.getParentHomeNode())) {
-                m.setTeamHome(winner);
-            }
-            if (currentNode.equals(next.getParentAwayNode())) {
-                m.setTeamAway(winner);
-            }
-
-            matchRepository.save(m);
-        }
-    }
-
-    private Team determineWinner(Match finishedMatch) {
-        if(finishedMatch.getHomeScore() > finishedMatch.getAwayScore()) {
-            return finishedMatch.getTeamHome();
-        } else if (finishedMatch.getAwayScore() > finishedMatch.getHomeScore()) {
-            return finishedMatch.getTeamAway();
-        }
-        else {
-            return null;
-        }
-    }
-
     private String getBracketMatchName(int round, int totalTeams) {
         int totalRounds = (int) (Math.log(totalTeams) / Math.log(2));
         int currentStage = totalRounds - round + 1;
@@ -345,6 +309,48 @@ public class FormatService{
             };
             default -> "Round " + currentStage;
         };
+    }
+
+    public List<Group> getGroupsWithStandings(Long tournamentId, User user) {
+        Tournament tournament = tournamentRepository.findById(tournamentId)
+                .orElseThrow(() -> new NoSuchElementException("Tournament not found"));
+        if (!tournament.getOrganizer().getId().equals(user.getId())) {
+            throw new IllegalArgumentException("Unauthorized");
+        }
+
+        List<Group> groups = groupRepository.findByTournamentId(tournamentId);
+        for (Group group : groups) {
+            for (GroupTeam gt : group.getGroupTeams()) {
+                computeStatsForGroupTeam(gt);
+            }
+            group.getGroupTeams().sort(Comparator.comparing(GroupTeam::getPoints).reversed());
+        }
+
+        return groups;
+    }
+
+    private void computeStatsForGroupTeam(GroupTeam gt) {
+        List<Match> matches = matchRepository.findByTeamInGroup(gt.getTeam(), gt.getGroup().getId());
+
+        int points = 0, goalsFor = 0, goalsAgainst = 0;
+
+        for (Match m : matches) {
+            if (m.getHomeScore() == null || m.getAwayScore() == null) continue;
+
+            boolean isHome = m.getTeamHome().getId().equals(gt.getTeam().getId());
+            int scored = isHome ? m.getHomeScore() : m.getAwayScore();
+            int conceded = isHome ? m.getAwayScore() : m.getHomeScore();
+
+            goalsFor += scored;
+            goalsAgainst += conceded;
+
+            if (scored > conceded) points += 3;
+            else if (scored == conceded) points += 1;
+        }
+
+        gt.setGoalsFor(goalsFor);
+        gt.setGoalsAgainst(goalsAgainst);
+        gt.setPoints(points);
     }
 
 }

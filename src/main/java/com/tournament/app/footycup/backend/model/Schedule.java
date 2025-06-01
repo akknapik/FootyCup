@@ -1,5 +1,7 @@
 package com.tournament.app.footycup.backend.model;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.persistence.*;
 import lombok.*;
@@ -24,6 +26,7 @@ public class Schedule {
 
     @Schema(description = "Tournament associated with this schedule")
     @ManyToOne
+    @JsonBackReference
     @JoinColumn(name = "id_tournament")
     private Tournament tournament;
 
@@ -32,6 +35,11 @@ public class Schedule {
 
     @Schema(description = "List of schedule entries (matches or breaks)")
     @OneToMany(mappedBy = "schedule", cascade = CascadeType.ALL, orphanRemoval = true)
+    @JsonManagedReference
     @OrderBy("startDateTime")
     private List<ScheduleEntry> entries = new ArrayList<>();
+
+    @Schema(description = "Break duration between matches in minutes", example = "10")
+    @Column(name = "break_between_matches_in_min")
+    private int breakBetweenMatchesInMin;
 }

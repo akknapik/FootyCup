@@ -1,7 +1,7 @@
-import { Team } from "./team.model";
+import { GroupTeam } from "./group-team.model";
 
 export interface Group {
     id: number;
     name: string;
-    groupTeams: Team[];
+    groupTeams: GroupTeam[];
 }
