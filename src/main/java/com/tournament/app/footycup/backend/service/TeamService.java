@@ -93,6 +93,12 @@ public class TeamService {
         teamRepository.delete(team);
     }
 
+    public void deleteTeams(Long tournamentId, User user) {
+        List<Team> teams = getTeamsByTournamentId(tournamentId, user);
+
+        teamRepository.deleteAll(teams);
+    }
+
     public Team addPlayer(Long tournamentId, Long id, Player request, User user) {
         Team team = getTeamById(tournamentId, id, user);
 

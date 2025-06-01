@@ -21,7 +21,6 @@ import java.time.LocalTime;
 @Entity
 @Table(name = "matches")
 @Schema(description = "Match entity representing a scheduled football match")
-@JsonIdentityInfo(generator = ObjectIdGenerators.PropertyGenerator.class, property = "id")
 public class Match {
 
     @Id

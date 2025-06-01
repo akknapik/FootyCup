@@ -18,6 +18,8 @@ import java.util.NoSuchElementException;
 public class TournamentService {
     private final TournamentRepository tournamentRepository;
     private final ScheduleService scheduleService;
+    private final FormatService formatService;
+    private final TeamService teamService;
 
     public Tournament createTournament(Tournament request, User organizer) {
         Tournament tournament = new Tournament();
@@ -79,6 +81,9 @@ public class TournamentService {
 
     public void deleteTournament(Long id, User user) {
         Tournament tournament = getTournamentById(id, user);
+        scheduleService.deleteSchedules(tournament.getId(), user);
+        formatService.deleteAllStructures(tournament.getId(), user);
+        teamService.deleteTeams(tournament.getId(), user);
         tournamentRepository.delete(tournament);
     }
 }

@@ -61,10 +61,6 @@ public class Tournament implements Serializable {
     @Enumerated(EnumType.STRING)
     private TournamentSystem system;
 
-    @OneToMany(mappedBy = "tournament", cascade = CascadeType.ALL, orphanRemoval = true)
-    @JsonManagedReference
-    private List<Schedule> schedules = new ArrayList<>();
-
     @Schema(description = "Scoring rules for the tournament (e.g. WIN = 3)")
     @ElementCollection
     @CollectionTable(name = "scoring_rules", joinColumns = @JoinColumn(name = "tournament_id"))

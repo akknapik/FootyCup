@@ -26,7 +26,6 @@ public class Schedule {
 
     @Schema(description = "Tournament associated with this schedule")
     @ManyToOne
-    @JsonBackReference
     @JoinColumn(name = "id_tournament")
     private Tournament tournament;
 
@@ -35,7 +34,6 @@ public class Schedule {
 
     @Schema(description = "List of schedule entries (matches or breaks)")
     @OneToMany(mappedBy = "schedule", cascade = CascadeType.ALL, orphanRemoval = true)
-    @JsonManagedReference
     @OrderBy("startDateTime")
     private List<ScheduleEntry> entries = new ArrayList<>();
 

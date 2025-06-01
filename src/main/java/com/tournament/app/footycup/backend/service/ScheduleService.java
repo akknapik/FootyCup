@@ -180,4 +180,19 @@ public class ScheduleService {
         schedule.setStartDateTime(newStart);
         scheduleRepository.save(schedule);
     }
+
+    public void deleteSchedules(Long tournamentId, User user) {
+        Tournament tournament = tournamentRepository.findById(tournamentId)
+                .orElseThrow(() -> new NoSuchElementException("Tournament not found"));
+        if (!tournament.getOrganizer().getId().equals(user.getId())) throw new IllegalArgumentException();
+
+        List<Schedule> schedules = scheduleRepository.findByTournamentId(tournamentId);
+
+        for (Schedule schedule : schedules) {
+            List<ScheduleEntry> entries = scheduleEntryRepository.findByScheduleId(schedule.getId());
+            scheduleEntryRepository.deleteAll(entries);
+        }
+
+        scheduleRepository.deleteAll(schedules);
+    }
 }

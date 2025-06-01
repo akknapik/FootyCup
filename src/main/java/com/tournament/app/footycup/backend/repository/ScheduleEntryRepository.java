@@ -9,4 +9,6 @@ import java.util.List;
 public interface ScheduleEntryRepository extends JpaRepository<ScheduleEntry, Long> {
     @Query("SELECT se.match.id FROM ScheduleEntry se WHERE se.match IS NOT NULL AND se.schedule.tournament.id = :tournamentId")
     public List<Long> findAllScheduledMatchIdsByTournamentId(Long tournamentId);
+
+    public List<ScheduleEntry> findByScheduleId(Long scheduleId);
 }
