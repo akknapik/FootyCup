@@ -144,3 +144,114 @@ table {
     padding: 0.5rem;
     text-align: left;
   }
+
+.header-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.5rem;
+}
+
+.actions {
+  display: flex;
+  gap: 0.75rem;
+}
+
+.actions button {
+  padding: 0.5rem 1rem;
+  background: #2F855A;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.actions button:hover {
+  background: #276749;
+}
+
+.btn-add {
+  padding: 0.5rem 1rem;
+  background-color: white;
+  border: 1px solid #ccc;
+  border-radius: 999px;
+  cursor: pointer;
+  font-size: 0.9rem;
+  transition: background 0.2s ease;
+}
+.btn-add:hover {
+  background: #f0f0f0;
+}
+
+.tournament-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+
+.tournament-card {
+  position: relative;
+  width: 220px;
+  background: white;
+  padding: 1rem;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  cursor: pointer;
+  transition: transform 0.2s ease;
+}
+
+.tournament-card:hover {
+  transform: scale(1.02);
+}
+
+.card-date {
+  font-size: 0.8rem;
+  color: #38A169;
+  margin-bottom: 0.25rem;
+}
+
+.card-title {
+  font-weight: bold;
+  font-size: 1rem;
+  color: #333;
+}
+
+.card-actions {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+}
+
+.dots-btn {
+  background: none;
+  border: none;
+  font-size: 1.2rem;
+  cursor: pointer;
+  color: #666;
+}
+
+.card-menu {
+  position: absolute;
+  top: 28px;
+  right: 0;
+  background: white;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
+  display: flex;
+  flex-direction: column;
+  z-index: 100;
+}
+
+.card-menu button {
+  padding: 0.5rem 1rem;
+  background: white;
+  border: none;
+  text-align: left;
+  cursor: pointer;
+  font-size: 0.9rem;
+}
+.card-menu button:hover {
+  background: #f0f0f0;
+}

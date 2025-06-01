@@ -45,92 +45,91 @@
 
         <main class="content">
             <ul class="tabs">
-                <li (click)="activeTab = 'schedule'" [class.active]="activeTab === 'schedule'">Harmonogram</li>
-                <li (click)="onTabChange('groups')" [class.active]="activeTab === 'groups'">Grupy</li>
-                <li (click)="onTabChange('bracket')" [class.active]="activeTab === 'bracket'">Drabinka</li>
+                <li (click)="activeTab = 'schedule'" [class.active]="activeTab === 'schedule'">Schedule</li>
+                <li (click)="onTabChange('groups')" [class.active]="activeTab === 'groups'">Groups</li>
+                <li (click)="onTabChange('bracket')" [class.active]="activeTab === 'bracket'">Bracket</li>
             </ul>
 
             <div *ngIf="activeTab === 'schedule'">
-                <ul class="tabs">
-                    <li
-                    *ngFor="let s of schedules"
-                    (click)="selectSchedule(s.id)"
-                    [class.active]="s.id === selectedScheduleId"
-                    >
+                <ul class="tabs subtabs">
+                <li *ngFor="let s of schedules" (click)="selectSchedule(s.id)" [class.active]="s.id === selectedScheduleId">
                     {{ s.startDateTime | date: 'yyyy-MM-dd' }}
-                    </li>
+                </li>
                 </ul>
 
-                <div class="schedule-container">
-                    <div class="schedule">
-                        <h3>Wyniki</h3>
-                        <table>
-                            <thead>
-                                <tr>
-                                    <th>Godzina</th>
-                                    <th>Drużyna 1</th>
-                                    <th>Wynik</th>
-                                    <th>Drużyna 2</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <tr *ngFor="let e of scheduleEntries">
-                                    <ng-container *ngIf="e.type === 'MATCH' && e.match">
-                                        <td>{{ e.startDateTime | date: 'HH:mm' }}</td>
-                                        <td>{{ e.match.teamHome?.name }}</td>
-                                        <td>
-                                        <input
-                                            type="number"
-                                            [(ngModel)]="e.match.homeScore"
-                                            (blur)="onResultChange(e.match)"
-                                            min="0"
-                                        />
-                                        </td>
-                                        <td>{{ e.match.teamAway?.name }}</td>
-                                        <td>
-                                        <input
-                                            type="number"
-                                            [(ngModel)]="e.match.awayScore"
-                                            (blur)="onResultChange(e.match)"
-                                            min="0"
-                                        />
-                                        </td>
-                                    </ng-container>
-
-                                    <ng-container *ngIf="e.type === 'BREAK'">
-                                        <td>{{ e.startDateTime | date: 'HH:mm' }}</td>
-                                        <td colspan="4">⏸ Przerwa ({{ e.durationInMin }} min)</td>
-                                    </ng-container>
-                                </tr>
-
-                            </tbody>
-                        </table>
-                    </div>
+                <div class="results-table-container">
+                <h3 class="section-title">Match Results</h3>
+                <table class="styled-table">
+                    <thead>
+                    <tr>
+                        <th>Time</th>
+                        <th>Team 1</th>
+                        <th>Score</th>
+                        <th>Team 2</th>
+                        <th>Score</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr *ngFor="let e of scheduleEntries">
+                        <ng-container *ngIf="e.type === 'MATCH' && e.match">
+                        <td>{{ e.startDateTime | date: 'HH:mm' }}</td>
+                        <td>{{ e.match.teamHome?.name }}</td>
+                        <td>
+                            <input
+                            type="number"
+                            [(ngModel)]="e.match.homeScore"
+                            (blur)="onResultChange(e.match)"
+                            min="0"
+                            class="score-input"
+                            />
+                        </td>
+                        <td>{{ e.match.teamAway?.name }}</td>
+                        <td>
+                            <input
+                            type="number"
+                            [(ngModel)]="e.match.awayScore"
+                            (blur)="onResultChange(e.match)"
+                            min="0"
+                            class="score-input"
+                            />
+                        </td>
+                        </ng-container>
+                        <ng-container *ngIf="e.type === 'BREAK'">
+                        <td>{{ e.startDateTime | date: 'HH:mm' }}</td>
+                        <td colspan="4" class="break-row">Break ({{ e.durationInMin }} min)</td>
+                        </ng-container>
+                    </tr>
+                    </tbody>
+                </table>
                 </div>
             </div>
 
             <div *ngIf="activeTab === 'groups'">
-                <div *ngFor="let g of groups">
-                    <h3>{{ g.name }}</h3>
-                    <table>
+                <div *ngFor="let g of groups" class="group-block">
+                <h3>{{ g.name }}</h3>
+                <table class="styled-table">
                     <thead>
-                        <tr><th>Drużyna</th><th>Punkty</th><th>Gole</th></tr>
+                    <tr>
+                        <th>Team</th>
+                        <th>Points</th>
+                        <th>Goals</th>
+                    </tr>
                     </thead>
                     <tbody>
-                        <tr *ngFor="let gt of g.groupTeams">
+                    <tr *ngFor="let gt of g.groupTeams">
                         <td>{{ gt.team?.name }}</td>
                         <td>{{ gt.points }}</td>
                         <td>{{ gt.goalsFor }} : {{ gt.goalsAgainst }}</td>
-                        </tr>
+                    </tr>
                     </tbody>
-                    </table>
+                </table>
                 </div>
             </div>
 
             <div *ngIf="activeTab === 'bracket'">
-                <div *ngFor="let node of bracket">
-                    <p>{{ node.match.teamHome?.name || '---' }} vs {{ node.match.teamAway?.name || '---' }}</p>
-                    <p>{{ node.match.homeScore }} : {{ node.match.awayScore }}</p>
+                <div *ngFor="let node of bracket" class="bracket-node">
+                <p>{{ node.match.teamHome?.name || '---' }} vs {{ node.match.teamAway?.name || '---' }}</p>
+                <p class="score">{{ node.match.homeScore }} : {{ node.match.awayScore }}</p>
                 </div>
             </div>
             </main>

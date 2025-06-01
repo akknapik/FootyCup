@@ -1,8 +1,10 @@
+/* === RESET & BASE === */
 * {
   margin: 0;
   padding: 0;
   box-sizing: border-box;
 }
+
 html, body {
   height: 100%;
   font-family: 'Open Sans', sans-serif;
@@ -10,10 +12,11 @@ html, body {
 
 .app-container {
   display: flex;
-  height: 100vh;        
+  height: 100vh;
   overflow: hidden;
 }
 
+/* === SIDEBAR === */
 .sidebar {
   width: 240px;
   height: 100vh;
@@ -55,19 +58,6 @@ html, body {
   text-decoration: none;
 }
 
-.nav-sublink {
-  display: block;
-  padding: 0.5rem 0;
-  color: white;
-  font-size: 0.9rem;
-}
-
-.nav-subheader {
-  font-weight: bold;
-  margin-top: 1rem;
-  color: #ccc;
-}
- 
 .sidebar-footer {
   display: flex;
   flex-direction: column;
@@ -76,7 +66,6 @@ html, body {
 }
 
 .sidebar-footer a {
-  /* margin-top: 1rem; */
   font-size: 0.9rem;
   color: #68D391;
   text-decoration: none;
@@ -102,13 +91,7 @@ html, body {
   background: #fff;
 }
 
-.main {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  background: #f5f5f5;
-}
-
+/* === HEADER === */
 .header {
   height: 64px;
   background: #fff;
@@ -117,11 +100,13 @@ html, body {
   padding: 0 1.5rem;
   box-shadow: 0 2px 4px rgba(0,0,0,0.1);
 }
+
 .header-spacer {
   flex: 1;
   border-left: 1px solid #ccc;
   height: 40px;
 }
+
 .user-info {
   display: flex;
   align-items: center;
@@ -129,11 +114,20 @@ html, body {
   font-size: 0.95rem;
   color: #333;
 }
+
 .avatar {
   width: 32px;
   height: 32px;
   border-radius: 50%;
   background: #ccc;
+}
+
+/* === MAIN CONTENT === */
+.main {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  background: #f5f5f5;
 }
 
 .content {
@@ -142,6 +136,7 @@ html, body {
   overflow-y: auto;
 }
 
+/* === FOOTER === */
 .footer {
   height: 48px;
   background: #fff;
@@ -153,20 +148,166 @@ html, body {
   border-top: 1px solid #e0e0e0;
 }
 
-hr {
-  border: none;
-  border-top: 1px solid hwb(108 1% 43%);
-  margin: 1.5rem 0;
+.header-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.5rem;
 }
 
-table {
-    width: 100%;
-    border-collapse: collapse;
-    margin-top: 1rem;
-  }
-  
-  th, td {
-    border: 1px solid #ccc;
-    padding: 0.5rem;
-    text-align: left;
-  }
+.actions {
+  display: flex;
+  gap: 0.75rem;
+}
+
+.actions button {
+  padding: 0.5rem 1rem;
+  background: #2F855A;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.actions button:hover {
+  background: #276749;
+}
+
+.btn-add {
+  padding: 0.5rem 1rem;
+  background-color: white;
+  border: 1px solid #ccc;
+  border-radius: 999px;
+  cursor: pointer;
+  font-size: 0.9rem;
+  transition: background 0.2s ease;
+}
+
+.btn-add:hover {
+  background: #f0f0f0;
+}
+
+.teams-table {
+  background: #fff;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  padding: 1rem;
+  max-width: 900px;
+  margin: 0 auto;
+}
+
+.teams-header,
+.teams-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr 140px 1fr;
+  padding: 0.75rem 1rem;
+  align-items: center;
+}
+
+.teams-header {
+  background: #f0f0f0;
+  font-weight: bold;
+  border-bottom: 1px solid #ccc;
+  color: #2F855A;
+}
+
+.teams-row {
+  position: relative;
+  border-bottom: 1px solid #eee;
+  min-height: 50px;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.teams-row:hover {
+  background: #f9f9f9;
+}
+
+.players-column {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 0.4rem;
+}
+
+.icon-person {
+  font-size: 1rem;
+  opacity: 0.6;
+}
+
+.row-actions {
+  position: absolute;
+  top: 0.5rem;
+  right: 1rem;
+}
+
+.dots-btn {
+  background: transparent;
+  border: none;
+  font-size: 1.2rem;
+  cursor: pointer;
+  opacity: 0.6;
+  transition: opacity 0.2s;
+  padding: 0;
+  margin: 0;
+}
+
+.dots-btn:hover {
+  opacity: 1;
+}
+
+.dropdown-menu {
+  position: absolute;
+  top: 2rem;
+  right: 0;
+  background: white;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+  z-index: 1000;
+  display: flex;
+  flex-direction: column;
+  min-width: 120px;
+}
+
+.dropdown-menu button {
+  background: none;
+  border: none;
+  padding: 0.6rem 1rem;
+  text-align: left;
+  font-size: 0.9rem;
+  cursor: pointer;
+}
+
+.dropdown-menu button:hover {
+  background: #f5f5f5;
+}
+
+.pagination {
+  margin: 1.5rem auto;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 1rem;
+  font-size: 0.95rem;
+  color: #333;
+}
+
+.pagination button {
+  padding: 0.4rem 0.8rem;
+  background: white;
+  border: 1px solid #ccc;
+  border-radius: 20px;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.pagination button:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.pagination button:hover:not(:disabled) {
+  background: #f0f0f0;
+}

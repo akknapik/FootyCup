@@ -45,6 +45,11 @@ export class MyTournamentsComponent {
       });
   }
   
+  openedMenu: number | null = null;
+
+  toggleMenu(id: number): void {
+    this.openedMenu = this.openedMenu === id ? null : id;
+  }
 
   openDetails(id: number): void {
     this.router.navigate(['/tournaments', id]);

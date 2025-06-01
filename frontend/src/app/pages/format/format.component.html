@@ -44,90 +44,93 @@
         </header>
 
         <main class="content">
-          <h2>Turniej – Format</h2>
+          <div class="header-row">
+            <h2>Format</h2>
+            <div class="actions" *ngIf="structureExists">
+              <button (click)="deleteStructures(tournamentId)">Delete Format</button>
+              <div *ngIf="groups.length > 0">
+                <button (click)="assignTeamsRandomly(tournamentId)">Assign Teams Randomly</button>
+              </div>
+            </div>
+          </div>
 
-          <div *ngIf="!structureExists; else showStructure">
-            <p>Wybierz format turnieju:</p>
-
+          <div *ngIf="!structureExists; else showStructure" class="format-options">
             <div class="form-card">
-              <h3>⚽ Ligowy</h3>
+              <h3>League</h3>
               <div class="input-group">
-                <label>Liczba grup:</label>
-                <input type="number" [(ngModel)]="groupCount" name="groupCount" min="1" required />
+                <label>Number of groups:</label>
+                <input type="number" [(ngModel)]="groupCount" min="1" />
               </div>
               <div class="input-group">
-                <label>Drużyn w grupie:</label>
-                <input type="number" [(ngModel)]="teamsPerGroup" name="teamsPerGroup" min="2" required />
+                <label>Teams per group:</label>
+                <input type="number" [(ngModel)]="teamsPerGroup" min="2" />
               </div>
-              <button (click)="generateGroup()">Generuj format ligowy</button>
+              <button (click)="generateGroup()">Generate League Format</button>
             </div>
 
             <div class="form-card">
-              <h3>🏆 Pucharowy</h3>
+              <h3>Knockout</h3>
               <div class="input-group">
-                <label>Liczba drużyn:</label>
-                <select [(ngModel)]="bracketSize" name="bracketSize">
+                <label>Number of teams:</label>
+                <select [(ngModel)]="bracketSize">
                   <option *ngFor="let size of [2,4,8,16,32]" [value]="size">{{ size }}</option>
                 </select>
               </div>
-              <button (click)="generateBracket()">Generuj drabinkę</button>
+              <button (click)="generateBracket()">Generate Bracket</button>
             </div>
 
             <div class="form-card">
-              <h3>⚽ + 🏆 Mieszany</h3>
+              <h3>Mixed</h3>
               <div class="input-group">
-                <label>Liczba grup:</label>
-                <input type="number" [(ngModel)]="mixedGroupCount" name="mixedGroupCount" min="1" required />
+                <label>Number of groups:</label>
+                <input type="number" [(ngModel)]="mixedGroupCount" min="1" />
               </div>
               <div class="input-group">
-                <label>Drużyn w grupie:</label>
-                <input type="number" [(ngModel)]="mixedTeamsPerGroup" name="mixedTeamsPerGroup" min="2" required />
+                <label>Teams per group:</label>
+                <input type="number" [(ngModel)]="mixedTeamsPerGroup" min="2" />
               </div>
               <div class="input-group">
-                <label>Drużyn awansujących:</label>
-                <select [(ngModel)]="mixedAdvancing" name="mixedAdvancing" required>
+                <label>Advancing teams:</label>
+                <select [(ngModel)]="mixedAdvancing">
                   <option *ngFor="let option of [2, 4, 8, 16, 32]" [value]="option">{{ option }}</option>
                 </select>
               </div>
-              <button (click)="generateMixed()">Generuj format mieszany</button>
+              <button (click)="generateMixed()">Generate Mixed Format</button>
             </div>
           </div>
 
           <ng-template #showStructure>
-            <button (click)="deleteStructures(tournamentId)">Usun</button>
-            <button (click)="assignTeamsRandomly(tournamentId)">Losowo przypisz zespoły</button>
             <div *ngIf="groups.length > 0">
-              <h3>⚽ Grupy:</h3>
-              <div *ngFor="let group of groups">
-                <strong>{{ group.name }}</strong>
-                <table>
-                  <thead>
-                    <tr><th>Zespół</th></tr>
-                  </thead>
-                  <tbody>
-                    <tr *ngFor="let slot of group.groupTeams" (click)="editSlot(slot)">
-                      <td>
-                        <ng-container *ngIf="editedSlot?.id === slot.id; else showName">
-                          <select [(ngModel)]="slot.team" (change)="assignTeamToSlot(slot)">
-                            <option *ngFor="let team of availableTeams" [ngValue]="team">{{ team.name }}</option>
-                          </select>
-                        </ng-container>
-                        <ng-template #showName>
-                          {{ slot.team?.name || "Empty slot" }}
-                        </ng-template>
-                      </td>
-                    </tr>
-                  </tbody>
-                </table>
+              <h3>Groups</h3>
+              <div class="groups-grid">
+                <div *ngFor="let group of groups" class="group-box">
+                  <strong>{{ group.name }}</strong>
+                  <table>
+                    <thead><tr><th>Team</th></tr></thead>
+                    <tbody>
+                      <tr *ngFor="let slot of group.groupTeams" (click)="editSlot(slot)">
+                        <td>
+                          <ng-container *ngIf="editedSlot?.id === slot.id; else showName">
+                            <select [(ngModel)]="slot.team" (change)="assignTeamToSlot(slot)">
+                              <option *ngFor="let team of availableTeams" [ngValue]="team">{{ team.name }}</option>
+                            </select>
+                          </ng-container>
+                          <ng-template #showName>
+                            {{ slot.team?.name || 'Empty slot' }}
+                          </ng-template>
+                        </td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
               </div>
             </div>
-            
+
             <div *ngIf="bracket.length > 0">
-              <h3>🏆 Drabinka:</h3>
-              <div *ngFor="let node of bracket">
-                <div>
-                  <strong>Runda {{ node.match.name }}</strong> | 
-                
+              <h3>Bracket</h3>
+              <div class="bracket-wrapper">
+                <div *ngFor="let node of bracket" class="bracket-match">
+                  <strong>Round {{ node.match.name }}</strong> |
                   <span (click)="editBracketTeam(node, 'home', $event)">
                     <ng-container *ngIf="editedNode?.id === node.id && editedSide === 'home'; else showHome">
                       <select [(ngModel)]="node.teamHome" (change)="assignTeamToBracket(node, 'home')">
@@ -135,12 +138,10 @@
                       </select>
                     </ng-container>
                     <ng-template #showHome>
-                      {{ node.match.teamHome?.name || "Empty slot" }}
+                      {{ node.match.teamHome?.name || 'Empty slot' }}
                     </ng-template>
                   </span>
-                
                   vs
-                
                   <span (click)="editBracketTeam(node, 'away', $event)">
                     <ng-container *ngIf="editedNode?.id === node.id && editedSide === 'away'; else showAway">
                       <select [(ngModel)]="node.teamAway" (change)="assignTeamToBracket(node, 'away')">
@@ -148,16 +149,13 @@
                       </select>
                     </ng-container>
                     <ng-template #showAway>
-                      {{ node.match.teamAway?.name || "Empty slot" }}
+                      {{ node.match.teamAway?.name || 'Empty slot' }}
                     </ng-template>
                   </span>
                 </div>
               </div>
             </div>
-            </ng-template>
-
-          <div *ngIf="loading">⏳ Przetwarzanie...</div>
-
+          </ng-template>
         </main>
 
         <footer class="footer">

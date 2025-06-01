@@ -225,12 +225,13 @@
     opacity: 0.5;
   }
 
-  .tabs {
+.tabs {
   list-style: none;
   padding: 0;
   display: flex;
   margin-bottom: 1rem;
 }
+
 .tabs li {
   margin-right: 0.5rem;
   padding: 0.5rem 1rem;
@@ -238,9 +239,84 @@
   border: 1px solid #ccc;
   border-radius: 4px;
 }
+
 .tabs li.active {
-  background-color: #007bff;
+  background-color: #2F855A;
   color: white;
-  border-color: #007bff;
+  border-color: #2F855A;
 }
   
+.results-table-container {
+  margin-top: 2rem;
+}
+
+.section-title {
+  margin-bottom: 1rem;
+  font-size: 1.25rem;
+  color: #2F855A;
+}
+
+.styled-table {
+  width: 100%;
+  border-collapse: collapse;
+  background: white;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.styled-table th, .styled-table td {
+  padding: 0.75rem 1rem;
+  border: 1px solid #e2e8f0;
+  text-align: left;
+}
+
+.styled-table th {
+  background-color: #f0f0f0;
+  color: #2D3748;
+  font-weight: bold;
+}
+
+.score-input {
+  width: 60px;
+  padding: 0.4rem;
+  border-radius: 6px;
+  border: 1px solid #ccc;
+  text-align: center;
+}
+
+.score-input:focus {
+  border-color: #68D391;
+  outline: none;
+  box-shadow: 0 0 0 2px rgba(104, 211, 145, 0.2);
+}
+
+.break-row {
+  font-style: italic;
+  color: #718096;
+  background-color: #f9fafb;
+  text-align: center;
+}
+
+.group-block {
+  margin-top: 2rem;
+}
+
+.bracket-node {
+  margin: 1rem 0;
+  padding: 1rem;
+  background: white;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+}
+
+.bracket-node .score {
+  font-weight: bold;
+  color: #2F855A;
+  margin-top: 0.25rem;
+}
+
+.subtabs {
+  margin-bottom: 1rem;
+}

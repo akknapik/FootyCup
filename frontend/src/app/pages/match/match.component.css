@@ -158,15 +158,182 @@
     border-top: 1px solid hwb(108 1% 43%);
     margin: 1.5rem 0;
   }
+
+.header-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.5rem;
+}
+
+.actions {
+  display: flex;
+  gap: 0.75rem;
+}
+
+.actions button {
+  padding: 0.5rem 1rem;
+  background: #2F855A;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.actions button:hover {
+  background: #276749;
+}
+
+.btn-add {
+  padding: 0.5rem 1rem;
+  background-color: white;
+  border: 1px solid #ccc;
+  border-radius: 999px;
+  cursor: pointer;
+  font-size: 0.9rem;
+  transition: background 0.2s ease;
+}
+
+.btn-add:hover {
+  background: #f0f0f0;
+}
+
+.matches-table {
+  background: #fff;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  padding: 1rem;
+  max-width: 1000px;
+  margin: 1rem auto;
+}
+
+.matches-header,
+.matches-row {
+  display: grid;
+  grid-template-columns: 2fr 3fr 1fr;
+  padding: 0.75rem 1rem;
+  align-items: center;
+  position: relative;
+}
+
+.matches-header {
+  background: #f0f0f0;
+  font-weight: bold;
+  border-bottom: 1px solid #ccc;
+  color: #2F855A;
+}
+
+.matches-row {
+  border-bottom: 1px solid #eee;
+  transition: background 0.2s;
+  min-height: 50px;
+}
+
+.matches-row:hover {
+  background: #f9f9f9;
+}
+
+.status-column {
+  font-size: 0.9rem;
+  color: #333;
+}
+
+.row-actions {
+  position: absolute;
+  top: 0.5rem;
+  right: 1rem;
+}
+
+.dots-btn {
+  background: transparent;
+  border: none;
+  font-size: 1.2rem;
+  cursor: pointer;
+  opacity: 0.6;
+  transition: opacity 0.2s;
+}
+
+.dots-btn:hover {
+  opacity: 1;
+}
+
+.dropdown-menu {
+  position: absolute;
+  top: 2rem;
+  right: 0;
+  background: white;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+  z-index: 1000;
+  display: flex;
+  flex-direction: column;
+  min-width: 120px;
+}
+
+.dropdown-menu button {
+  background: none;
+  border: none;
+  padding: 0.6rem 1rem;
+  text-align: left;
+  font-size: 0.9rem;
+  cursor: pointer;
+}
+
+.dropdown-menu button:hover {
+  background: #f5f5f5;
+}
+
+.pagination {
+  margin: 1.5rem auto;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 1rem;
+  font-size: 0.95rem;
+  color: #333;
+}
+
+.pagination button {
+  padding: 0.4rem 0.8rem;
+  background: white;
+  border: 1px solid #ccc;
+  border-radius: 20px;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.pagination button:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.pagination button:hover:not(:disabled) {
+  background: #f0f0f0;
+}
+
+.no-matches {
+  text-align: center;
+  padding: 2rem;
+  color: #777;
+}
   
-  table {
-      width: 100%;
-      border-collapse: collapse;
-      margin-top: 1rem;
-    }
-    
-    th, td {
-      border: 1px solid #ccc;
-      padding: 0.5rem;
-      text-align: left;
-    }
+  .header-buttons {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 0.5rem;
+  }
+
+  .btn-add.secondary {
+    border-color: #ccc;
+    background: white;
+    color: #333;
+    font-size: 0.85rem;
+    padding: 0.4rem 0.9rem;
+  }
+
+  .btn-add.secondary:hover {
+    background-color: #f5f5f5;
+  }

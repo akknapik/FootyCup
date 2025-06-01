@@ -13,7 +13,10 @@ import { NotificationService } from '../../../services/notification.service';
 export class TeamsComponent {
   teams: any[] = [];
   tournamentId!: number;
-
+  selectedTeam: any = null;
+  pageSize = 10;
+  currentPage = 1;
+  
   constructor(private teamService: TeamService, private router: Router, private route: ActivatedRoute, public auth: AuthService, private notification: NotificationService) {}
 
   ngOnInit(): void {
@@ -51,4 +54,35 @@ export class TeamsComponent {
   openDetails(id: number): void {
     this.router.navigate(['/tournament', this.tournamentId, 'teams', id]);
   }
+
+toggleMenu(team: any): void {
+  this.paginatedTeams.forEach(t => {
+    if (t && t.id !== team.id) t.showMenu = false;
+  });
+  team.showMenu = !team.showMenu;
+}
+
+get totalPages(): number {
+  return Math.ceil((this.teams?.length || 0) / this.pageSize) || 1;
+}
+
+get paginatedTeams(): (any | null)[] {
+  const start = (this.currentPage - 1) * this.pageSize;
+  const sliced = this.teams.slice(start, start + this.pageSize);
+
+  const fillCount = this.pageSize - sliced.length;
+  return [...sliced, ...Array(fillCount).fill(null)];
+}
+
+prevPage() {
+  if (this.currentPage > 1) {
+    this.currentPage--;
+  }
+}
+
+nextPage() {
+  if (this.currentPage < this.totalPages) {
+    this.currentPage++;
+  }
+}
 }

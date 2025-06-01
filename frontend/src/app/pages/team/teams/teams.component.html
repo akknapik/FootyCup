@@ -44,39 +44,51 @@
         </header>
 
         <main class="content">
-            <h2>Moje drużyny</h2>
-            <table>
-                <thead>
-                        <tr>
-                            <th>Name</th>
-                            <th>Coach</th>
-                            <th>Country</th>
-                            <th>Players</th>
-                            <th>
-                                <button (click)="loadTeams()">Refresh</button>
-                                <button (click)="goToCreate()">Create</button>
-                            </th>
-                        </tr>
-                </thead>
-                <tbody>
-                    <tr *ngFor="let t of teams" (click)="openDetails(t.id)" style="cursor: pointer;">
-                        <td>{{ t.name }}</td>
-                        <td>{{ t.coach?.firstname }} {{ t.coach?.lastname }}</td>
-                        <td>{{ t.country }}</td>
-                        <td>{{ t.playerList?.length }}</td>
-                        <td>
-                            <button (click)="deleteTeam(t.id); $event.stopPropagation()">🗑️ Usuń</button>
-                        </td>
-                    </tr>
-            </table>
-            
+          <div class="header-row">
+            <h2>Teams</h2>
+            <div class="actions">
+              <button (click)="goToCreate()">New team</button>
+            </div>
+          </div>
+
+          <div class="teams-table">
+            <div class="teams-header">
+              <div>Name</div>
+              <div>Coach</div>
+              <div class="players-column">Players</div>
+              <div></div> 
+            </div>
+
+            <div class="teams-row" *ngFor="let team of paginatedTeams">
+              <div>{{ team?.name || '—' }}</div>
+              <div>{{ team?.coach?.firstname + ' ' + team?.coach?.lastname || '—' }}</div>
+              <div class="players-column">
+                {{ team?.playerList?.length ?? '—' }}
+                <span *ngIf="team?.playerList" class="icon-person">👤</span>
+              </div>
+
+              <div class="row-actions" *ngIf="team" (click)="$event.stopPropagation()">
+                <button class="dots-btn" (click)="toggleMenu(team)">⋮</button>
+                <div class="dropdown-menu" *ngIf="team.showMenu">
+                  <button (click)="openDetails(team.id)">Edit</button>
+                  <button (click)="deleteTeam(team.id)">Delete</button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="pagination">
+            <button (click)="prevPage()" [disabled]="currentPage === 1">Prev</button>
+            <span>{{ currentPage }} / {{ totalPages }}</span>
+            <button (click)="nextPage()" [disabled]="currentPage === totalPages">Next</button>
+          </div>
         </main>
 
         <footer class="footer">
           <p>&copy; 2023 FootyCup. All rights reserved.</p>
         </footer>
       </div>
-    </div>
+    </div>  
   </body>
 </html>
 

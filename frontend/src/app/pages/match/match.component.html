@@ -44,35 +44,45 @@
         </header>
 
         <main class="content">
-          <button (click)="generateGroupMatches()">Generate group matches</button>
-          <table *ngIf="matches.length > 0">
-            <thead>
-              <tr>
-                <th>Nazwa</th>
-                <th>Drużyny</th>
-                <th>Status</th>
-                <th>Akcje</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr *ngFor="let m of matches">
-                <td>{{ m.name }}</td>
-                <td>
-                  {{ m.teamHome?.name || 'Empty slot' }} vs {{ m.teamAway?.name || 'Empty slot' }}
-                </td>
-                <td>{{ m.status }}</td>
-                <td>
-                  <button (click)="deleteMatch(m.id)">🗑 Usuń</button>
-                </td>
-              </tr>
-            </tbody>
-          </table>
-          
-            <div *ngIf="matches.length === 0" class="no-matches">
-                <p>Brak meczów do wyświetlenia.</p>  
+          <div class="header-row">
+            <h2>Matches</h2>
+            <div class="actions">
+              <button class="btn-add">New match</button>
+              <div *ngIf="groups.length > 0">
+                <button class="btn-add" (click)="generateGroupMatches()">Generate group matches</button>
+              </div>
             </div>
-        </main>
+          </div>
 
+          <div class="matches-table">
+            <div class="matches-header">
+              <div>Name</div>
+              <div>Teams</div>
+              <div>Status</div>
+            </div>
+
+            <div class="matches-row" *ngFor="let match of paginatedMatches">
+              <div>{{ match?.name || '—' }}</div>
+              <div>
+                {{ match?.teamHome?.name || '—' }} vs {{ match?.teamAway?.name || '—' }}
+              </div>
+              <div class="status-column">{{ match?.status || '—' }}</div>
+
+              <div class="row-actions" *ngIf="match" (click)="$event.stopPropagation()">
+                <button class="dots-btn" (click)="toggleMenu(match)">⋮</button>
+                <div class="dropdown-menu" *ngIf="match.showMenu">
+                  <button (click)="deleteMatch(match.id)">Delete</button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="pagination" *ngIf="totalPages > 1">
+            <button (click)="prevPage()" [disabled]="currentPage === 1">Prev</button>
+            <span>Page {{ currentPage }} / {{ totalPages }}</span>
+            <button (click)="nextPage()" [disabled]="currentPage === totalPages">Next</button>
+          </div>
+        </main>
         <footer class="footer">
           <p>&copy; 2023 FootyCup. All rights reserved.</p>
         </footer>

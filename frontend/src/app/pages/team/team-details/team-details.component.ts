@@ -16,8 +16,17 @@ export class TeamDetailsComponent {
   team: any;
   playerList: any[] = [];
   selectedPlayer: any = null;
+  pageSize = 8;
+  currentPage = 1;
+  editMode = false;
 
-  constructor(private route: ActivatedRoute, private teamService: TeamService, private router: Router, public auth: AuthService, private notification: NotificationService) {}
+  constructor(
+    private route: ActivatedRoute,
+    private teamService: TeamService,
+    private router: Router,
+    public auth: AuthService,
+    private notification: NotificationService
+  ) {}
 
   ngOnInit(): void {
     this.route.paramMap.subscribe(params => {
@@ -38,7 +47,10 @@ export class TeamDetailsComponent {
     this.teamService.getTeamById(this.tournamentId, this.teamId).subscribe({
       next: (data) => {
         this.team = data;
-        this.playerList = data.playerList || [];  
+        this.playerList = (data.playerList || []).map((player: any) => ({
+          ...player,
+          showMenu: false
+        }));
       },
       error: () => this.notification.showError('Error loading team details!')
     });
@@ -71,35 +83,74 @@ export class TeamDetailsComponent {
   deletePlayer(playerId: number): void {
     this.notification.confirm('Are you sure you want to delete this player?').subscribe(confirmed => {
       if (confirmed) {
-      this.teamService.removePlayerFromTeam(this.tournamentId, this.teamId, playerId).subscribe({
-        next: () => {
-          this.notification.showSuccess('Player deleted!');
-          this.loadTeamDetails();
-        },
-        error: () => this.notification.showError('Error deleting player!')
-      });
-    }
+        this.teamService.removePlayerFromTeam(this.tournamentId, this.teamId, playerId).subscribe({
+          next: () => {
+            this.notification.showSuccess('Player deleted!');
+            this.loadTeamDetails();
+          },
+          error: () => this.notification.showError('Error deleting player!')
+        });
+      }
     });
   }
 
-  editPlayer(player: any) {
-    this.selectedPlayer = { ...player }; 
+  toggleMenu(player: any): void {
+    this.playerList.forEach(p => {
+      if (p.id !== player.id) p.showMenu = false;
+    });
+
+    player.showMenu = !player.showMenu;
   }
 
-  updatePlayer() {
+  startEdit(player: any): void {
+    this.selectedPlayer = { ...player };
+    this.editMode = true;
+    this.closeAllMenus();
+  }
+
+  closeAllMenus(): void {
+    this.playerList.forEach(p => p.showMenu = false);
+  }
+
+  cancelEdit(): void {
+    this.selectedPlayer = null;
+    this.editMode = false;
+  }
+
+  updatePlayer(): void {
     if (this.selectedPlayer) {
-      this.teamService.updatePlayerInTeam(this.tournamentId, this.teamId, this.selectedPlayer.id, this.selectedPlayer).subscribe({
+      this.teamService.updatePlayerInTeam(
+        this.tournamentId,
+        this.teamId,
+        this.selectedPlayer.id,
+        this.selectedPlayer
+      ).subscribe({
         next: () => {
           this.notification.showSuccess('Player updated!');
           this.loadTeamDetails();
-          this.selectedPlayer = null; 
+          this.cancelEdit();
         },
         error: () => this.notification.showError('Error updating player!')
       });
     }
   }
 
-  cancelEdit() {
-    this.selectedPlayer = null;
+  get totalPages(): number {
+    return Math.ceil((this.playerList?.length || 0) / this.pageSize) || 1;
+  }
+
+  get paginatedPlayers(): (any | null)[] {
+    const start = (this.currentPage - 1) * this.pageSize;
+    const page = this.playerList.slice(start, start + this.pageSize);
+    const empty = this.pageSize - page.length;
+    return [...page, ...Array(empty).fill(null)];
+  }
+
+  prevPage() {
+    if (this.currentPage > 1) this.currentPage--;
+  }
+
+  nextPage() {
+    if (this.currentPage < this.totalPages) this.currentPage++;
   }
 }

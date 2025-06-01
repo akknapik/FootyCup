@@ -43,57 +43,83 @@
         </header>
 
         <main class="content">
-            <h2>Edytuj drużynę</h2>
+          <h2>Edit team</h2>
 
-            <div>
-                <label>Nazwa:</label>
-                <input [(ngModel)]="team.name" placeholder="Nazwa drużyny" />
+          <div class="form-card">
+            <div class="one-row">
+              <div class="input-group">
+                <label>Team's name</label>
+                <input type="text" [(ngModel)]="team.name" />
+              </div>
+              <div class="input-group">
+                <label>Coach's email</label>
+                <input type="email" [(ngModel)]="team.coach.email" />
+              </div>
+              <div class="input-group">
+                <label>Country</label>
+                <input type="text" [(ngModel)]="team.country" />
+              </div>
             </div>
-            <div>
-                <label>Trener (email)</label>
-                <input [(ngModel)]="team.coach.email" placeholder="Trener (email)" />
+
+            <div class="form-actions">
+              <button class="btn btn-create" (click)="updateTeam()">Save</button>
             </div>
-            <div>
-                <label>Kraj</label>
-                <input [(ngModel)]="team.country" placeholder="Kraj" />
+          </div>
+
+          <div class="players-table">
+            <div class="header-row">
+              <h3>Players</h3>
+              <button class="btn-add" (click)="goToAddPlayer()">New player</button>
             </div>
-            
-            <button (click)="updateTeam()">Zapisz</button>
-            
-            <hr/>
-            
-            <h3>Lista zawodników</h3>
-            <table>
-                <thead>
-                    <tr>
-                        <th>Numer</th>
-                        <th>Imię i nazwisko</th>
-                        <th>Data urodzenia</th>
-                        <th><button (click)="goToAddPlayer()">Dodaj</button>
-                        </th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr *ngFor="let player of playerList" (click)="editPlayer(player)">
-                        <td>{{ player.number }}</td>
-                        <td>{{ player.name }}</td>
-                        <td>{{ player.birthDate | date: 'dd/MM/yyyy' }}</td>
-                        <td>
-                            <button (click)="deletePlayer(player.id); $event.stopPropagation()">🗑️ Usuń</button>
-                        </td>
-                    </tr>
-                </tbody>
-            </table>
-            
-            <div *ngIf="selectedPlayer">
-                <h4>Edycja zawodnika</h4>
-                <input [(ngModel)]="selectedPlayer.number" placeholder="Numer" type="number" />
-                <input [(ngModel)]="selectedPlayer.name" placeholder="Imię i nazwisko" />
-                <input [(ngModel)]="selectedPlayer.dateOfBirth" placeholder="Data urodzenia" type="date" />
-                <button (click)="updatePlayer()">Zapisz</button>
-                <button (click)="cancelEdit()">Anuluj</button>
-            </div>            
+
+            <div class="players-header">
+              <div>#</div>
+              <div>Name</div>
+              <div>Date of birth</div>
+            </div>
+
+            <div class="players-row" *ngFor="let player of paginatedPlayers">
+              <div>{{ player?.number || '—' }}</div>
+              <div>{{ player?.name || '—' }}</div>
+              <div>{{ player?.birthDate || '—' }}</div>
+
+              <div class="row-actions" *ngIf="player">
+                <button class="dots-btn" (click)="toggleMenu(player)">⋮</button>
+                <div class="dropdown-menu" *ngIf="player.showMenu">
+                  <button (click)="startEdit(player)">Edit</button>
+                  <button (click)="deletePlayer(player.id)">Delete</button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="pagination">
+            <button (click)="prevPage()" [disabled]="currentPage === 1">Prev</button>
+            <span>Page {{ currentPage }} / {{ totalPages }}</span>
+            <button (click)="nextPage()" [disabled]="currentPage === totalPages">Next</button>
+          </div>
         </main>
+
+        <div class="edit-modal" *ngIf="editMode">
+          <h4>Edit Player</h4>
+          <div class="input-group">
+            <label>Number</label>
+            <input type="number" [(ngModel)]="selectedPlayer.number" />
+          </div>
+          <div class="input-group">
+            <label>Name</label>
+            <input type="text" [(ngModel)]="selectedPlayer.name" />
+          </div>
+          <div class="input-group">
+            <label>Date of birth</label>
+            <input type="date" [(ngModel)]="selectedPlayer.birthDate" />
+          </div>
+
+          <div class="form-actions">
+            <button class="btn btn-create" (click)="updatePlayer()">Save</button>
+            <button class="btn btn-cancel" (click)="cancelEdit()">Cancel</button>
+          </div>
+        </div>
 
         <footer class="footer">
           <p>&copy; 2023 FootyCup. All rights reserved.</p>

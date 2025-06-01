@@ -124,6 +124,8 @@ drop(event: CdkDragDrop<any[]>): void {
   }
 }
 
+
+
   updateTime(entry: ScheduleEntry, time: string): void {
     const [datePart] = entry.startDateTime!.split('T');
     const newStart = `${datePart}T${time}:00`;

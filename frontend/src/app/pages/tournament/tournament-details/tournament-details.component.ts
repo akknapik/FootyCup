@@ -48,4 +48,20 @@ export class TournamentDetailsComponent implements OnInit {
   goBack(): void {
     this.router.navigate(['/tournaments/my']);
   }
+
+  updateTournament() {
+  const payload = {
+    name: this.tournament.name,
+    location: this.tournament.location
+  };
+
+  this.tournamentService.updateTournament(this.tournamentId, payload).subscribe({
+    next: () => {
+      this.notification.showSuccess('Zapisano zmiany turnieju!');
+    },
+    error: () => this.notification.showError('Błąd podczas zapisu!')
+  });
+  }
+
+
 }

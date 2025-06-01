@@ -44,25 +44,44 @@
         </header>
 
         <main class="content">
-          <h2>Szczegóły turnieju</h2>
+          <h2>{{ tournament?.name }}</h2>
 
-          <div *ngIf="tournament">
-            <p><strong>Nazwa:</strong> {{ tournament.name }}</p>
-            <p><strong>Start:</strong> {{ tournament.startDate }}</p>
-            <p><strong>Koniec:</strong> {{ tournament.endDate }}</p>
-            <p><strong>Lokalizacja:</strong> {{ tournament.location }}</p>
-            <p><strong>Status:</strong> {{ tournament.status }}</p>
+          <div *ngIf="tournament" class="form-card">
+            <h3 style="text-align: center; margin-bottom: 2rem;">Information</h3>
 
+            <div class="input-group">
+              <label>Name of the tournament</label>
+              <input type="text" [(ngModel)]="tournament.name" />
+            </div>
 
-            <button (click)="goToTeams()">📋 Lista zespołów</button>
+            <div class="input-group">
+              <label>Start date of the tournament</label>
+              <div class="static-field">{{ tournament.startDate }}</div>
+            </div>
+
+            <div class="input-group">
+              <label>End date of the tournament</label>
+              <div class="static-field">{{ tournament.endDate }}</div>
+            </div>
+
+            <div class="input-group">
+              <label>Location</label>
+              <input type="text" [(ngModel)]="tournament.location" />
+            </div>
+
+            <div class="input-group">
+              <label>Status</label>
+              <div class="static-field">{{ tournament.status }}</div>
+            </div>
+
+            <div class="form-actions">
+              <button class="btn btn-create" (click)="updateTournament()">Zapisz</button>
+            </div>
           </div>
-
-          <button (click)="goBack()">↩️ Powrót do moich turniejów</button>
-
         </main>
 
         <footer class="footer">
-          <p>&copy; 2023 FootyCup. All rights reserved.</p>
+          <p>&copy; 2025 FootyCup. All rights reserved.</p>
         </footer>
       </div>
     </div>

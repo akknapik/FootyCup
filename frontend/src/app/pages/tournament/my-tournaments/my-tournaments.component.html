@@ -35,36 +35,28 @@
         </header>
 
         <main class="content">
-          <h2>Moje Turnieje</h2>
-          <table>
-            <thead>
-              <tr>
-                <th>Name</th>
-                <th>Start date</th>
-                <th>End date</th>
-                <th>Location</th>
-                <th>Status</th>
-                <th>
-                  <button (click)="loadTournaments()">Refresh</button>
-                  <button (click)="goToCreate()">Create</button>
-                </th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr *ngFor="let t of tournaments" (click)="openDetails(t.id)" style="cursor: pointer;">
-                <td>{{ t.name }}</td>
-                <td>{{ t.startDate }}</td>
-                <td>{{ t.endDate }}</td>
-                <td>{{ t.location }}</td>
-                <td>{{ t.status }}</td>
-                <td>
-                  <button (click)="deleteTournament(t.id); $event.stopPropagation()">🗑️ Usuń</button>
-                </td>
-              </tr>
-            </tbody>
-          </table>
+          <div class="header-row">
+            <h2>Tournaments</h2>
+            <div class="actions">
+              <button (click)="goToCreate()">New tournament</button>
+            </div>
+          </div>
 
+          <div class="tournament-grid">
+            <div class="tournament-card" *ngFor="let t of tournaments" (click)="openDetails(t.id)">
+              <div class="card-date">{{ t.startDate }}</div>
+              <div class="card-title">{{ t.name }}</div>
+              <div class="card-actions" (click)="$event.stopPropagation()">
+                <button class="dots-btn" (click)="toggleMenu(t.id)">⋮</button>
+                <div class="card-menu" *ngIf="openedMenu === t.id">
+                  <button (click)="openDetails(t.id)">Edit</button>
+                  <button (click)="deleteTournament(t.id)">Delete</button>
+                </div>
+              </div>
+            </div>
+          </div>
         </main>
+
 
         <footer class="footer">
           <p>&copy; 2023 FootyCup. All rights reserved.</p>
@@ -73,6 +65,3 @@
     </div>
   </body>
 </html>
-
-
-
