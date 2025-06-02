@@ -17,20 +17,28 @@ export class ErrorService implements HttpInterceptor {
     private notification: NotificationService
   ) {}
 
-  intercept(req: HttpRequest<any>, next: HttpHandler): Observable<HttpEvent<any>> {
-    return next.handle(req).pipe(
-      catchError((error: HttpErrorResponse) => {
-        const errorMsg = error.error?.message || 'An error has occurred';
+intercept(req: HttpRequest<any>, next: HttpHandler): Observable<HttpEvent<any>> {
+  return next.handle(req).pipe(
+    catchError((error: HttpErrorResponse) => {
+      let errorMsg = 'An error has occurred';
 
-        this.notification.showError(errorMsg);
+      try {
+        const parsed = typeof error.error === 'string'
+          ? JSON.parse(error.error)
+          : error.error;
 
-        if (error.status === 401 || error.status === 403) {
-          localStorage.removeItem('token');
-          this.router.navigate(['/login']);
-        }
+        errorMsg = parsed?.message || errorMsg;
+      } catch {
+      }
 
-        return throwError(() => error);
-      })
-    );
-  }
+      this.notification.showError(errorMsg);
+
+      if (error.status === 401 || error.status === 403) {
+        this.router.navigate(['/login']); 
+      }
+
+      return throwError(() => error);
+    })
+  );
+}
 }

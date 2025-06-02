@@ -50,10 +50,9 @@ public class TokenAuthenticationFilter extends OncePerRequestFilter {
 
         String token = null;
 
-        // ✅ Odczytaj JWT z HttpOnly cookie
         if (request.getCookies() != null) {
             for (Cookie cookie : request.getCookies()) {
-                if ("jwt".equals(cookie.getName())) {
+                if ("accessToken".equals(cookie.getName())) {
                     token = cookie.getValue();
                     break;
                 }

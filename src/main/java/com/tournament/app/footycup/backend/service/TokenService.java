@@ -9,7 +9,7 @@ import java.util.Date;
 
 @Service
 public class TokenService {
-    private static final long EXPIRATION_TIME = 86400000;
+    private static final long EXPIRATION_TIME = 15 * 1000;
     private final Key secretKey = Keys.secretKeyFor(SignatureAlgorithm.HS256);
 
     public String generateToken(String email) {
@@ -37,4 +37,25 @@ public class TokenService {
     public boolean isValid(String token) {
         return getEmailFromToken(token) != null;
     }
+
+    public String generateAccessToken(String email, String role) {
+        return Jwts.builder()
+                .setSubject(email)
+                .claim("role", role)
+                .setIssuedAt(new Date())
+                .setExpiration(new Date(System.currentTimeMillis() + 15 * 60 * 1000))
+                .signWith(secretKey)
+                .compact();
+    }
+
+    public String generateRefreshToken(String email, String role) {
+        return Jwts.builder()
+                .setSubject(email)
+                .claim("role", role)
+                .setIssuedAt(new Date())
+                .setExpiration(new Date(System.currentTimeMillis() + 7 * 24 * 60 * 60 * 1000))
+                .signWith(secretKey)
+                .compact();
+    }
+
 }

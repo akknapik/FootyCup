@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="pl">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard | FootyCup</title>
+    <link rel="stylesheet" href="admin-users.component.css">
+  </head>
+  <body>
+    <div class="app-container">
+      <aside class="sidebar">
+        <div class="sidebar-header">
+          <img src="assets/images/logo1_3.png" alt="FootyCup Logo" class="sidebar-logo">
+        </div>
+        <nav class="sidebar-nav">
+          <a routerLink="/dashboard" class="nav-link">Dashboard</a>
+          <a routerLink="/tournaments/my" class="nav-link">Tournaments</a>
+          <a routerLink="/settings"class="nav-link">Settings</a>
+          <a *ngIf="(auth.currentUser$ | async)?.userRole === 'ADMIN'"
+              routerLink="/admin/users"
+              class="nav-link active">
+              Admin Panel
+            </a>
+        </nav>
+        <nav class="sidebar-footer">
+          <a routerLink="/aboutus">About us</a>
+          <a routerLink="/contact">Contact</a>
+        </nav>
+      </aside>
+
+      <div class="main">
+        <header class="header">
+          <div class="header-spacer"></div>
+
+          <div class="user-info">
+            <div class="user-text">
+              <span *ngIf="auth.currentUser$ | async as user">
+                <div class="user-name">{{ user.firstname }} {{ user.lastname }}</div>
+                <button class="logout-btn" (click)="logout()">Log out</button>
+              </span>
+            </div>
+            <div class="avatar"></div>
+          </div>
+        </header>
+
+        <main class="content">
+            <div class="header-row">
+                <h2>Admin Panel</h2>
+            </div>
+
+            <div class="teams-table">
+                <div class="teams-header">
+                <div>Email</div>
+                <div>Name</div>
+                <div>Role</div>
+                <div></div>
+                </div>
+
+                <div class="teams-row" *ngFor="let user of paginatedUsers">
+                <div>{{ user?.email || '—' }}</div>
+                <div>{{ user?.firstname }} {{ user?.lastname }}</div>
+                <div>{{ user?.userRole }}</div>
+                <div class="row-actions" *ngIf="user" (click)="$event.stopPropagation()">
+                    <button class="dots-btn" (click)="toggleMenu(user)">⋮</button>
+                    <div class="dropdown-menu" *ngIf="user.showMenu">
+                    <button (click)="deleteUser(user.id)">Delete</button>
+                    </div>
+                </div>
+                </div>
+            </div>
+
+            <div class="pagination">
+                <button (click)="prevPage()" [disabled]="currentPage === 1">Prev</button>
+                <span>{{ currentPage }} / {{ totalPages }}</span>
+                <button (click)="nextPage()" [disabled]="currentPage === totalPages">Next</button>
+            </div>
+</main>
+
+        <footer class="footer">
+          <p>&copy; 2025 FootyCup. All rights reserved.</p>
+        </footer>
+      </div>
+    </div>
+  </body>
+</html>
