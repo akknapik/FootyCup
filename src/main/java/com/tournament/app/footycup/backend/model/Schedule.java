@@ -15,8 +15,13 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 @Entity
-@Table(name = "schedules")
-@Schema(description = "Schedule for a tournament including matches and breaks")
+@Table(
+        name = "schedules",
+        indexes = {
+                @Index(name = "idx_schedule_tournament", columnList = "id_tournament"),
+                @Index(name = "idx_schedule_start_datetime", columnList = "startDateTime")
+        }
+)@Schema(description = "Schedule for a tournament including matches and breaks")
 public class Schedule {
 
     @Id

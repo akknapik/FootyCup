@@ -1,7 +1,5 @@
 package com.tournament.app.footycup.backend.model;
 
-
-import com.fasterxml.jackson.annotation.JsonManagedReference;
 import com.tournament.app.footycup.backend.enums.TournamentStatus;
 import com.tournament.app.footycup.backend.enums.TournamentSystem;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -13,14 +11,19 @@ import lombok.Setter;
 
 import java.io.Serializable;
 import java.time.LocalDate;
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 @Schema(description = "Tournament entity representing a football competition")
 @Entity
-@Table(name = "tournaments")
+@Table(
+        name = "tournaments",
+        indexes = {
+                @Index(name = "idx_tournament_name", columnList = "name"),
+                @Index(name = "idx_tournament_start_date", columnList = "startDate"),
+                @Index(name = "idx_tournament_organizer", columnList = "id_organizer")
+        }
+)
 @Getter
 @Setter
 @AllArgsConstructor

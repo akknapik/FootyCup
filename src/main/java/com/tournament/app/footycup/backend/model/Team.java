@@ -13,7 +13,13 @@ import java.util.List;
 
 @Schema(description = "Team entity representing a football team")
 @Entity
-@Table(name = "teams")
+@Table(
+        name = "teams",
+        indexes = {
+                @Index(name = "idx_team_name", columnList = "name"),
+                @Index(name = "idx_team_tournament", columnList = "id_tournament")
+        }
+)
 @Getter
 @Setter
 @AllArgsConstructor

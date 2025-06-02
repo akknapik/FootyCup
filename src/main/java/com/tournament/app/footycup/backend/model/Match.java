@@ -19,8 +19,13 @@ import java.time.LocalTime;
 @AllArgsConstructor
 @NoArgsConstructor
 @Entity
-@Table(name = "matches")
-@Schema(description = "Match entity representing a scheduled football match")
+@Table(
+        name = "matches",
+        indexes = {
+                @Index(name = "idx_match_group", columnList = "id_group"),
+                @Index(name = "idx_match_tournament", columnList = "id_tournament")
+        }
+)@Schema(description = "Match entity representing a scheduled football match")
 public class Match {
 
     @Id

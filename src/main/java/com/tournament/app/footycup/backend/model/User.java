@@ -14,7 +14,13 @@ import java.util.List;
 
 @Schema(description = "User entity representing an application user")
 @Entity
-@Table(name = "users")
+@Table(
+        name = "users",
+        indexes = {
+                @Index(name = "idx_users_email", columnList = "email"),
+                @Index(name = "idx_users_user_role", columnList = "userRole")
+        }
+)
 @Getter
 @Setter
 @AllArgsConstructor

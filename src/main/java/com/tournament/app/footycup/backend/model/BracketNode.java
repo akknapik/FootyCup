@@ -4,15 +4,20 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.persistence.*;
 import lombok.*;
 
-import java.util.List;
-
 @Getter
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
 @Entity
-@Table(name = "bracketNodes")
-@Schema(description = "Represents a single node in a tournament bracket (elimination format)")
+@Table(
+        name = "bracketNodes",
+        indexes = {
+                @Index(name = "idx_bracket_node_position", columnList = "position"),
+                @Index(name = "idx_bracket_node_parent_home", columnList = "id_parent_home_node"),
+                @Index(name = "idx_bracket_node_parent_away", columnList = "id_parent_away_node"),
+                @Index(name = "idx_bracket_node_tournament", columnList = "id_tournament")
+        }
+)@Schema(description = "Represents a single node in a tournament bracket (elimination format)")
 public class BracketNode {
 
     @Id

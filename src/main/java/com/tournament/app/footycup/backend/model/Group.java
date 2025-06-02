@@ -13,8 +13,12 @@ import java.util.List;
 @AllArgsConstructor
 @NoArgsConstructor
 @Entity
-@Table(name = "groups")
-@Schema(description = "Group of teams in a tournament (used for group stage format)")
+@Table(
+        name = "groups",
+        indexes = {
+                @Index(name = "idx_group_tournament", columnList = "id_tournament")
+        }
+)@Schema(description = "Group of teams in a tournament (used for group stage format)")
 public class Group {
 
     @Id

@@ -10,8 +10,14 @@ import lombok.*;
 @AllArgsConstructor
 @NoArgsConstructor
 @Entity
-@Table(name = "group_teams")
-@Schema(description = "Represents a team's participation and performance within a group")
+@Table(
+        name = "group_teams",
+        indexes = {
+                @Index(name = "idx_group_team_group", columnList = "id_group"),
+                @Index(name = "idx_group_team_team", columnList = "id_team"),
+                @Index(name = "idx_group_team_points", columnList = "points")
+        }
+)@Schema(description = "Represents a team's participation and performance within a group")
 public class GroupTeam {
 
     @Id

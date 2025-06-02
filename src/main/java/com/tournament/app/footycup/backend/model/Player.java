@@ -15,8 +15,13 @@ import java.time.LocalDate;
 @AllArgsConstructor
 @NoArgsConstructor
 @Entity
-@Table(name = "players")
-@Schema(description = "Player entity representing a football team member")
+@Table(
+        name = "players",
+        indexes = {
+                @Index(name = "idx_player_number", columnList = "number"),
+                @Index(name = "idx_player_team", columnList = "id_team")
+        }
+)@Schema(description = "Player entity representing a football team member")
 public class Player {
 
     @Id

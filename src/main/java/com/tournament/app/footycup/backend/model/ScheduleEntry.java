@@ -15,8 +15,14 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 @AllArgsConstructor
 @Entity
-@Table(name = "schedule_entries")
-@Schema(description = "Single entry in a schedule, either a match or a break")
+@Table(
+        name = "schedule_entries",
+        indexes = {
+                @Index(name = "idx_schedule_entry_schedule", columnList = "id_schedule"),
+                @Index(name = "idx_schedule_entry_type", columnList = "type"),
+                @Index(name = "idx_schedule_entry_match", columnList = "id_match")
+        }
+)@Schema(description = "Single entry in a schedule, either a match or a break")
 public class ScheduleEntry {
 
     @Id
