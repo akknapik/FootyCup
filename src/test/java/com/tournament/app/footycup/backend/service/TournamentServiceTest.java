@@ -26,6 +26,15 @@ public class TournamentServiceTest {
     @InjectMocks
     private TournamentService tournamentService;
 
+    @Mock
+    private ScheduleService scheduleService;
+
+    @Mock
+    private FormatService formatService;
+
+    @Mock
+    private TeamService teamService;
+
     @BeforeEach
     void setUp() {
         MockitoAnnotations.openMocks(this);
@@ -200,11 +209,15 @@ public class TournamentServiceTest {
         t1.setId(1L);
         t1.setName("Turniej 1");
         t1.setOrganizer(organizer);
+        t1.setStartDate(LocalDate.of(2025, 6, 1));
+        t1.setEndDate(LocalDate.of(2025, 6, 10));
 
         Tournament t2 = new Tournament();
         t2.setId(2L);
         t2.setName("Turniej 2");
         t2.setOrganizer(organizer);
+        t2.setStartDate(LocalDate.of(2025, 7, 1));
+        t2.setEndDate(LocalDate.of(2025, 7, 10));
 
         List<Tournament> tournaments = List.of(t1, t2);
 
