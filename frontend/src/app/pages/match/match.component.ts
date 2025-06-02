@@ -20,6 +20,8 @@ export class MatchComponent {
   groups: any[] = [];
   pageSize = 10;
   currentPage = 1;
+  isLoading: boolean = false;
+
 
   constructor(private route: ActivatedRoute, public router: Router, private matchService: MatchService, public auth: AuthService, private notification: NotificationService, private formatService: FormatService) {}
 
@@ -30,13 +32,18 @@ export class MatchComponent {
   }
 
   loadMatches() {
-    this.matchService.getMatches(this.tournamentId).subscribe({
-      next: (data) => {
-        this.matches = data;
-      },
-      error: () => this.notification.showError('Error loading matches!'),
-    });
-  }
+  this.isLoading = true;
+  this.matchService.getMatches(this.tournamentId).subscribe({
+    next: (data) => {
+      this.matches = data;
+      this.isLoading = false;
+    },
+    error: () => {
+      this.notification.showError('Error loading matches!');
+      this.isLoading = false;
+    },
+  });
+}
 
   loadGroups() {
   this.formatService.getGroups(this.tournamentId).subscribe({

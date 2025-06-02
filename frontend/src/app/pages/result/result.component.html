@@ -60,90 +60,90 @@
             </ul>
 
             <div *ngIf="activeTab === 'schedule'">
-                <ul class="tabs subtabs">
+              <ul class="tabs subtabs" *ngIf="!isLoadingSchedule && schedules.length > 0">
                 <li *ngFor="let s of schedules" (click)="selectSchedule(s.id)" [class.active]="s.id === selectedScheduleId">
-                    {{ s.startDateTime | date: 'yyyy-MM-dd' }}
+                  {{ s.startDateTime | date: 'yyyy-MM-dd' }}
                 </li>
-                </ul>
+              </ul>
 
-                <div class="results-table-container">
+              <p *ngIf="isLoadingSchedule" class="loading">Loading schedule...</p>
+              <p *ngIf="!isLoadingSchedule && schedules.length === 0" class="empty-state">No schedules available.</p>
+
+              <div class="results-table-container" *ngIf="!isLoadingSchedule && scheduleEntries.length > 0">
                 <h3 class="section-title">Match Results</h3>
                 <table class="styled-table">
-                    <thead>
+                  <thead>
                     <tr>
-                        <th>Time</th>
-                        <th>Match</th>
-                        <th>Team 1</th>
-                        <th>Score</th>
-                        <th>Team 2</th>
-                        <th>Score</th>
+                      <th>Time</th>
+                      <th>Match</th>
+                      <th>Team 1</th>
+                      <th>Score</th>
+                      <th>Team 2</th>
+                      <th>Score</th>
                     </tr>
-                    </thead>
-                    <tbody>
+                  </thead>
+                  <tbody>
                     <tr *ngFor="let e of scheduleEntries">
-                        <ng-container *ngIf="e.type === 'MATCH' && e.match">
+                      <ng-container *ngIf="e.type === 'MATCH' && e.match">
                         <td>{{ e.startDateTime | date: 'HH:mm' }}</td>
                         <td>{{ e.match.name }}</td>
                         <td>{{ e.match.teamHome?.name }}</td>
-                        <td>
-                            <input
-                            type="number"
-                            [(ngModel)]="e.match.homeScore"
-                            (blur)="onResultChange(e.match)"
-                            min="0"
-                            class="score-input"
-                            />
-                        </td>
+                        <td><input type="number" [(ngModel)]="e.match.homeScore" (blur)="onResultChange(e.match)" min="0" class="score-input" /></td>
                         <td>{{ e.match.teamAway?.name }}</td>
-                        <td>
-                            <input
-                            type="number"
-                            [(ngModel)]="e.match.awayScore"
-                            (blur)="onResultChange(e.match)"
-                            min="0"
-                            class="score-input"
-                            />
-                        </td>
-                        </ng-container>
-                        <ng-container *ngIf="e.type === 'BREAK'">
+                        <td><input type="number" [(ngModel)]="e.match.awayScore" (blur)="onResultChange(e.match)" min="0" class="score-input" /></td>
+                      </ng-container>
+                      <ng-container *ngIf="e.type === 'BREAK'">
                         <td>{{ e.startDateTime | date: 'HH:mm' }}</td>
                         <td colspan="5" class="break-row">Break ({{ e.durationInMin }} min)</td>
-                        </ng-container>
+                      </ng-container>
                     </tr>
-                    </tbody>
+                  </tbody>
                 </table>
-                </div>
+              </div>
+
+              <p *ngIf="!isLoadingSchedule && scheduleEntries.length === 0" class="empty-state">No entries in the selected schedule.</p>
             </div>
 
             <div *ngIf="activeTab === 'groups'">
+              <p *ngIf="isLoadingGroups" class="loading">Loading groups...</p>
+              <p *ngIf="!isLoadingGroups && groups.length === 0" class="empty-state">
+                No groups available.
+              </p>
+              <ng-container *ngIf="!isLoadingGroups && groups.length > 0">
                 <div *ngFor="let g of groups" class="group-block">
-                <h3>{{ g.name }}</h3>
-                <table class="styled-table">
+                  <h3>{{ g.name }}</h3>
+                  <table class="styled-table">
                     <thead>
-                    <tr>
+                      <tr>
                         <th>Team</th>
                         <th>Points</th>
                         <th>Goals</th>
-                    </tr>
+                      </tr>
                     </thead>
                     <tbody>
-                    <tr *ngFor="let gt of g.groupTeams">
+                      <tr *ngFor="let gt of g.groupTeams">
                         <td>{{ gt.team?.name }}</td>
                         <td>{{ gt.points }}</td>
                         <td>{{ gt.goalsFor }} : {{ gt.goalsAgainst }}</td>
-                    </tr>
+                      </tr>
                     </tbody>
-                </table>
+                  </table>
                 </div>
+              </ng-container>
             </div>
 
             <div *ngIf="activeTab === 'bracket'">
+              <p *ngIf="isLoadingBracket" class="loading">Loading bracket...</p>
+              <p *ngIf="!isLoadingBracket && bracket.length === 0" class="empty-state">No bracket matches yet.</p>
+
+              <ng-container *ngIf="!isLoadingBracket && bracket.length > 0">
                 <div *ngFor="let node of bracket" class="bracket-node">
-                <p>{{ node.match.teamHome?.name || '---' }} vs {{ node.match.teamAway?.name || '---' }}</p>
-                <p class="score">{{ node.match.homeScore }} : {{ node.match.awayScore }}</p>
+                  <p>{{ node.match.teamHome?.name || '---' }} vs {{ node.match.teamAway?.name || '---' }}</p>
+                  <p class="score">{{ node.match.homeScore }} : {{ node.match.awayScore }}</p>
                 </div>
+              </ng-container>
             </div>
-            </main>
+        </main>
         <footer class="footer">
           <p>&copy; 2025 FootyCup. All rights reserved.</p>
         </footer>

@@ -29,6 +29,9 @@ export class ResultComponent implements OnInit {
   groups: Group[] = [];
   groupTeams: GroupTeam[] = [];
   bracket: BracketNode[] = [];
+  isLoadingSchedule: boolean = false;
+  isLoadingGroups: boolean = false;
+  isLoadingBracket: boolean = false;
 
   constructor(
     private route: ActivatedRoute,
@@ -48,25 +51,42 @@ export class ResultComponent implements OnInit {
   }
 
   loadSchedulesList(): void {
-    this.scheduleService.getSchedulesList(this.tournamentId).subscribe(list => {
+  this.isLoadingSchedule = true;
+  this.scheduleService.getSchedulesList(this.tournamentId).subscribe({
+    next: (list) => {
       this.schedules = list.sort((a, b) =>
         new Date(a.startDateTime!).getTime() - new Date(b.startDateTime!).getTime()
       );
       if (this.schedules.length) {
         this.selectSchedule(this.schedules[0].id!);
+      } else {
+        this.isLoadingSchedule = false;
       }
-    });
-  }
+    },
+    error: () => {
+      this.notification.showError('Error loading schedules');
+      this.isLoadingSchedule = false;
+    }
+  });
+}
 
-  selectSchedule(scheduleId: number): void {
-    this.selectedScheduleId = scheduleId;
-    this.scheduleService
-      .getScheduleById(this.tournamentId, scheduleId)
-      .subscribe(sched => {
+selectSchedule(scheduleId: number): void {
+  this.isLoadingSchedule = true;
+  this.selectedScheduleId = scheduleId;
+  this.scheduleService
+    .getScheduleById(this.tournamentId, scheduleId)
+    .subscribe({
+      next: (sched) => {
         this.selectedSchedule = sched;
         this.scheduleEntries = sched.entries;
-      });
-  }
+        this.isLoadingSchedule = false;
+      },
+      error: () => {
+        this.notification.showError('Error loading schedule details');
+        this.isLoadingSchedule = false;
+      }
+    });
+}
 
   onResultChange(match: Match | null): void {
   if (!match) return;
@@ -81,13 +101,33 @@ export class ResultComponent implements OnInit {
     });
   }
 
-  loadGroups(): void {
-    this.resultService.getGroups(this.tournamentId).subscribe(g => this.groups = g);
-  }
+loadGroups(): void {
+  this.isLoadingGroups = true;
+  this.resultService.getGroups(this.tournamentId).subscribe({
+    next: (g) => {
+      this.groups = g;
+      this.isLoadingGroups = false;
+    },
+    error: () => {
+      this.notification.showError('Error loading groups');
+      this.isLoadingGroups = false;
+    }
+  });
+}
 
-  loadBracket(): void {
-    this.resultService.getBracket(this.tournamentId).subscribe(b => this.bracket = b);
-  }
+loadBracket(): void {
+  this.isLoadingBracket = true;
+  this.resultService.getBracket(this.tournamentId).subscribe({
+    next: (b) => {
+      this.bracket = b;
+      this.isLoadingBracket = false;
+    },
+    error: () => {
+      this.notification.showError('Error loading bracket');
+      this.isLoadingBracket = false;
+    }
+  });
+}
 
   onTabChange(tab: string): void {
   this.activeTab = tab;

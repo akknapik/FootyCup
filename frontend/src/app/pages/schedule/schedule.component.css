@@ -308,3 +308,15 @@ input[type="time"]:focus {
   border-color: #68D391;
   box-shadow: 0 0 0 2px rgba(104, 211, 145, 0.3);
 }
+
+.loading, .empty-state {
+  text-align: center;
+  font-size: 1.1rem;
+  padding: 2rem;
+  color: #666;
+}
+.empty-placeholder {
+  text-align: center;
+  font-style: italic;
+  color: #888;
+}

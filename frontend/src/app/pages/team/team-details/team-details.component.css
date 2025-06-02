@@ -270,7 +270,26 @@ hr {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.actions {
+  display: flex;
+  gap: 0.75rem;
+}
+
+.actions button {
+  padding: 0.5rem 1rem;
+  background: #2F855A;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.actions button:hover {
+  background: #276749;
 }
 
 .btn-add {
@@ -406,4 +425,11 @@ hr {
   background: #fff;
   box-shadow: 0 4px 12px rgba(0,0,0,0.1);
   border-radius: 8px;
+}
+
+.loading, .empty-state {
+  text-align: center;
+  padding: 2rem;
+  font-size: 1.1rem;
+  color: #666;
 }

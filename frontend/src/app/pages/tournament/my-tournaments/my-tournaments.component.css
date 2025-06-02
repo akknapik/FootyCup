@@ -286,3 +286,10 @@ table {
 .card-menu button:hover {
   background: #f0f0f0;
 }
+
+.loading, .empty-state {
+  text-align: center;
+  padding: 2rem;
+  font-size: 1.2rem;
+  color: #666;
+}

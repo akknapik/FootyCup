@@ -24,7 +24,8 @@ export class ScheduleComponent implements OnInit {
   allMatches: Match[] = [];
   scheduleEntries: ScheduleEntry[] = [];
   breakDuration: number = 15;
-
+  isLoading: boolean = false;
+  loadingMatches: boolean = false;
 
   constructor(
     private route: ActivatedRoute,
@@ -43,34 +44,55 @@ export class ScheduleComponent implements OnInit {
   }
 
   loadSchedulesList(): void {
-  this.scheduleService.getSchedulesList(this.tournamentId).subscribe(list => {
-    this.schedules = list
-      .map(s => ({
-        id: s.id!,
-        startDateTime: new Date(s.startDateTime!)
-      }))
-      .sort((a, b) => a.startDateTime.getTime() - b.startDateTime.getTime()); 
+  this.isLoading = true;
+  this.scheduleService.getSchedulesList(this.tournamentId).subscribe({
+    next: (list) => {
+      this.schedules = list
+        .map(s => ({
+          id: s.id!,
+          startDateTime: new Date(s.startDateTime!)
+        }))
+        .sort((a, b) => a.startDateTime.getTime() - b.startDateTime.getTime());
 
-    if (this.schedules.length) {
-      this.selectSchedule(this.schedules[0].id);
+      if (this.schedules.length) {
+        this.selectSchedule(this.schedules[0].id);
+      } else {
+        this.isLoading = false;
+      }
+    },
+    error: () => {
+      this.notification.showError('Failed to load schedules');
+      this.isLoading = false;
     }
   });
 }
 
   selectSchedule(id: number): void {
-    this.selectedScheduleId = id;
-    forkJoin({
-      sched: this.scheduleService.getScheduleById(this.tournamentId, id),
-      matches: this.matchService.getMatches(this.tournamentId),
-      usedIds: this.scheduleService.getUsedMatchIds(this.tournamentId)
-    }).subscribe(({ sched, matches, usedIds }) => {
+  this.loadingMatches = true;
+  this.selectedScheduleId = id;
+
+  forkJoin({
+    sched: this.scheduleService.getScheduleById(this.tournamentId, id),
+    matches: this.matchService.getMatches(this.tournamentId),
+    usedIds: this.scheduleService.getUsedMatchIds(this.tournamentId)
+  }).subscribe({
+    next: ({ sched, matches, usedIds }) => {
       this.scheduleEntries = sched.entries;
       sched.startDateTime = new Date(sched.startDateTime);
-      this.selectedSchedule = sched; 
+      this.selectedSchedule = sched;
       const usedIdSet = new Set(usedIds);
       this.allMatches = matches.filter(m => !usedIdSet.has(m.id));
-    });
+      this.loadingMatches = false;
+      this.isLoading = false;
+    },
+    error: () => {
+      this.notification.showError('Error loading schedule details');
+      this.loadingMatches = false;
+      this.isLoading = false;
+    }
+  });
 }
+
 
   onAddBreak(durationInMin: number): void {
     this.scheduleService

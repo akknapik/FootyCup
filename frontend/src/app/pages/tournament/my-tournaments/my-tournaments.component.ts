@@ -12,6 +12,7 @@ import { NotificationService } from '../../../services/notification.service';
 })
 export class MyTournamentsComponent {
   tournaments: any[] = [];
+  isLoading: boolean = false;
 
   constructor(private tournamentService: TournamentService, private router: Router, public auth: AuthService, private notification: NotificationService) {}
 
@@ -20,11 +21,18 @@ export class MyTournamentsComponent {
   }
 
   loadTournaments() {
-    this.tournamentService.getMyTournaments().subscribe({
-      next: (data) => this.tournaments = data,
-      error: () => this.notification.showError('Error loading tournaments')
-    });
-  }
+  this.isLoading = true;
+  this.tournamentService.getMyTournaments().subscribe({
+    next: (data) => {
+      this.tournaments = data;
+      this.isLoading = false;
+    },
+    error: () => {
+      this.notification.showError('Error loading tournaments');
+      this.isLoading = false;
+    }
+  });
+}
 
   goToCreate() {
     this.router.navigate(['/tournaments/new']);

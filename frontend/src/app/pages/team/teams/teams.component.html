@@ -60,15 +60,23 @@
             </div>
           </div>
 
-          <div class="teams-table">
+          <div *ngIf="isLoading" class="loading">
+            <p>Loading teams...</p>
+          </div>
+
+          <div *ngIf="!isLoading && teams.length === 0" class="empty-state">
+            <p>No teams found. Click "New team" to add one.</p>
+          </div>
+
+          <div *ngIf="!isLoading && teams.length > 0" class="teams-table">
             <div class="teams-header">
               <div>Name</div>
               <div>Coach</div>
               <div class="players-column">Players</div>
-              <div></div> 
+              <div></div>
             </div>
 
-            <div class="teams-row" *ngFor="let team of paginatedTeams" (click)="openDetails(team.id)">
+            <div class="teams-row" *ngFor="let team of paginatedTeams" (click)="team && openDetails(team.id)">
               <div>{{ team?.name || '—' }}</div>
               <div>
                 {{ team?.coach ? team.coach.firstname + ' ' + team.coach.lastname : '—' }}
@@ -88,7 +96,7 @@
             </div>
           </div>
 
-          <div class="pagination">
+          <div class="pagination" *ngIf="!isLoading && teams.length > 0">
             <button (click)="prevPage()" [disabled]="currentPage === 1">Prev</button>
             <span>{{ currentPage }} / {{ totalPages }}</span>
             <button (click)="nextPage()" [disabled]="currentPage === totalPages">Next</button>

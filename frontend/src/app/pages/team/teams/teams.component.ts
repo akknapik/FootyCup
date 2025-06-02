@@ -16,6 +16,7 @@ export class TeamsComponent {
   selectedTeam: any = null;
   pageSize = 10;
   currentPage = 1;
+  isLoading = false;
   
   constructor(private teamService: TeamService, private router: Router, private route: ActivatedRoute, public auth: AuthService, private notification: NotificationService) {}
 
@@ -25,9 +26,16 @@ export class TeamsComponent {
   }
 
   loadTeams() {
+    this.isLoading = true; 
     this.teamService.getTeams(this.tournamentId).subscribe({
-      next: (data) => this.teams = data,
-      error: () => this.notification.showError('Error loading teams')
+      next: (data) => {
+        this.teams = data;
+        this.isLoading = false; 
+      },
+      error: () => {
+        this.notification.showError('Error loading teams');
+        this.isLoading = false;
+      }
     });
   }
 

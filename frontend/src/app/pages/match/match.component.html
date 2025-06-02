@@ -64,31 +64,42 @@
           </div>
 
           <div class="matches-table">
-            <div class="matches-header">
-              <div>Name</div>
-              <div>Teams</div>
-              <div>Status</div>
+
+            <div *ngIf="isLoading" class="loading">
+              <p>Loading matches...</p>
             </div>
 
-            <div class="matches-row" *ngFor="let match of paginatedMatches">
-              <div>{{ match?.name || '—' }}</div>
-              <div>
-                {{ match?.teamHome?.name || '—' }} vs {{ match?.teamAway?.name || '—' }}
-              </div>
-              <div class="status-column">{{ match?.status || '—' }}</div>
+            <div *ngIf="!isLoading && matches.length === 0" class="empty-state">
+              <p>No matches yet. You can create one or generate from groups.</p>
+            </div>
 
-              <div class="row-actions" *ngIf="match" (click)="$event.stopPropagation()">
-                <button class="dots-btn" (click)="toggleMenu(match)">⋮</button>
-                <div class="dropdown-menu" *ngIf="match.showMenu">
-                  <button (click)="deleteMatch(match.id)">Delete</button>
+            <ng-container *ngIf="!isLoading && matches.length > 0">
+              <div class="matches-header">
+                <div>Name</div>
+                <div>Teams</div>
+                <div>Status</div>
+              </div>
+
+              <div class="matches-row" *ngFor="let match of paginatedMatches">
+                <div>{{ match?.name || '—' }}</div>
+                <div>
+                  {{ match?.teamHome?.name || '—' }} vs {{ match?.teamAway?.name || '—' }}
+                </div>
+                <div class="status-column">{{ match?.status || '—' }}</div>
+
+                <div class="row-actions" *ngIf="match" (click)="$event.stopPropagation()">
+                  <button class="dots-btn" (click)="toggleMenu(match)">⋮</button>
+                  <div class="dropdown-menu" *ngIf="match.showMenu">
+                    <button (click)="deleteMatch(match.id)">Delete</button>
+                  </div>
                 </div>
               </div>
-            </div>
+            </ng-container>
           </div>
 
-          <div class="pagination" *ngIf="totalPages > 1">
+          <div class="pagination" *ngIf="!isLoading && totalPages > 1">
             <button (click)="prevPage()" [disabled]="currentPage === 1">Prev</button>
-            <span>Page {{ currentPage }} / {{ totalPages }}</span>
+            <span>{{ currentPage }} / {{ totalPages }}</span>
             <button (click)="nextPage()" [disabled]="currentPage === totalPages">Next</button>
           </div>
         </main>

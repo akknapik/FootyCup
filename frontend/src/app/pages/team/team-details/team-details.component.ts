@@ -19,6 +19,7 @@ export class TeamDetailsComponent {
   pageSize = 8;
   currentPage = 1;
   editMode = false;
+  isLoading: boolean = false;
 
   constructor(
     private route: ActivatedRoute,
@@ -44,17 +45,22 @@ export class TeamDetailsComponent {
   }
 
   loadTeamDetails() {
-    this.teamService.getTeamById(this.tournamentId, this.teamId).subscribe({
-      next: (data) => {
-        this.team = data;
-        this.playerList = (data.playerList || []).map((player: any) => ({
-          ...player,
-          showMenu: false
-        }));
-      },
-      error: () => this.notification.showError('Error loading team details!')
-    });
-  }
+  this.isLoading = true;
+  this.teamService.getTeamById(this.tournamentId, this.teamId).subscribe({
+    next: (data) => {
+      this.team = data;
+      this.playerList = (data.playerList || []).map((player: any) => ({
+        ...player,
+        showMenu: false
+      }));
+      this.isLoading = false;
+    },
+    error: () => {
+      this.notification.showError('Error loading team details!');
+      this.isLoading = false;
+    }
+  });
+}
 
   updateTeam() {
     const payload = {

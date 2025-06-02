@@ -69,7 +69,7 @@
             </div>
           </div>
 
-          <ul class="tabs">
+          <ul class="tabs" *ngIf="!isLoading && schedules.length > 0">
             <li
               *ngFor="let s of schedules"
               (click)="selectSchedule(s.id)"
@@ -78,6 +78,10 @@
               {{ s.startDateTime | date: 'yyyy-MM-dd' }}
             </li>
           </ul>
+
+          <div *ngIf="!isLoading && schedules.length === 0" class="empty-state">
+            <p>No schedules available. Please create one in the admin panel.</p>
+          </div>
 
           <div class="start-time-control" *ngIf="selectedSchedule">
             <label>Start time:</label>
@@ -89,16 +93,18 @@
           </div>
 
           <div class="schedule-container">
-            <div
-              class="matches-list"
-              cdkDropList
-              id="allMatchesList"
-              [cdkDropListData]="allMatches"
-              [cdkDropListConnectedTo]="['scheduleList']"
-              (cdkDropListDropped)="drop($event)"
-            >
+            <div class="matches-list" cdkDropList id="allMatchesList" [cdkDropListData]="allMatches" [cdkDropListConnectedTo]="['scheduleList']" (cdkDropListDropped)="drop($event)">
               <h3>All Matches</h3>
-              <table>
+
+              <div *ngIf="loadingMatches" class="loading">
+                <p>Loading matches...</p>
+              </div>
+
+              <div *ngIf="!loadingMatches && allMatches.length === 0" class="empty-state">
+                <p>No matches available to schedule.</p>
+              </div>
+
+              <table *ngIf="!loadingMatches && allMatches.length > 0">
                 <tbody>
                   <tr *ngFor="let m of allMatches" cdkDrag>
                     <td>{{ m.name }}</td>

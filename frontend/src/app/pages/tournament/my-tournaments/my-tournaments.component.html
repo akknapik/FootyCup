@@ -51,19 +51,27 @@
             </div>
           </div>
 
-          <div class="tournament-grid">
-            <div class="tournament-card" *ngFor="let t of tournaments" (click)="openDetails(t.id)">
-              <div class="card-date">{{ t.startDate }}</div>
-              <div class="card-title">{{ t.name }}</div>
-              <div class="card-actions" (click)="$event.stopPropagation()">
-                <button class="dots-btn" (click)="toggleMenu(t.id)">⋮</button>
-                <div class="card-menu" *ngIf="openedMenu === t.id">
-                  <button (click)="openDetails(t.id)">Edit</button>
-                  <button (click)="deleteTournament(t.id)">Delete</button>
-                </div>
+          <div *ngIf="isLoading" class="loading">
+            <p>Loading tournaments...</p>
+          </div>
+
+        <div *ngIf="!isLoading && tournaments.length === 0" class="empty-state">
+          <p>No tournaments found. Click "New tournament" to create one.</p>
+        </div>
+
+        <div *ngIf="!isLoading && tournaments.length > 0" class="tournament-grid">
+          <div class="tournament-card" *ngFor="let t of tournaments" (click)="openDetails(t.id)">
+            <div class="card-date">{{ t.startDate }}</div>
+            <div class="card-title">{{ t.name }}</div>
+            <div class="card-actions" (click)="$event.stopPropagation()">
+              <button class="dots-btn" (click)="toggleMenu(t.id)">⋮</button>
+              <div class="card-menu" *ngIf="openedMenu === t.id">
+                <button (click)="openDetails(t.id)">Edit</button>
+                <button (click)="deleteTournament(t.id)">Delete</button>
               </div>
             </div>
           </div>
+        </div>
         </main>
         <footer class="footer">
           <p>&copy; 2025 FootyCup. All rights reserved.</p>

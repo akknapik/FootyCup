@@ -79,33 +79,49 @@
           <div class="players-table">
             <div class="header-row">
               <h3>Players</h3>
-              <button class="btn-add" (click)="goToAddPlayer()">New player</button>
-            </div>
-
-            <div class="players-header">
-              <div>#</div>
-              <div>Name</div>
-              <div>Date of birth</div>
-            </div>
-
-            <div class="players-row" *ngFor="let player of paginatedPlayers" (click)="startEdit(player)">
-              <div>{{ player?.number || '—' }}</div>
-              <div>{{ player?.name || '—' }}</div>
-              <div>{{ player?.birthDate || '—' }}</div>
-
-              <div class="row-actions" *ngIf="player">
-                <button class="dots-btn" (click)="toggleMenu(player)">⋮</button>
-                <div class="dropdown-menu" *ngIf="player.showMenu">
-                  <button (click)="startEdit(player)">Edit</button>
-                  <button (click)="deletePlayer(player.id)">Delete</button>
-                </div>
+              <div class="actions">
+                <button (click)="goToAddPlayer()">New player</button>
               </div>
             </div>
+
+            <div *ngIf="isLoading" class="loading">
+              <p>Loading players...</p>
+            </div>
+
+            <div *ngIf="!isLoading && playerList.length === 0" class="empty-state">
+              <p>No players added to this team yet.</p>
+            </div>
+
+            <ng-container *ngIf="!isLoading && playerList.length > 0">
+              <div class="players-header">
+                <div>#</div>
+                <div>Name</div>
+                <div>Date of birth</div>
+              </div>
+
+              <div
+                class="players-row"
+                *ngFor="let player of paginatedPlayers"
+                (click)="player && startEdit(player)"
+              >
+                <div>{{ player?.number || '—' }}</div>
+                <div>{{ player?.name || '—' }}</div>
+                <div>{{ player?.birthDate || '—' }}</div>
+
+                <div class="row-actions" *ngIf="player" (click)="$event.stopPropagation()">
+                  <button class="dots-btn" (click)="toggleMenu(player)">⋮</button>
+                  <div class="dropdown-menu" *ngIf="player.showMenu">
+                    <button (click)="startEdit(player)">Edit</button>
+                    <button (click)="deletePlayer(player.id)">Delete</button>
+                  </div>
+                </div>
+              </div>
+            </ng-container>
           </div>
 
-          <div class="pagination">
+          <div class="pagination" *ngIf="!isLoading && playerList.length > 0">
             <button (click)="prevPage()" [disabled]="currentPage === 1">Prev</button>
-            <span>Page {{ currentPage }} / {{ totalPages }}</span>
+            <span>{{ currentPage }} / {{ totalPages }}</span>
             <button (click)="nextPage()" [disabled]="currentPage === totalPages">Next</button>
           </div>
         </main>
