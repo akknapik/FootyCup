@@ -11,23 +11,21 @@ export class AuthGuard implements CanActivate {
   constructor(private auth: AuthService, private router: Router) {}
 
   canActivate(): Observable<boolean> {
-    return this.auth.currentUser$.pipe(
-      switchMap(user => {
-        if (user) {
-          return of(true);
-        }
-        return this.auth.loadCurrentUser().pipe(
-          map(loadedUser => {
-            if (loadedUser) {
-              return true;
-            } else {
-              this.router.navigate(['/login']);
-              return false;
-            }
-          })
-        );
-      }),
-      take(1)
-    );
+  const isLoginRoute = this.router.url.startsWith('/login');
+  if (isLoginRoute) {
+    return of(true);
   }
+
+  return this.auth.currentUser$.pipe(
+    switchMap(user => {
+      if (user) {
+        return of(true);
+      }
+      return this.auth.loadCurrentUser().pipe(
+        map(loadedUser => !!loadedUser)
+      );
+    }),
+    take(1)
+  );
+}
 }

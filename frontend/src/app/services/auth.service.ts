@@ -1,6 +1,6 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
-import { BehaviorSubject, Observable, tap } from 'rxjs';
+import { BehaviorSubject, catchError, Observable, of, tap, throwError } from 'rxjs';
 import { User } from '../models/user.model';
 import { NotificationService } from './notification.service';
 import { Router } from '@angular/router';
@@ -13,11 +13,11 @@ export class AuthService {
   currentUser$ = this.currentUserSubject.asObservable();
   private tokenTimeout: any;
 
-  constructor(private http: HttpClient, private notification: NotificationService, private router: Router) {
-  this.loadCurrentUser().subscribe({
-    error: () => this.logout().subscribe()
-  });
-}
+  constructor(private http: HttpClient, private notification: NotificationService, private router: Router
+  ) {
+    this.loadCurrentUser().subscribe();
+  }
+
 
   register(data: any) {
     return this.http.post('/api/register', data, { responseType: 'text',
@@ -91,13 +91,20 @@ startTokenWatcher(expiresInSeconds: number) {
 );
 }
 
-  loadCurrentUser() {
-    return this.http.get<User>('/api/users/me', {
-      withCredentials: true 
-    }).pipe(
-      tap(user => this.currentUserSubject.next(user))
-    );
-  }
+ loadCurrentUser(): Observable<User | null> {
+  return this.http.get<User>('/api/users/me', {
+    withCredentials: true
+  }).pipe(
+    tap(user => this.currentUserSubject.next(user)),
+    catchError(err => {
+      if (err.status === 401) {
+        this.currentUserSubject.next(null);
+        return of(null); 
+      }
+      return throwError(() => err);
+    })
+  );
+}
 
   isLoggedIn(): boolean {
     return !!this.currentUserSubject.value;

@@ -56,6 +56,8 @@ public class WebSecurityConfig {
                 )
                 .exceptionHandling(exception -> exception
                         .authenticationEntryPoint((request, response, authException) -> {
+                            if (response.isCommitted()) return;
+
                             ErrorResponse error = new ErrorResponse(
                                     HttpStatus.UNAUTHORIZED.value(),
                                     "Unauthorized access",
@@ -66,6 +68,8 @@ public class WebSecurityConfig {
                             new ObjectMapper().writeValue(response.getWriter(), error);
                         })
                         .accessDeniedHandler((request, response, accessDeniedException) -> {
+                            if (response.isCommitted()) return;
+
                             ErrorResponse error = new ErrorResponse(
                                     HttpStatus.FORBIDDEN.value(),
                                     "Access denied",

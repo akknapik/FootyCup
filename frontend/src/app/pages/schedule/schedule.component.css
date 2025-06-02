@@ -129,19 +129,21 @@ html, body {
 }
 
 .logout-btn {
-  margin-top: 0.4rem;
-  padding: 0.4rem 1rem;
-  background-color: #f0f0f0;
-  border: 1px solid #ccc;
-  color: #333;
-  border-radius: 6px;
+  background-color: white;
+  color: #2F855A;
+  border: 1px solid #2F855A;
+  padding: 0.3rem 1rem;
+  border-radius: 999px;
+  font-size: 0.9rem;
+  font-weight: 600;
   cursor: pointer;
-  font-size: 0.85rem;
-  transition: background 0.2s ease;
+  transition: all 0.2s ease-in-out;
+  margin-top: 0.25rem;
 }
 
 .logout-btn:hover {
-  background-color: #e0e0e0;
+  background-color: #2F855A;
+  color: white;
 }
 
 .avatar {

@@ -34,7 +34,7 @@ intercept(req: HttpRequest<any>, next: HttpHandler): Observable<HttpEvent<any>> 
       this.notification.showError(errorMsg);
 
       if (error.status === 401 || error.status === 403) {
-        this.router.navigate(['/login']); 
+        this.router.navigate(['/logout']); 
       }
 
       return throwError(() => error);

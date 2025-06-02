@@ -134,19 +134,21 @@ public class MatchService {
 
     public void propagateWinner(Match finishedMatch) {
         Team winner = determineWinner(finishedMatch);
-        if(winner == null) {
+        if (winner == null) {
             return;
         }
 
         BracketNode currentNode = bracketNodeRepository.findByMatch(finishedMatch);
+        if (currentNode == null) {
+            return;
+        }
 
-        List<BracketNode> nextNodes = bracketNodeRepository.findByParentHomeNodeOrParentAwayNode(currentNode,
-                currentNode);
+        List<BracketNode> nextNodes = bracketNodeRepository.findByParentHomeNodeOrParentAwayNode(currentNode, currentNode);
 
-        for(BracketNode next : nextNodes) {
+        for (BracketNode next : nextNodes) {
             Match m = next.getMatch();
 
-            if(currentNode.equals(next.getParentHomeNode())) {
+            if (currentNode.equals(next.getParentHomeNode())) {
                 m.setTeamHome(winner);
             }
             if (currentNode.equals(next.getParentAwayNode())) {
