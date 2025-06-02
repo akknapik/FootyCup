@@ -1,5 +1,5 @@
 import { Component, HostListener } from '@angular/core';
-import { ActivatedRoute } from '@angular/router';
+import { ActivatedRoute, Route, Router } from '@angular/router';
 import { FormatService } from '../../services/format.service';
 import { AuthService } from '../../services/auth.service';
 import { TeamService } from '../../services/team.service';
@@ -35,7 +35,7 @@ export class FormatComponent {
   mixedAdvancing: number = 4;
 
 
-  constructor(private route: ActivatedRoute, private formatService: FormatService, private teamService: TeamService, public auth: AuthService, private notification: NotificationService) {}
+  constructor(private route: ActivatedRoute, public router: Router, private formatService: FormatService, private teamService: TeamService, public auth: AuthService, private notification: NotificationService) {}
 
   ngOnInit(): void {
     this.tournamentId = +this.route.snapshot.paramMap.get('tournamentId')!;
@@ -192,5 +192,11 @@ generateMixed() {
       this.editedNode = null;
       this.editedSide = null;
     }
+  }
+
+    logout(): void {
+    this.auth.logout().subscribe(() => {
+      this.router.navigate(['/login']); 
+    });
   }
 }

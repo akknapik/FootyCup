@@ -20,10 +20,16 @@
             <a routerLink="/tournament/{{ tournamentId }}/teams" class="nav-link active">Teams</a>
             <a routerLink="/tournament/{{ tournamentId }}/format" class="nav-link">Format</a>
             <a routerLink="/tournament/{{ tournamentId }}/matches" class="nav-link">Matches</a>
+            <a routerLink="/tournament/{{ tournamentId }}/schedule" class="nav-link">Schedule</a>
             <a routerLink="/tournament/{{ tournamentId }}/results" class="nav-link">Results</a>
           </div>
 
           <a routerLink="/settings"class="nav-link">Settings</a>
+            <a *ngIf="(auth.currentUser$ | async)?.userRole === 'ADMIN'"
+              routerLink="/admin/users"
+              class="nav-link">
+              Admin Panel
+            </a>
         </nav>
         <nav class="sidebar-footer">
           <a routerLink="/aboutus">About us</a>
@@ -34,28 +40,42 @@
       <div class="main">
         <header class="header">
           <div class="header-spacer"></div>
+
           <div class="user-info">
-            <span *ngIf="auth.currentUser$ | async as user">
-              {{ user.firstname }} {{ user.lastname }}
-            </span>
+            <div class="user-text">
+              <span *ngIf="auth.currentUser$ | async as user">
+                <div class="user-name">{{ user.firstname }} {{ user.lastname }}</div>
+                <button class="logout-btn" (click)="logout()">Log out</button>
+              </span>
+            </div>
             <div class="avatar"></div>
           </div>
         </header>
 
         <main class="content">
-          <h2>Nowy zespół</h2>
+        <h2>New team</h2>
+        <div class="form-card">
           <form (ngSubmit)="create()">
-            <input [(ngModel)]="form.name" name="name" placeholder="Nazwa" required />
-            <input [(ngModel)]="form.country" name="country" placeholder="Kraj" required />
-            <input [(ngModel)]="form.coachEmail" name="coachEmail" placeholder="Email trenera" type="email"/>
-          
-            <button type="submit">Dodaj zespół</button>
+            <div class="input-group">
+              <input [(ngModel)]="form.name" name="name" placeholder="Team name" required />
+            </div>
+            <div class="input-group">
+              <input [(ngModel)]="form.country" name="country" placeholder="Country" required />
+            </div>
+            <div class="input-group">
+              <input [(ngModel)]="form.coachEmail" name="coachEmail" placeholder="Coach email" type="email" />
+            </div>
+
+            <div class="form-actions">
+              <button type="button" class="btn btn-cancel" (click)="router.navigate(['/tournament', tournamentId, 'teams'])">Cancel</button>
+              <button type="submit" class="btn btn-create">Create</button>
+            </div>
           </form>
-               
-        </main>
+        </div>
+      </main>
 
         <footer class="footer">
-          <p>&copy; 2023 FootyCup. All rights reserved.</p>
+          <p>&copy; 2025 FootyCup. All rights reserved.</p>
         </footer>
       </div>
     </div>

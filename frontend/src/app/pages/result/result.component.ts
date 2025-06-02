@@ -1,5 +1,5 @@
 import { Component, OnInit } from '@angular/core';
-import { ActivatedRoute } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { ScheduleEntry } from '../../models/schedule-entry.model';
 import { Schedule } from '../../models/schedule.model';
 import { MatchService } from '../../services/match.service';
@@ -32,6 +32,7 @@ export class ResultComponent implements OnInit {
 
   constructor(
     private route: ActivatedRoute,
+    public router: Router,
     private scheduleService: ScheduleService,
     private matchService: MatchService,
     public auth: AuthService,
@@ -75,8 +76,8 @@ export class ResultComponent implements OnInit {
     homeScore: match.homeScore ?? 0,
     awayScore: match.awayScore ?? 0
   }).subscribe({
-      next: () => this.notification.showSuccess('Wynik zapisany!'),
-      error: () => this.notification.showError('Błąd zapisu wyniku')
+      next: () => this.notification.showSuccess('Result saved!'),
+      error: () => this.notification.showError('Error saving result')
     });
   }
 
@@ -97,6 +98,12 @@ export class ResultComponent implements OnInit {
     this.loadBracket();
   }
 }
+
+  logout(): void {
+    this.auth.logout().subscribe(() => {
+      this.router.navigate(['/login']); 
+    });
+  }
 
 }
 

@@ -25,6 +25,11 @@
           </div>
 
           <a routerLink="/settings"class="nav-link">Settings</a>
+            <a *ngIf="(auth.currentUser$ | async)?.userRole === 'ADMIN'"
+              routerLink="/admin/users"
+              class="nav-link">
+              Admin Panel
+            </a>
         </nav>
         <nav class="sidebar-footer">
           <a routerLink="/aboutus">About us</a>
@@ -35,10 +40,14 @@
       <div class="main">
         <header class="header">
           <div class="header-spacer"></div>
+
           <div class="user-info">
-            <span *ngIf="auth.currentUser$ | async as user">
-              {{ user.firstname }} {{ user.lastname }}
-            </span>
+            <div class="user-text">
+              <span *ngIf="auth.currentUser$ | async as user">
+                <div class="user-name">{{ user.firstname }} {{ user.lastname }}</div>
+                <button class="logout-btn" (click)="logout()">Log out</button>
+              </span>
+            </div>
             <div class="avatar"></div>
           </div>
         </header>
@@ -92,6 +101,7 @@
               <table>
                 <tbody>
                   <tr *ngFor="let m of allMatches" cdkDrag>
+                    <td>{{ m.name }}</td>
                     <td>{{ m.teamHome?.name }}</td>
                     <td>{{ m.teamAway?.name }}</td>
                   </tr>
@@ -112,6 +122,7 @@
                 <thead>
                   <tr>
                     <th>Time</th>
+                    <th>Match</th>
                     <th>Team 1</th>
                     <th>Team 2</th>
                     <th></th>
@@ -127,6 +138,7 @@
                           (change)="updateTime(e, $any($event.target).value)"
                         />
                       </td>
+                      <td>{{ e.match?.name }}</td>
                       <td>{{ e.match?.teamHome?.name }}</td>
                       <td>{{ e.match?.teamAway?.name }}</td>
                       <td class="remove-cell">
@@ -139,6 +151,7 @@
                       <td colspan="2" class="break-info">
                         Break ({{ e.durationInMin }} min)
                       </td>
+                      <td></td>
                       <td class="remove-cell">
                         <button class="remove-btn" (click)="removeEntry(e)">✖</button>
                       </td>
@@ -155,7 +168,7 @@
           </div>
         </main>
         <footer class="footer">
-          <p>&copy; 2023 FootyCup. All rights reserved.</p>
+          <p>&copy; 2025 FootyCup. All rights reserved.</p>
         </footer>
       </div>
     </div>

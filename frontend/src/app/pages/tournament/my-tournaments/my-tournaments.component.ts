@@ -54,4 +54,10 @@ export class MyTournamentsComponent {
   openDetails(id: number): void {
     this.router.navigate(['/tournaments', id]);
   }
+
+  logout(): void {
+    this.auth.logout().subscribe(() => {
+      this.router.navigate(['/login']); 
+    });
+  }
 }

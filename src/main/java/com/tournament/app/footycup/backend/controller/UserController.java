@@ -12,6 +12,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
@@ -20,7 +21,7 @@ import java.util.Map;
 import java.util.NoSuchElementException;
 
 @RestController
-@RequestMapping("/me")
+@RequestMapping("/users")
 public class UserController {
 
     private final UserService userService;
@@ -29,16 +30,23 @@ public class UserController {
         this.userService = userService;
     }
 
+    @GetMapping
+    public ResponseEntity<List<UserDto>> getUsers(Authentication authentication) {
+        User user = (User) authentication.getPrincipal();
+        List<UserDto> usersDto = userService.getAllUsers(user);
+        return ResponseEntity.ok(usersDto);
+    }
+
     @Operation(summary = "Get the currently authenticated user's details")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "User details retrieved successfully",
                     content = @Content(mediaType = "application/json", schema = @Schema(implementation = UserDto.class))),
             @ApiResponse(responseCode = "401", description = "Unauthorized", content = @Content)
     })
-    @GetMapping
+    @GetMapping("/me")
     public ResponseEntity<UserDto> getUser(Authentication authentication) {
         User user = (User) authentication.getPrincipal();
-        UserDto userDto = new UserDto(user.getId(), user.getFirstname(), user.getLastname(), user.getEmail());
+        UserDto userDto = new UserDto(user.getId(), user.getFirstname(), user.getLastname(), user.getEmail(), user.getUserRole());
         return ResponseEntity.ok(userDto);
     }
 
@@ -52,9 +60,11 @@ public class UserController {
     @PutMapping("/{id}")
     public ResponseEntity<?> updateUser(
             @Parameter(description = "User ID") @PathVariable("id") Long id,
-            @RequestBody @Parameter(description = "Updated user data") User user) {
+            @RequestBody @Parameter(description = "Updated user data") User newUser,
+            Authentication authentication) {
         try {
-            UserDto updatedUser = userService.updateUser(id, user);
+            User user = (User) authentication.getPrincipal();
+            UserDto updatedUser = userService.updateUser(id, newUser, user);
             return ResponseEntity.ok(updatedUser);
         } catch (NoSuchElementException e) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND)
@@ -67,11 +77,13 @@ public class UserController {
             @ApiResponse(responseCode = "204", description = "User deleted successfully"),
             @ApiResponse(responseCode = "404", description = "User not found", content = @Content)
     })
+    @PreAuthorize("hasRole('ADMIN')")
     @DeleteMapping("/{id}")
     public ResponseEntity<?> deleteUser(
-            @Parameter(description = "User ID") @PathVariable("id") Long id) {
+            @Parameter(description = "User ID") @PathVariable("id") Long id, Authentication authentication) {
         try {
-            userService.deleteUser(id);
+            User user = (User) authentication.getPrincipal();
+            userService.deleteUser(id, user);
             return ResponseEntity.status(HttpStatus.NO_CONTENT)
                     .body(Map.of("message", "User deleted successfully"));
         } catch (NoSuchElementException e) {

@@ -1,5 +1,5 @@
 import { Component, OnInit } from '@angular/core';
-import { ActivatedRoute } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { CdkDragDrop, moveItemInArray } from '@angular/cdk/drag-drop';
 import { forkJoin } from 'rxjs';
 import { ScheduleService } from '../../services/schedule.service';
@@ -28,6 +28,7 @@ export class ScheduleComponent implements OnInit {
 
   constructor(
     private route: ActivatedRoute,
+    public router: Router,
     private scheduleService: ScheduleService,
     private matchService: MatchService,
     public auth: AuthService,
@@ -124,8 +125,6 @@ drop(event: CdkDragDrop<any[]>): void {
   }
 }
 
-
-
   updateTime(entry: ScheduleEntry, time: string): void {
     const [datePart] = entry.startDateTime!.split('T');
     const newStart = `${datePart}T${time}:00`;
@@ -180,5 +179,11 @@ drop(event: CdkDragDrop<any[]>): void {
   this.scheduleService
     .removeEntryFromSchedule(this.tournamentId, this.selectedScheduleId, entry.id)
     .subscribe(() => this.selectSchedule(this.selectedScheduleId));
+  }
+
+    logout(): void {
+    this.auth.logout().subscribe(() => {
+      this.router.navigate(['/login']); 
+    });
   }
 }

@@ -48,4 +48,10 @@ export class AddPlayerComponent {
   cancel() {
     this.router.navigate(['/tournament', this.tournamentId, 'teams', this.teamId]);
   }
+
+    logout(): void {
+    this.auth.logout().subscribe(() => {
+      this.router.navigate(['/login']); 
+    });
+  }
 }

@@ -1,6 +1,6 @@
 import { HttpClient } from '@angular/common/http';
 import { Component } from '@angular/core';
-import { ActivatedRoute } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { MatchService } from '../../services/match.service';
 import { Match } from '../../models/match.model';
 import { AuthService } from '../../services/auth.service';
@@ -21,7 +21,7 @@ export class MatchComponent {
   pageSize = 10;
   currentPage = 1;
 
-  constructor(private route: ActivatedRoute, private matchService: MatchService, public auth: AuthService, private notification: NotificationService, private formatService: FormatService) {}
+  constructor(private route: ActivatedRoute, public router: Router, private matchService: MatchService, public auth: AuthService, private notification: NotificationService, private formatService: FormatService) {}
 
   ngOnInit(): void {
     this.tournamentId = +this.route.snapshot.paramMap.get('tournamentId')!;
@@ -32,7 +32,6 @@ export class MatchComponent {
   loadMatches() {
     this.matchService.getMatches(this.tournamentId).subscribe({
       next: (data) => {
-        console.log(data);
         this.matches = data;
       },
       error: () => this.notification.showError('Error loading matches!'),
@@ -96,5 +95,9 @@ export class MatchComponent {
     if (this.currentPage < this.totalPages) this.currentPage++;
   }
 
-
+  logout(): void {
+    this.auth.logout().subscribe(() => {
+      this.router.navigate(['/login']); 
+    });
+  }
 }

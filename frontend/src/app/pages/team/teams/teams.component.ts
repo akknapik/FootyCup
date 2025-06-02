@@ -85,4 +85,10 @@ nextPage() {
     this.currentPage++;
   }
 }
+
+  logout(): void {
+    this.auth.logout().subscribe(() => {
+      this.router.navigate(['/login']); 
+    });
+  }
 }

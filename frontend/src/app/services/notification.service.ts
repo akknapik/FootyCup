@@ -25,6 +25,14 @@ export class NotificationService {
     });
   }
 
+  showInfo(message: string): void {
+  this.snackBar.open(message, 'OK', {
+    duration: 4000,
+    panelClass: ['snackbar-info'],
+    verticalPosition: 'top',
+  });
+}
+
   confirm(message: string): Observable<boolean> {
     const subject = new Subject<boolean>();
     const ref = this.snackBar.open(message, 'Tak', {

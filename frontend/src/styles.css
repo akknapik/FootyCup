@@ -22,3 +22,9 @@ body { margin: 0; font-family: Roboto, "Helvetica Neue", sans-serif; }
   background-color: #1976d2; 
   color: #fff;
 }
+
+.snackbar-info {
+  background-color: #2196f3; 
+  color: #fff;
+}
+

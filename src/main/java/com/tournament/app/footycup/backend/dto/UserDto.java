@@ -1,5 +1,6 @@
 package com.tournament.app.footycup.backend.dto;
 
+import com.tournament.app.footycup.backend.enums.UserRole;
 import com.tournament.app.footycup.backend.model.User;
 
 import java.io.Serializable;
@@ -10,6 +11,7 @@ public class UserDto implements Serializable {
     private String firstname;
     private String lastname;
     private String email;
+    private UserRole userRole;
 
     public UserDto() {
     }
@@ -19,13 +21,15 @@ public class UserDto implements Serializable {
         this.firstname = user.getFirstname();
         this.lastname = user.getLastname();
         this.email = user.getEmail();
+        this.userRole = user.getUserRole();
     }
 
-    public UserDto(Long id, String firstname, String lastname, String email) {
+    public UserDto(Long id, String firstname, String lastname, String email, UserRole userRole) {
         this.id = id;
         this.firstname = firstname;
         this.lastname = lastname;
         this.email = email;
+        this.userRole = userRole;
     }
 
     public Long getId() {
@@ -60,6 +64,14 @@ public class UserDto implements Serializable {
         this.email = email;
     }
 
+    public UserRole getUserRole() {
+        return userRole;
+    }
+
+    public void setUserRole(UserRole userRole) {
+        this.userRole = userRole;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
@@ -68,7 +80,8 @@ public class UserDto implements Serializable {
         return Objects.equals(this.id, entity.id) &&
                 Objects.equals(this.firstname, entity.firstname) &&
                 Objects.equals(this.lastname, entity.lastname) &&
-                Objects.equals(this.email, entity.email);
+                Objects.equals(this.email, entity.email) &&
+                Objects.equals(this.userRole, entity.userRole);
     }
 
     @Override

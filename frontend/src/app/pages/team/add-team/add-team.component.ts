@@ -19,7 +19,7 @@ export class AddTeamComponent {
     coachEmail: ''
 }
 
-constructor(private teamService: TeamService, private router: Router, private route: ActivatedRoute, public auth: AuthService, private notification: NotificationService) {}
+constructor(private teamService: TeamService, public router: Router, private route: ActivatedRoute, public auth: AuthService, private notification: NotificationService) {}
   
   ngOnInit(): void {
     this.route.paramMap.subscribe(params => {
@@ -40,6 +40,12 @@ constructor(private teamService: TeamService, private router: Router, private ro
         this.router.navigate(['/tournament', this.tournamentId, 'teams']);
       },
       error: () => this.notification.showError('Error while creating team')
+    });
+  }
+
+    logout(): void {
+    this.auth.logout().subscribe(() => {
+      this.router.navigate(['/login']); 
     });
   }
 }

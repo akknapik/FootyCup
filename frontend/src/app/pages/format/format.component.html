@@ -25,6 +25,11 @@
           </div>
 
           <a routerLink="/settings"class="nav-link">Settings</a>
+            <a *ngIf="(auth.currentUser$ | async)?.userRole === 'ADMIN'"
+              routerLink="/admin/users"
+              class="nav-link">
+              Admin Panel
+            </a>
         </nav>
         <nav class="sidebar-footer">
           <a routerLink="/aboutus">About us</a>
@@ -35,10 +40,14 @@
       <div class="main">
         <header class="header">
           <div class="header-spacer"></div>
+
           <div class="user-info">
-            <span *ngIf="auth.currentUser$ | async as user">
-              {{ user.firstname }} {{ user.lastname }}
-            </span>
+            <div class="user-text">
+              <span *ngIf="auth.currentUser$ | async as user">
+                <div class="user-name">{{ user.firstname }} {{ user.lastname }}</div>
+                <button class="logout-btn" (click)="logout()">Log out</button>
+              </span>
+            </div>
             <div class="avatar"></div>
           </div>
         </header>
@@ -159,7 +168,7 @@
         </main>
 
         <footer class="footer">
-          <p>&copy; 2023 FootyCup. All rights reserved.</p>
+          <p>&copy; 2025 FootyCup. All rights reserved.</p>
         </footer>
       </div>
     </div>

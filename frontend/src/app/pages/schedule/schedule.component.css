@@ -16,7 +16,6 @@ html, body {
   overflow: hidden;
 }
 
-/* === SIDEBAR === */
 .sidebar {
   width: 240px;
   height: 100vh;
@@ -93,7 +92,6 @@ html, body {
   background: #fff;
 }
 
-/* === HEADER === */
 .header {
   height: 64px;
   background: #fff;
@@ -112,19 +110,47 @@ html, body {
 .user-info {
   display: flex;
   align-items: center;
-  gap: 0.75rem;
-  font-size: 0.95rem;
+  gap: 1.5rem;
+}
+
+.user-text {
+  display: flex;
+  flex-direction: column;
+  align-items: center; 
+  text-align: center;
+  line-height: 1.2;
+}
+
+.user-name {
+  font-weight: 600;
+  font-size: 1rem;
+  text-transform: uppercase;
   color: #333;
 }
 
+.logout-btn {
+  margin-top: 0.4rem;
+  padding: 0.4rem 1rem;
+  background-color: #f0f0f0;
+  border: 1px solid #ccc;
+  color: #333;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 0.85rem;
+  transition: background 0.2s ease;
+}
+
+.logout-btn:hover {
+  background-color: #e0e0e0;
+}
+
 .avatar {
-  width: 32px;
-  height: 32px;
+  width: 36px;
+  height: 36px;
   border-radius: 50%;
   background: #ccc;
 }
 
-/* === MAIN === */
 .main {
   flex: 1;
   display: flex;
@@ -149,7 +175,6 @@ html, body {
   border-top: 1px solid #e0e0e0;
 }
 
-/* === SCHEDULE === */
 .header-row {
   display: flex;
   justify-content: space-between;

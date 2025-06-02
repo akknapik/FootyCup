@@ -29,4 +29,10 @@ export class AddTournamentComponent {
       error: () => this.notification.showError('Error while creating tournament')
     });
   }
+
+    logout(): void {
+    this.auth.logout().subscribe(() => {
+      this.router.navigate(['/login']); 
+    });
+  }
 }

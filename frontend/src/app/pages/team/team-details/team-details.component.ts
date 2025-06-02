@@ -153,4 +153,10 @@ export class TeamDetailsComponent {
   nextPage() {
     if (this.currentPage < this.totalPages) this.currentPage++;
   }
+
+    logout(): void {
+    this.auth.logout().subscribe(() => {
+      this.router.navigate(['/login']); 
+    });
+  }
 }

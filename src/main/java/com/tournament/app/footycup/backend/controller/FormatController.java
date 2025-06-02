@@ -25,13 +25,13 @@ public class FormatController {
     private final FormatService formatService;
 
     @Operation(summary = "Check if a tournament format already exists")
-    @ApiResponses(value = {
+    @ApiResponses({
             @ApiResponse(responseCode = "200", description = "Format existence check completed",
                     content = @Content(mediaType = "application/json", schema = @Schema(implementation = Boolean.class)))
     })
     @GetMapping
     public ResponseEntity<Boolean> formatExits(
-            @Parameter(description = "Tournament ID") @PathVariable Long tournamentId,
+            @Parameter(description = "Tournament ID", required = true) @PathVariable Long tournamentId,
             Authentication authentication) {
         User user = (User) authentication.getPrincipal();
         boolean exists = formatService.structureExists(tournamentId, user);
@@ -44,9 +44,9 @@ public class FormatController {
     })
     @PostMapping("/group")
     public ResponseEntity<Void> generateGroupFormat(
-            @Parameter(description = "Tournament ID") @PathVariable Long tournamentId,
-            @RequestParam int groupCount,
-            @RequestParam int teamsPerGroup,
+            @Parameter(description = "Tournament ID", required = true) @PathVariable Long tournamentId,
+            @Parameter(description = "Number of groups", required = true) @RequestParam int groupCount,
+            @Parameter(description = "Number of teams per group", required = true) @RequestParam int teamsPerGroup,
             Authentication authentication) {
         User user = (User) authentication.getPrincipal();
         formatService.generateGroupStructure(tournamentId, groupCount, teamsPerGroup, user);
@@ -59,8 +59,8 @@ public class FormatController {
     })
     @PostMapping("/bracket")
     public ResponseEntity<Void> generateBracketFormat(
-            @Parameter(description = "Tournament ID") @PathVariable Long tournamentId,
-            @RequestParam int totalTeams,
+            @Parameter(description = "Tournament ID", required = true) @PathVariable Long tournamentId,
+            @Parameter(description = "Total number of teams", required = true) @RequestParam int totalTeams,
             Authentication authentication) {
         User user = (User) authentication.getPrincipal();
         formatService.generateBracketStructure(tournamentId, totalTeams, user);
@@ -73,10 +73,10 @@ public class FormatController {
     })
     @PostMapping("/mixed")
     public ResponseEntity<Void> generateMixedFormat(
-            @Parameter(description = "Tournament ID") @PathVariable Long tournamentId,
-            @RequestParam int groupCount,
-            @RequestParam int teamsPerGroup,
-            @RequestParam int advancing,
+            @Parameter(description = "Tournament ID", required = true) @PathVariable Long tournamentId,
+            @Parameter(description = "Number of groups", required = true) @RequestParam int groupCount,
+            @Parameter(description = "Teams per group", required = true) @RequestParam int teamsPerGroup,
+            @Parameter(description = "Advancing teams per group", required = true) @RequestParam int advancing,
             Authentication authentication) {
         User user = (User) authentication.getPrincipal();
         formatService.generateMixedStructure(tournamentId, groupCount, teamsPerGroup, advancing, user);
@@ -89,9 +89,9 @@ public class FormatController {
     })
     @PutMapping("/{slotId}/assign/{teamId}")
     public ResponseEntity<Void> assignTeam(
-            @Parameter(description = "Tournament ID") @PathVariable Long tournamentId,
-            @PathVariable Long slotId,
-            @PathVariable Long teamId,
+            @Parameter(description = "Tournament ID", required = true) @PathVariable Long tournamentId,
+            @Parameter(description = "Slot ID", required = true) @PathVariable Long slotId,
+            @Parameter(description = "Team ID", required = true) @PathVariable Long teamId,
             Authentication authentication) {
         User user = (User) authentication.getPrincipal();
         formatService.assignTeamToSlot(tournamentId, slotId, teamId, user);
@@ -104,7 +104,7 @@ public class FormatController {
     })
     @PostMapping("/assign-random")
     public ResponseEntity<Void> assignTeamsRandomly(
-            @Parameter(description = "Tournament ID") @PathVariable Long tournamentId,
+            @Parameter(description = "Tournament ID", required = true) @PathVariable Long tournamentId,
             Authentication authentication) {
         User user = (User) authentication.getPrincipal();
         formatService.assignTeamsRandomlyToGroups(tournamentId, user);
@@ -117,10 +117,10 @@ public class FormatController {
     })
     @PutMapping("/bracket/{nodeId}")
     public ResponseEntity<Void> assignTeamToNode(
-            @Parameter(description = "Tournament ID") @PathVariable Long tournamentId,
-            @Parameter(description = "Node ID") @PathVariable Long nodeId,
-            @RequestParam Long teamId,
-            @RequestParam boolean homeTeam,
+            @Parameter(description = "Tournament ID", required = true) @PathVariable Long tournamentId,
+            @Parameter(description = "Node ID", required = true) @PathVariable Long nodeId,
+            @Parameter(description = "Team ID", required = true) @RequestParam Long teamId,
+            @Parameter(description = "Is this the home team?", required = true) @RequestParam boolean homeTeam,
             Authentication authentication) {
         User user = (User) authentication.getPrincipal();
         formatService.assignTeamToNode(tournamentId, nodeId, teamId, homeTeam, user);
@@ -135,7 +135,7 @@ public class FormatController {
     })
     @GetMapping("/groups")
     public ResponseEntity<List<Group>> getGroups(
-            @Parameter(description = "Tournament ID") @PathVariable Long tournamentId,
+            @Parameter(description = "Tournament ID", required = true) @PathVariable Long tournamentId,
             Authentication authentication) {
         User user = (User) authentication.getPrincipal();
         List<Group> groups = formatService.getGroups(tournamentId, user);
@@ -150,7 +150,7 @@ public class FormatController {
     })
     @GetMapping("/bracket")
     public ResponseEntity<List<BracketNode>> getBracket(
-            @Parameter(description = "Tournament ID") @PathVariable Long tournamentId,
+            @Parameter(description = "Tournament ID", required = true) @PathVariable Long tournamentId,
             Authentication authentication) {
         User user = (User) authentication.getPrincipal();
         List<BracketNode> bracketNodes = formatService.getBracketNodes(tournamentId, user);
@@ -163,7 +163,7 @@ public class FormatController {
     })
     @DeleteMapping
     public ResponseEntity<Void> deleteAllStructures(
-            @Parameter(description = "Tournament ID") @PathVariable Long tournamentId,
+            @Parameter(description = "Tournament ID", required = true) @PathVariable Long tournamentId,
             Authentication authentication) {
         User user = (User) authentication.getPrincipal();
         formatService.deleteAllStructures(tournamentId, user);

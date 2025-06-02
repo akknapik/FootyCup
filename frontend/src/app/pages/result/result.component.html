@@ -25,6 +25,11 @@
           </div>
 
           <a routerLink="/settings"class="nav-link">Settings</a>
+            <a *ngIf="(auth.currentUser$ | async)?.userRole === 'ADMIN'"
+              routerLink="/admin/users"
+              class="nav-link">
+              Admin Panel
+            </a>
         </nav>
         <nav class="sidebar-footer">
           <a routerLink="/aboutus">About us</a>
@@ -35,10 +40,14 @@
       <div class="main">
         <header class="header">
           <div class="header-spacer"></div>
+
           <div class="user-info">
-            <span *ngIf="auth.currentUser$ | async as user">
-              {{ user.firstname }} {{ user.lastname }}
-            </span>
+            <div class="user-text">
+              <span *ngIf="auth.currentUser$ | async as user">
+                <div class="user-name">{{ user.firstname }} {{ user.lastname }}</div>
+                <button class="logout-btn" (click)="logout()">Log out</button>
+              </span>
+            </div>
             <div class="avatar"></div>
           </div>
         </header>
@@ -63,6 +72,7 @@
                     <thead>
                     <tr>
                         <th>Time</th>
+                        <th>Match</th>
                         <th>Team 1</th>
                         <th>Score</th>
                         <th>Team 2</th>
@@ -73,6 +83,7 @@
                     <tr *ngFor="let e of scheduleEntries">
                         <ng-container *ngIf="e.type === 'MATCH' && e.match">
                         <td>{{ e.startDateTime | date: 'HH:mm' }}</td>
+                        <td>{{ e.match.name }}</td>
                         <td>{{ e.match.teamHome?.name }}</td>
                         <td>
                             <input
@@ -96,7 +107,7 @@
                         </ng-container>
                         <ng-container *ngIf="e.type === 'BREAK'">
                         <td>{{ e.startDateTime | date: 'HH:mm' }}</td>
-                        <td colspan="4" class="break-row">Break ({{ e.durationInMin }} min)</td>
+                        <td colspan="5" class="break-row">Break ({{ e.durationInMin }} min)</td>
                         </ng-container>
                     </tr>
                     </tbody>
@@ -134,7 +145,7 @@
             </div>
             </main>
         <footer class="footer">
-          <p>&copy; 2023 FootyCup. All rights reserved.</p>
+          <p>&copy; 2025 FootyCup. All rights reserved.</p>
         </footer>
       </div>
     </div>

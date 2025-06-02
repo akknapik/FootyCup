@@ -57,11 +57,15 @@ export class TournamentDetailsComponent implements OnInit {
 
   this.tournamentService.updateTournament(this.tournamentId, payload).subscribe({
     next: () => {
-      this.notification.showSuccess('Zapisano zmiany turnieju!');
+      this.notification.showSuccess('Tournament updated successfully!');
     },
-    error: () => this.notification.showError('Błąd podczas zapisu!')
+    error: () => this.notification.showError('Error updating tournament')
   });
   }
 
-
+  logout(): void {
+    this.auth.logout().subscribe(() => {
+      this.router.navigate(['/login']); 
+    });
+  }
 }
