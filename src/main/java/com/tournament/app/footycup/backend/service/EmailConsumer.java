@@ -21,8 +21,6 @@ public class EmailConsumer {
             mail.setSubject(message.getSubject());
             mail.setText(message.getContent());
             mailSender.send(mail);
-
-            System.out.println("Email send to: " + mail.getTo());
         } catch (Exception e) {
             e.printStackTrace();
         }
