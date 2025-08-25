@@ -1,30 +1,31 @@
 import { Component } from '@angular/core';
 import { AuthService } from '../../services/auth.service';
-import { Router } from '@angular/router';
+import { Router, ActivatedRoute } from '@angular/router';
 import { NotificationService } from '../../services/notification.service';
 
 @Component({
   selector: 'app-login',
   standalone: false,
   templateUrl: './login.component.html',
-  styleUrl: './login.component.css'
+  styleUrls: ['./login.component.css']
 })
 export class LoginComponent {
-  form = {
-    email: '',
-    password: ''
-  };
+  form = { email: '', password: '' };
 
-  constructor(private auth: AuthService, private router: Router, private notification: NotificationService) { }
+  constructor(
+    private auth: AuthService,
+    private router: Router,
+    private route: ActivatedRoute,
+    private notification: NotificationService
+  ) {}
 
   login() {
     this.auth.login(this.form).subscribe({
-      next: () =>  {
-        this.router.navigate(['/tournaments/my']);
+      next: () => {
+        const returnUrl = this.route.snapshot.queryParamMap.get('returnUrl') || '/tournaments/my';
+        this.router.navigateByUrl(returnUrl);
       },
-      error: () => this.notification.showError('Login failed')
+      error: (err) => this.notification.showError(err?.error?.message ?? 'Login failed')
     });
   }
-
-
 }

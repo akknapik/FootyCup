@@ -30,26 +30,18 @@ public class TokenAuthenticationFilter extends OncePerRequestFilter {
     @Override
     protected void doFilterInternal(HttpServletRequest request,
                                     HttpServletResponse response,
-                                    FilterChain filterChain)
-            throws ServletException, IOException {
+                                    FilterChain filterChain) throws ServletException, IOException {
 
         String path = request.getServletPath();
-        if (
-                path.startsWith("/swagger-ui") ||
-                        path.startsWith("/v3/api-docs") ||
-                        path.startsWith("/swagger-ui.html") ||
-                        path.startsWith("/api/docs") ||
-                        path.startsWith("/api/swagger-ui") ||
-                        path.startsWith("/swagger-resources") ||
-                        path.startsWith("/webjars") ||
-                        path.startsWith("/configuration")
-        ) {
+        if (path.startsWith("/swagger-ui") || path.startsWith("/v3/api-docs")
+                || path.startsWith("/swagger-ui.html") || path.startsWith("/api/docs")
+                || path.startsWith("/api/swagger-ui") || path.startsWith("/swagger-resources")
+                || path.startsWith("/webjars") || path.startsWith("/configuration")) {
             filterChain.doFilter(request, response);
             return;
         }
 
         String token = null;
-
         if (request.getCookies() != null) {
             for (Cookie cookie : request.getCookies()) {
                 if ("accessToken".equals(cookie.getName())) {
@@ -60,16 +52,18 @@ public class TokenAuthenticationFilter extends OncePerRequestFilter {
         }
 
         if (token != null && SecurityContextHolder.getContext().getAuthentication() == null) {
-            String email = tokenService.getEmailFromToken(token);
-
-            if (email != null) {
-                User user = userRepository.findByEmail(email).orElse(null);
-                if (user != null) {
-                    UsernamePasswordAuthenticationToken authentication =
-                            new UsernamePasswordAuthenticationToken(user, null, user.getAuthorities());
-                    authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
-                    SecurityContextHolder.getContext().setAuthentication(authentication);
+            try {
+                String email = tokenService.getEmailFromToken(token);
+                if (email != null) {
+                    userRepository.findByEmail(email).ifPresent(user -> {
+                        var auth = new UsernamePasswordAuthenticationToken(
+                                user, null, user.getAuthorities());
+                        auth.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
+                        SecurityContextHolder.getContext().setAuthentication(auth);
+                    });
                 }
+            } catch (RuntimeException ex) {
+                SecurityContextHolder.clearContext();
             }
         }
 
