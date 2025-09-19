@@ -1,8 +1,9 @@
-import { HttpClient } from "@angular/common/http";
+import { HttpClient, HttpParams } from "@angular/common/http";
 import { Injectable } from "@angular/core";
 import { Tournament } from "../models/tournament.model";
 import { BehaviorSubject, filter } from "rxjs";
 import { NavigationEnd, Router } from "@angular/router";
+import { User } from "../models/user.model";
 
 @Injectable({ providedIn: 'root' })
 export class TournamentService {
@@ -27,7 +28,7 @@ export class TournamentService {
   }
 
   getTournamentById(id: number) {
-    return this.http.get<any>(`/api/tournaments/${id}`, { withCredentials: true });
+    return this.http.get<Tournament>(`/api/tournaments/${id}`, { withCredentials: true });
   }
   
   updateTournament(id: number, data: any) {
@@ -38,6 +39,21 @@ export class TournamentService {
     return this.http.delete(`/api/tournaments/${id}`, { withCredentials: true });
   }
 
+  getReferees(tournamentId: number) {
+    return this.http.get<User[]>(`/api/tournaments/${tournamentId}/referees`, { withCredentials: true });
+  }
+
+  addReferee(id: number, email: string) {
+    return this.http.post<User[]>(`/api/tournaments/${id}/referees`, null, {
+      params: new HttpParams().set('email', email),
+      withCredentials: true,
+    });
+  }
+
+  removeReferee(tournamentId: number, userId: number) {
+    return this.http.delete<Tournament>(`/api/tournaments/${tournamentId}/referees/${userId}`, { withCredentials: true });
+  }
+  
   get currentId(): string | null {
     return this.tournamentIdSubject.value;
   }

@@ -11,8 +11,7 @@ import lombok.Setter;
 
 import java.io.Serializable;
 import java.time.LocalDate;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 
 @Schema(description = "Tournament entity representing a football competition")
 @Entity
@@ -63,6 +62,13 @@ public class Tournament implements Serializable {
     @Schema(description = "Tournament system type", example = "GROUP_STAGE")
     @Enumerated(EnumType.STRING)
     private TournamentSystem system;
+
+    @Schema(description = "Referees assigned to the tournament")
+    @ManyToMany
+    @JoinTable(name = "tournament_referees",
+            joinColumns = @JoinColumn(name = "tournament_id"),
+            inverseJoinColumns = @JoinColumn(name = "referee_id"))
+    private List<User> referees = new ArrayList<>();
 
     @Schema(description = "Scoring rules for the tournament (e.g. WIN = 3)")
     @ElementCollection

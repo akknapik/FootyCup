@@ -83,6 +83,63 @@
               <div class="static-field">{{ tournament.status }}</div>
             </div>
 
+            <!-- dodawanie -->
+            <div class="input-group">
+              <label for="refereeEmail">Referees</label>
+              <input
+                id="refereeEmail"
+                type="email"
+                name="refereeEmail"
+                [(ngModel)]="newRefereeEmail"
+                required
+                placeholder="referee@example.com"
+              />
+            </div>
+
+            <div class="form-actions">
+              <button class="btn" (click)="onAddReferee(newRefereeEmail)" [disabled]="!newRefereeEmail">
+                Add
+              </button>
+            </div>
+
+            <!-- lista -->
+            <div class="input-group">
+              <label>Assigned referees</label>
+
+              <div *ngIf="referees.length === 0" class="static-field">
+                There are no referees assigned yet.
+              </div>
+
+              <div *ngIf="referees.length > 0" class="static-field">
+                <table style="width: 100%; border-collapse: collapse;">
+                  <thead>
+                    <tr>
+                      <th style="text-align:left;">Name</th>
+                      <th style="text-align:left;">Email</th>
+                      <th></th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr *ngFor="let referee of referees">
+                      <td>{{ referee.firstname }} {{ referee.lastname }}</td>
+                      <td>{{ referee.email }}</td>
+                      <td style="text-align:right;">
+                        <button
+                          type="button"
+                          class="btn"
+                          (click)="removeReferee(referee.id)"
+                          style="margin: 0.25rem 0.6rem; font-size: 0.9rem; line-height: 1;"
+                        >
+                          &times;
+                        </button>
+                      </td>
+
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
             <div class="form-actions">
               <button class="btn btn-create" (click)="updateTournament()">Zapisz</button>
             </div>

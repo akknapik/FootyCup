@@ -1,11 +1,13 @@
 package com.tournament.app.footycup.backend.controller;
 
+import com.tournament.app.footycup.backend.dto.UserDto;
 import com.tournament.app.footycup.backend.model.Tournament;
 import com.tournament.app.footycup.backend.model.User;
 import com.tournament.app.footycup.backend.service.TournamentService;
 import com.tournament.app.footycup.backend.service.UserService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.media.ArraySchema;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -127,6 +129,66 @@ public class TournamentController {
         }
         User user = (User) authentication.getPrincipal();
         tournamentService.deleteTournament(id, user);
+        return ResponseEntity.noContent().build();
+    }
+
+    @Operation(summary = "Get referees for a tournament")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Referee list returned",
+                    content = @Content(mediaType = "application/json",
+                            array = @ArraySchema(schema = @Schema(implementation = User.class)))),
+            @ApiResponse(responseCode = "400", description = "Invalid authentication", content = @Content),
+            @ApiResponse(responseCode = "404", description = "Tournament not found", content = @Content)
+    })
+    @GetMapping("/{id}/referees")
+    public ResponseEntity<List<User>> getReferees(
+            @Parameter(description = "ID of the tournament") @PathVariable Long id,
+            Authentication authentication) {
+
+        if (authentication == null || authentication.getPrincipal() == null) {
+            return ResponseEntity.badRequest().build();
+        }
+
+        List<User> referees = tournamentService.getReferees(id);
+        return ResponseEntity.ok(referees);
+    }
+
+
+    @Operation(summary = "Add a referee to a tournament")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Referee added successfully",
+                    content = @Content(mediaType = "application/json", schema = @Schema(implementation = User.class))),
+            @ApiResponse(responseCode = "400", description = "Invalid authentication or request", content = @Content)
+    })
+    @PostMapping("/{id}/referees")
+    public ResponseEntity<List<User>> addReferee(
+            @Parameter(description = "ID of the tournament") @PathVariable Long id,
+            @RequestParam("email") String refereeEmail,
+            Authentication authentication) {
+        if (authentication == null || authentication.getPrincipal() == null) {
+            return ResponseEntity.badRequest().build();
+        }
+        User user = (User) authentication.getPrincipal();
+        List<User> referees = tournamentService.addReferee(id, refereeEmail, user);
+        return ResponseEntity.ok(referees);
+    }
+
+    @Operation(summary = "Remove a referee from the tournament")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "204", description = "Referee removed successfully"),
+            @ApiResponse(responseCode = "400", description = "Invalid authentication", content = @Content),
+            @ApiResponse(responseCode = "404", description = "Tournament or referee not found", content = @Content)
+    })
+    @DeleteMapping("/{id}/referees/{refereeId}")
+    public ResponseEntity<Void> removeReferee(
+            @Parameter(description = "ID of the tournament") @PathVariable Long id,
+            @PathVariable Long refereeId,
+            Authentication authentication) {
+        if (authentication == null || authentication.getPrincipal() == null) {
+            return ResponseEntity.badRequest().build();
+        }
+        User user = (User) authentication.getPrincipal();
+        tournamentService.removeReferee(id, refereeId, user);
         return ResponseEntity.noContent().build();
     }
 }
