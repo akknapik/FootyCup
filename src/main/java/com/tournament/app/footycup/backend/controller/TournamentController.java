@@ -1,95 +1,194 @@
 package com.tournament.app.footycup.backend.controller;
 
-import com.tournament.app.footycup.backend.dto.common.UserRef;
-import com.tournament.app.footycup.backend.dto.tournament.*;
-import com.tournament.app.footycup.backend.mapper.CommonMapper;
-import com.tournament.app.footycup.backend.mapper.TournamentMapper;
+import com.tournament.app.footycup.backend.dto.UserDto;
+import com.tournament.app.footycup.backend.model.Tournament;
 import com.tournament.app.footycup.backend.model.User;
 import com.tournament.app.footycup.backend.service.TournamentService;
-import jakarta.validation.Valid;
-import lombok.AllArgsConstructor;
+import com.tournament.app.footycup.backend.service.UserService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.media.ArraySchema;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.util.UriComponentsBuilder;
 
 import java.util.List;
+import java.util.NoSuchElementException;
 
-@AllArgsConstructor
 @RestController
 @RequestMapping("/tournaments")
 public class TournamentController {
+
     private final TournamentService tournamentService;
-    private final CommonMapper commonMapper;
-    private final TournamentMapper tournamentMapper;
+    private final UserService userService;
 
+    public TournamentController(TournamentService tournamentService, UserService userService) {
+        this.tournamentService = tournamentService;
+        this.userService = userService;
+    }
+
+    @Operation(summary = "Get tournaments created by the currently authenticated user")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Tournaments retrieved successfully",
+                    content = @Content(mediaType = "application/json",
+                            schema = @Schema(implementation = Tournament.class))),
+            @ApiResponse(responseCode = "400", description = "Invalid or missing authentication", content = @Content),
+            @ApiResponse(responseCode = "404", description = "No tournaments found", content = @Content)
+    })
     @GetMapping("/my")
-    public ResponseEntity<List<TournamentItemResponse>> getMyTournaments(@AuthenticationPrincipal User organizer) {
-        var tournaments = tournamentService.getTournamentsByOrganizer(organizer);
-        var dto = tournaments.stream().map(tournamentMapper::toItem).toList();
-        return  ResponseEntity.ok(dto);
+    public ResponseEntity<List<Tournament>> getMyTournaments(Authentication authentication) {
+        if (authentication == null || authentication.getPrincipal() == null) {
+            return ResponseEntity.badRequest().build();
+        }
+        User user = (User) authentication.getPrincipal();
+        try {
+            List<Tournament> myTournaments = tournamentService.getTournamentsByOrganizer(user);
+            return ResponseEntity.ok(myTournaments);
+        } catch (NoSuchElementException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+        }
     }
 
+    @Operation(summary = "Create a new tournament")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Tournament created successfully",
+                    content = @Content(mediaType = "application/json",
+                            schema = @Schema(implementation = Tournament.class))),
+            @ApiResponse(responseCode = "400", description = "Invalid request or authentication", content = @Content)
+    })
     @PostMapping
-    public ResponseEntity<TournamentResponse> createTournament(
-            @RequestBody @Valid CreateTournamentRequest request,
-            @AuthenticationPrincipal User organizer) {
-        var saved = tournamentService.createTournament(request, organizer);
-        var body = tournamentMapper.toResponse(saved, commonMapper);
-        var location = UriComponentsBuilder.fromPath("/tournaments/{id}").buildAndExpand(saved.getId()).toUri();
-        return ResponseEntity.created(location).body(body);
+    public ResponseEntity<Tournament> createTournament(
+            @RequestBody @Parameter(description = "Tournament data") Tournament request,
+            Authentication authentication) {
+        if (authentication == null || authentication.getPrincipal() == null) {
+            return ResponseEntity.badRequest().build();
+        }
+        User organizer = (User) authentication.getPrincipal();
+        Tournament tournament = tournamentService.createTournament(request, organizer);
+        return ResponseEntity.ok(tournament);
     }
 
+    @Operation(summary = "Get a tournament by its ID")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Tournament retrieved successfully",
+                    content = @Content(mediaType = "application/json",
+                            schema = @Schema(implementation = Tournament.class))),
+            @ApiResponse(responseCode = "400", description = "Invalid authentication", content = @Content),
+            @ApiResponse(responseCode = "404", description = "Tournament not found", content = @Content)
+    })
     @GetMapping("/{id}")
-    public ResponseEntity<TournamentResponse> getById(
-            @PathVariable Long id,
-            @AuthenticationPrincipal User organizer) {
-        var tournament = tournamentService.getTournamentById(id, organizer);
-        return ResponseEntity.ok(tournamentMapper.toResponse(tournament, commonMapper));
+    public ResponseEntity<Tournament> getById(
+            @Parameter(description = "ID of the tournament") @PathVariable Long id,
+            Authentication authentication) {
+        if (authentication == null || authentication.getPrincipal() == null) {
+            return ResponseEntity.badRequest().build();
+        }
+        User user = (User) authentication.getPrincipal();
+        Tournament tournament = tournamentService.getTournamentById(id, user);
+        return ResponseEntity.ok(tournament);
     }
 
+    @Operation(summary = "Update an existing tournament")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Tournament updated successfully",
+                    content = @Content(mediaType = "application/json",
+                            schema = @Schema(implementation = Tournament.class))),
+            @ApiResponse(responseCode = "400", description = "Invalid authentication or request data", content = @Content),
+            @ApiResponse(responseCode = "404", description = "Tournament not found", content = @Content)
+    })
     @PutMapping("/{id}")
-    public ResponseEntity<TournamentResponse> updateTournament(
-            @PathVariable Long id,
-            @RequestBody @Valid UpdateTournamentRequest updatedData,
-            @AuthenticationPrincipal User organizer) {
-        var updated = tournamentService.updateTournament(id, updatedData, organizer);
-        return ResponseEntity.ok(tournamentMapper.toResponse(updated, commonMapper));
+    public ResponseEntity<Tournament> update(
+            @Parameter(description = "ID of the tournament") @PathVariable Long id,
+            @RequestBody @Parameter(description = "Updated tournament data") Tournament updatedData,
+            Authentication authentication) {
+        if (authentication == null || authentication.getPrincipal() == null) {
+            return ResponseEntity.badRequest().build();
+        }
+        User user = (User) authentication.getPrincipal();
+        Tournament updated = tournamentService.updateTournament(id, updatedData, user);
+        return ResponseEntity.ok(updated);
     }
 
+    @Operation(summary = "Delete a tournament")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "204", description = "Tournament deleted successfully"),
+            @ApiResponse(responseCode = "400", description = "Invalid authentication", content = @Content),
+            @ApiResponse(responseCode = "404", description = "Tournament not found", content = @Content)
+    })
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteTournament(
-            @PathVariable Long id,
-            @AuthenticationPrincipal User organizer) {
-        tournamentService.deleteTournament(id, organizer);
+            @Parameter(description = "ID of the tournament") @PathVariable Long id,
+            Authentication authentication) {
+        if (authentication == null || authentication.getPrincipal() == null) {
+            return ResponseEntity.badRequest().build();
+        }
+        User user = (User) authentication.getPrincipal();
+        tournamentService.deleteTournament(id, user);
         return ResponseEntity.noContent().build();
     }
 
+    @Operation(summary = "Get referees for a tournament")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Referee list returned",
+                    content = @Content(mediaType = "application/json",
+                            array = @ArraySchema(schema = @Schema(implementation = User.class)))),
+            @ApiResponse(responseCode = "400", description = "Invalid authentication", content = @Content),
+            @ApiResponse(responseCode = "404", description = "Tournament not found", content = @Content)
+    })
     @GetMapping("/{id}/referees")
-    public ResponseEntity<List<UserRef>> getReferees(
-            @PathVariable Long id,
-            @AuthenticationPrincipal User organizer) {
-        var refs = tournamentService.getReferees(id, organizer);
-        var dto = refs.stream().map(commonMapper::toUserRef).toList();
-        return ResponseEntity.ok(dto);
+    public ResponseEntity<List<User>> getReferees(
+            @Parameter(description = "ID of the tournament") @PathVariable Long id,
+            Authentication authentication) {
+
+        if (authentication == null || authentication.getPrincipal() == null) {
+            return ResponseEntity.badRequest().build();
+        }
+
+        List<User> referees = tournamentService.getReferees(id);
+        return ResponseEntity.ok(referees);
     }
 
+
+    @Operation(summary = "Add a referee to a tournament")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Referee added successfully",
+                    content = @Content(mediaType = "application/json", schema = @Schema(implementation = User.class))),
+            @ApiResponse(responseCode = "400", description = "Invalid authentication or request", content = @Content)
+    })
     @PostMapping("/{id}/referees")
-    public ResponseEntity<List<UserRef>> addReferee(
-            @PathVariable Long id,
-            @RequestBody @Valid AddRefereeRequest addRefereeRequest,
-            @AuthenticationPrincipal User organizer) {
-        var refs = tournamentService.addReferee(id, addRefereeRequest.email(), organizer);
-        var dto = refs.stream().map(commonMapper::toUserRef).toList();
-        return ResponseEntity.ok(dto);
+    public ResponseEntity<List<User>> addReferee(
+            @Parameter(description = "ID of the tournament") @PathVariable Long id,
+            @RequestParam("email") String refereeEmail,
+            Authentication authentication) {
+        if (authentication == null || authentication.getPrincipal() == null) {
+            return ResponseEntity.badRequest().build();
+        }
+        User user = (User) authentication.getPrincipal();
+        List<User> referees = tournamentService.addReferee(id, refereeEmail, user);
+        return ResponseEntity.ok(referees);
     }
 
+    @Operation(summary = "Remove a referee from the tournament")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "204", description = "Referee removed successfully"),
+            @ApiResponse(responseCode = "400", description = "Invalid authentication", content = @Content),
+            @ApiResponse(responseCode = "404", description = "Tournament or referee not found", content = @Content)
+    })
     @DeleteMapping("/{id}/referees/{refereeId}")
     public ResponseEntity<Void> removeReferee(
-            @PathVariable Long id,
+            @Parameter(description = "ID of the tournament") @PathVariable Long id,
             @PathVariable Long refereeId,
-            @AuthenticationPrincipal User organizer) {
-        tournamentService.removeReferee(id, refereeId, organizer);
+            Authentication authentication) {
+        if (authentication == null || authentication.getPrincipal() == null) {
+            return ResponseEntity.badRequest().build();
+        }
+        User user = (User) authentication.getPrincipal();
+        tournamentService.removeReferee(id, refereeId, user);
         return ResponseEntity.noContent().build();
     }
 }
