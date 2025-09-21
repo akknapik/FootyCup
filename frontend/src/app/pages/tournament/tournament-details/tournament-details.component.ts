@@ -4,6 +4,8 @@ import { TournamentService } from '../../../services/tournament.service';
 import { AuthService } from '../../../services/auth.service';
 import { NotificationService } from '../../../services/notification.service';
 import { User } from '../../../models/user.model';
+import { TournamentResponse } from '../../../models/tournament/tournament.response';
+import { UserRef } from '../../../models/common/user-ref.model';
 
 @Component({
   selector: 'app-tournament-details',
@@ -13,8 +15,8 @@ import { User } from '../../../models/user.model';
 })
 export class TournamentDetailsComponent implements OnInit {
   tournamentId!: number;
-  tournament: any;
-  referees: User[] = [];
+  tournament!: TournamentResponse;
+  referees: UserRef[] = [];
   newRefereeEmail = '';
   
   constructor(
@@ -96,8 +98,7 @@ export class TournamentDetailsComponent implements OnInit {
 
   removeReferee(userId: number) {
     this.tournamentService.removeReferee(this.tournamentId, userId).subscribe({
-      next: (t) => {
-        this.tournament = t;
+      next: () => {
         this.notification.showSuccess('Referee removed');
         this.loadReferees(this.tournamentId);
         this.loadTournamentDetails(this.tournamentId);

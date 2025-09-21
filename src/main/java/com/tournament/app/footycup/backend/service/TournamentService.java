@@ -1,6 +1,8 @@
 package com.tournament.app.footycup.backend.service;
 
 import com.tournament.app.footycup.backend.dto.UserDto;
+import com.tournament.app.footycup.backend.dto.tournament.CreateTournamentRequest;
+import com.tournament.app.footycup.backend.dto.tournament.UpdateTournamentRequest;
 import com.tournament.app.footycup.backend.enums.TournamentStatus;
 import com.tournament.app.footycup.backend.model.Tournament;
 import com.tournament.app.footycup.backend.model.User;
@@ -15,7 +17,6 @@ import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.NoSuchElementException;
-import java.util.stream.Collectors;
 
 @AllArgsConstructor
 @Service
@@ -26,112 +27,102 @@ public class TournamentService {
     private final TeamService teamService;
     private final UserRepository userRepository;
 
-    public Tournament createTournament(Tournament request, User organizer) {
-        Tournament tournament = new Tournament();
-        tournament.setName(request.getName());
-        tournament.setStartDate(request.getStartDate());
-        tournament.setEndDate(request.getEndDate());
-        tournament.setLocation(request.getLocation());
+    @Transactional
+    public Tournament createTournament(CreateTournamentRequest request, User organizer) {
+        var tournament = new Tournament();
+        tournament.setName(request.name());
+        tournament.setStartDate(request.startDate());
+        tournament.setEndDate(request.endDate());
+        tournament.setLocation(request.location());
         tournament.setOrganizer(organizer);
-        Tournament saved = tournamentRepository.save(tournament);
+        var saved = tournamentRepository.save(tournament);
         scheduleService.createEmptySchedules(saved.getId(), organizer);
         return saved;
     }
 
-    public Tournament getTournamentById(Long id, User user) {
-        Tournament tournament = tournamentRepository.findById(id)
+    @Transactional(readOnly = true)
+    public Tournament getTournamentById(Long id, User organizer) {
+        var tournament = tournamentRepository.findById(id)
                 .orElseThrow(() -> new NoSuchElementException("Tournament not found"));
 
-        if (!tournament.getOrganizer().getId().equals(user.getId())) {
+        if (!tournament.getOrganizer().getId().equals(organizer.getId())) {
             throw new AccessDeniedException("Lack of authorization");
         }
 
         return tournament;
     }
 
-    public Tournament updateTournament(Long id, Tournament updatedData, User user) {
-        Tournament tournament = getTournamentById(id, user);
-
-        if (updatedData.getName() != null) {
-            tournament.setName(updatedData.getName());
-        }
-        if (updatedData.getStartDate() != null) {
-            tournament.setStartDate(updatedData.getStartDate());
-        }
-        if (updatedData.getEndDate() != null) {
-            tournament.setEndDate(updatedData.getEndDate());
-        }
-        if (updatedData.getLocation() != null) {
-            tournament.setLocation(updatedData.getLocation());
-        }
-
+    @Transactional
+    public Tournament updateTournament(Long id, UpdateTournamentRequest updated, User organizer) {
+        var tournament = getTournamentById(id, organizer);
+        if (updated.name() != null) tournament.setName(updated.name());
+        if (updated.startDate() != null) tournament.setStartDate(updated.startDate());
+        if (updated.endDate() != null) tournament.setEndDate(updated.endDate());
+        if (updated.location() != null) tournament.setLocation(updated.location());
         return tournamentRepository.save(tournament);
     }
 
+    @Transactional(readOnly = true)
     public List<Tournament> getTournamentsByOrganizer(User organizer) {
-        List<Tournament> tournaments = tournamentRepository.findByOrganizer(organizer);
-        LocalDate today = LocalDate.now();
-        for (Tournament t : tournaments) {
-            if (t.getEndDate().isBefore(today)) {
-                t.setStatus(TournamentStatus.FINISHED);
-            } else if (!t.getStartDate().isAfter(today) && !t.getEndDate().isBefore(today)) {
-                t.setStatus(TournamentStatus.ONGOING);
-            } else {
-                t.setStatus(TournamentStatus.UPCOMING);
-            }
-        }
+        var tournaments = tournamentRepository.findByOrganizer(organizer);
+        var today = LocalDate.now();
+        tournaments.forEach(t -> {
+            var s =
+                    t.getEndDate().isBefore(today) ? TournamentStatus.FINISHED :
+                    (!t.getStartDate().isAfter(today) && !t.getEndDate().isBefore(today)) ? TournamentStatus.ONGOING :
+                    TournamentStatus.UPCOMING;
+            t.setStatus(s);
+        });
         return tournaments;
     }
 
-    public void deleteTournament(Long id, User user) {
-        Tournament tournament = getTournamentById(id, user);
-        scheduleService.deleteSchedules(tournament.getId(), user);
-        formatService.deleteAllStructures(tournament.getId(), user);
-        teamService.deleteTeams(tournament.getId(), user);
+    @Transactional
+    public void deleteTournament(Long id, User organizer) {
+        var tournament = getTournamentById(id, organizer);
+        scheduleService.deleteSchedules(tournament.getId(), organizer);
+        formatService.deleteAllStructures(tournament.getId(), organizer);
+        teamService.deleteTeams(tournament.getId(), organizer);
         tournamentRepository.delete(tournament);
     }
 
     @Transactional(readOnly = true)
-    public List<User> getReferees(Long tournamentId) {
-        Tournament tournament = tournamentRepository.findWithRefereesById(tournamentId)
+    public List<User> getReferees(Long tournamentId, User organizer) {
+        var tournament = tournamentRepository.findWithRefereesById(tournamentId)
                 .orElseThrow(() -> new NoSuchElementException("Tournament not found"));
-
+        if (!tournament.getOrganizer().getId().equals(organizer.getId())) {
+            throw new AccessDeniedException("Lack of authorization");
+        }
         return new ArrayList<>(tournament.getReferees());
     }
 
+    @Transactional
     public List<User> addReferee(Long tournamentId, String refereeEmail, User organizer) {
-        Tournament tournament = tournamentRepository.findWithRefereesById(tournamentId)
+        var tournament = tournamentRepository.findWithRefereesById(tournamentId)
                 .orElseThrow(() -> new NoSuchElementException("Tournament not found"));
-
         if(!tournament.getOrganizer().getId().equals(organizer.getId())) {
             throw new AccessDeniedException("Lack of authorization");
         }
-
-        User referee = userRepository.findByEmail(refereeEmail)
+        var referee = userRepository.findByEmail(refereeEmail)
                 .orElseThrow(() -> new NoSuchElementException("User not found"));
-
         if (!tournament.getReferees().contains(referee)) {
             tournament.getReferees().add(referee);
+            tournamentRepository.save(tournament);
         }
-        Tournament saved = tournamentRepository.save(tournament);
-        return saved.getReferees();
+        return tournament.getReferees();
     }
 
-    public void removeReferee(Long tournamentId, Long userId, User organizer) {
-        Tournament tournament = tournamentRepository.findWithRefereesById(tournamentId)
+    @Transactional
+    public void removeReferee(Long tournamentId, Long refereeId, User organizer) {
+        var tournament = tournamentRepository.findWithRefereesById(tournamentId)
                 .orElseThrow(() -> new NoSuchElementException("Tournament not found"));
-
         if(!tournament.getOrganizer().getId().equals(organizer.getId())) {
             throw new AccessDeniedException("Lack of authorization");
         }
-
-        User referee = userRepository.findById(userId)
+        var referee = userRepository.findById(refereeId)
                 .orElseThrow(() -> new NoSuchElementException("Referee not found"));
-
-        if (!tournament.getReferees().contains(referee)) {
+        if (!tournament.getReferees().remove(referee)) {
             throw new IllegalArgumentException("Referee not assigned");
         }
-        tournament.getReferees().remove(referee);
         tournamentRepository.save(tournament);
     }
 }
