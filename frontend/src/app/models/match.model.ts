@@ -1,4 +1,5 @@
 import { Team } from './team.model';
+import { User } from './user.model';
 
 export interface Match {
     id: number;
@@ -11,4 +12,5 @@ export interface Match {
     homeScore: number | null;
     awayScore: number | null;
     durationInMin: number;
+    referee?: User | null;
 }

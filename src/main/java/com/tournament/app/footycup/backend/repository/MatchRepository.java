@@ -8,8 +8,10 @@ import org.springframework.data.jpa.repository.Query;
 import java.util.List;
 
 public interface MatchRepository extends JpaRepository<Match, Long> {
-    public List<Match> findByTournamentId(Long tournamentId);
-    public List<Match> findByGroupId(Long groupId);
+    List<Match> findByTournamentId(Long tournamentId);
+    List<Match> findByGroupId(Long groupId);
+    List<Match> findByRefereeId(Long refereeId);
+    List<Match> findByTournamentIdAndRefereeId(Long tournamentId, Long refereeId);
 
     @Query("""
     SELECT m FROM Match m

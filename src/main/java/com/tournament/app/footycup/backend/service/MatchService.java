@@ -4,6 +4,7 @@ import com.tournament.app.footycup.backend.enums.MatchStatus;
 import com.tournament.app.footycup.backend.model.*;
 import com.tournament.app.footycup.backend.repository.*;
 import lombok.AllArgsConstructor;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -17,6 +18,7 @@ public class MatchService {
     private final MatchRepository matchRepository;
     private final TournamentRepository tournamentRepository;
     private final BracketNodeRepository bracketNodeRepository;
+    private final UserRepository userRepository;
 
     public List<Match> getMatches(Long tournamentId, User user) {
         Tournament tournament = tournamentRepository.findById(tournamentId)
@@ -168,6 +170,35 @@ public class MatchService {
         else {
             return null;
         }
+    }
+
+    public Match assignReferee(Long tournamentId, Long matchId, Long refereeId, User user) {
+        Tournament tournament = tournamentRepository.findWithRefereesById(tournamentId)
+                .orElseThrow(() -> new NoSuchElementException("Tournament not found"));
+        if(!tournament.getOrganizer().getId().equals(user.getId())) {
+            throw new IllegalArgumentException("Lack of authorization");
+        }
+
+        Match match = matchRepository.findById(matchId)
+                .orElseThrow(() -> new NoSuchElementException("Match not found"));
+
+        if (match.getTournament() == null || !match.getTournament().getId().equals(tournamentId)) {
+            throw new IllegalArgumentException("Match does not belong to tournament");
+        }
+
+        boolean refereeAssigned = tournament.getReferees().stream()
+                .anyMatch(ref -> Objects.equals(ref.getId(), refereeId));
+        if (!refereeAssigned) {
+            throw new IllegalArgumentException("Referee not assigned to tournament");
+        }
+
+        User resolvedReferee = userRepository.findById(refereeId)
+                .orElseThrow(() -> new NoSuchElementException("Referee not found"));
+
+        match.setReferee(resolvedReferee);
+        Match saved = matchRepository.save(match);
+        saved.setReferee(resolvedReferee);
+        return saved;
     }
 
 }

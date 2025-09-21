@@ -2,6 +2,7 @@ package com.tournament.app.footycup.backend.model;
 
 import com.fasterxml.jackson.annotation.JsonIdentityInfo;
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.ObjectIdGenerators;
 import com.tournament.app.footycup.backend.enums.MatchStatus;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -23,9 +24,11 @@ import java.time.LocalTime;
         name = "matches",
         indexes = {
                 @Index(name = "idx_match_group", columnList = "id_group"),
-                @Index(name = "idx_match_tournament", columnList = "id_tournament")
+                @Index(name = "idx_match_tournament", columnList = "id_tournament"),
+                @Index(name = "idx_match_referee", columnList = "id_referee")
         }
-)@Schema(description = "Match entity representing a scheduled football match")
+)
+@Schema(description = "Match entity representing a scheduled football match")
 public class Match {
 
     @Id
@@ -77,4 +80,10 @@ public class Match {
     @ManyToOne
     @JoinColumn(name = "id_group")
     private Group group;
+
+    @Schema(description = "Referee assigned to the match")
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "id_referee")
+    @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
+    private User referee;
 }

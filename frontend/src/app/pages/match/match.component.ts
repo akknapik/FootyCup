@@ -6,6 +6,9 @@ import { Match } from '../../models/match.model';
 import { AuthService } from '../../services/auth.service';
 import { NotificationService } from '../../services/notification.service';
 import { FormatService } from '../../services/format.service';
+import { User } from '../../models/user.model';
+import { TournamentService } from '../../services/tournament.service';
+import { UserRef } from '../../models/common/user-ref.model';
 
 @Component({
   selector: 'app-match',
@@ -21,36 +24,52 @@ export class MatchComponent {
   pageSize = 10;
   currentPage = 1;
   isLoading: boolean = false;
+  referees: UserRef[] = [];
+  selectedReferees: Record<number, number | null> = {};
+  assigning: Record<number, boolean> = {};
 
 
-  constructor(private route: ActivatedRoute, public router: Router, private matchService: MatchService, public auth: AuthService, private notification: NotificationService, private formatService: FormatService) {}
-
+  constructor(private route: ActivatedRoute, public router: Router, private matchService: MatchService, public auth: AuthService, private notification: NotificationService, private formatService: FormatService, private tournamentService: TournamentService) {}
+  
   ngOnInit(): void {
     this.tournamentId = +this.route.snapshot.paramMap.get('tournamentId')!;
     this.loadGroups();
     this.loadMatches();
+    this.loadReferees();
   }
 
   loadMatches() {
-  this.isLoading = true;
-  this.matchService.getMatches(this.tournamentId).subscribe({
-    next: (data) => {
-      this.matches = data;
-      this.isLoading = false;
-    },
-    error: () => {
-      this.notification.showError('Error loading matches!');
-      this.isLoading = false;
-    },
-  });
-}
+    this.isLoading = true;
+    this.matchService.getMatches(this.tournamentId).subscribe({
+      next: (data) => {
+        this.matches = data;
+        this.matches.forEach(match => {
+          if (match) {
+            this.selectedReferees[match.id] = match.referee ? match.referee.id : null;
+          }
+        });
+        this.isLoading = false;
+      },
+      error: () => {
+        this.notification.showError('Error loading matches!');
+        this.isLoading = false;
+      },
+    });
+  }
 
   loadGroups() {
-  this.formatService.getGroups(this.tournamentId).subscribe({
-    next: (data) => this.groups = data,
-    error: () => this.notification.showError('Failed to load groups'),
-  });
-}
+    this.formatService.getGroups(this.tournamentId).subscribe({
+      next: (data) => this.groups = data,
+      error: () => this.notification.showError('Failed to load groups'),
+    });
+  }
+
+  loadReferees() {
+    this.tournamentService.getReferees(this.tournamentId).subscribe({
+      next: (data) => this.referees = data,
+      error: () => this.notification.showError('Failed to load referees'),
+    });
+  }
 
   deleteMatch(matchId: number) {
     this.notification.confirm('Are you sure you want to delete this match?').subscribe((confirmed) => {
@@ -77,11 +96,40 @@ export class MatchComponent {
   }
  
   toggleMenu(match: any): void {
-  this.paginatedMatches.forEach(m => {
-    if (m && m.id !== match.id) m.showMenu = false;
-  });
-  match.showMenu = !match.showMenu;
-}
+    this.paginatedMatches.forEach(m => {
+      if (m && m.id !== match.id) m.showMenu = false;
+    });
+    match.showMenu = !match.showMenu;
+  }
+
+  onRefereeSelected(match: Match, refereeId: number | null) {
+    if (!match) {
+      return;
+    }
+
+    if (refereeId === null) {
+      this.selectedReferees[match.id] = match.referee ? match.referee.id ?? null : null;
+      return;
+    }
+
+    this.assigning[match.id] = true;
+    this.matchService.assignReferee(this.tournamentId, match.id, refereeId).subscribe({
+      next: (updatedMatch) => {
+        const index = this.matches.findIndex(m => m.id === updatedMatch.id);
+        if (index !== -1) {
+          this.matches[index] = updatedMatch;
+        }
+        this.selectedReferees[match.id] = updatedMatch.referee ? updatedMatch.referee.id ?? null : null;
+        this.notification.showSuccess('Referee assigned successfully');
+        this.assigning[match.id] = false;
+      },
+      error: () => {
+        this.notification.showError('Failed to assign referee');
+        this.selectedReferees[match.id] = match.referee ? match.referee.id ?? null : null;
+        this.assigning[match.id] = false;
+      }
+    });
+  }
 
   get paginatedMatches(): (any | null)[] {
     const start = (this.currentPage - 1) * this.pageSize;

@@ -82,4 +82,23 @@ public class MatchController {
         matchService.deleteMatch(tournamentId, matchId, user);
         return ResponseEntity.noContent().build();
     }
+
+    @Operation(summary = "Assign a referee to a match")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Referee assigned successfully",
+                    content = @Content(mediaType = "application/json", schema = @Schema(implementation = Match.class))),
+            @ApiResponse(responseCode = "400", description = "Invalid request", content = @Content),
+            @ApiResponse(responseCode = "401", description = "Unauthorized", content = @Content),
+            @ApiResponse(responseCode = "404", description = "Match or referee not found", content = @Content)
+    })
+    @PutMapping("/{matchId}/referee")
+    public ResponseEntity<Match> assignReferee(
+            @Parameter(description = "Tournament ID") @PathVariable Long tournamentId,
+            @Parameter(description = "Match ID") @PathVariable Long matchId,
+            @Parameter(description = "Referee ID") @RequestParam Long refereeId,
+            Authentication authentication) {
+        User user = (User) authentication.getPrincipal();
+        Match match = matchService.assignReferee(tournamentId, matchId, refereeId, user);
+        return ResponseEntity.ok(match);
+    }
 }

@@ -1,4 +1,4 @@
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpParams } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { Match } from '../models/match.model';
 import { Observable } from 'rxjs';
@@ -31,5 +31,12 @@ export class MatchService {
 
   deleteAllMatches(tournamentId: number): Observable<void> {
     return this.http.delete<void>(`/api/tournament/${tournamentId}/matches`, { withCredentials: true });
+  }
+
+  assignReferee(tournamentId: number, matchId: number, refereeId: number): Observable<Match> {
+    return this.http.put<Match>(`/api/tournament/${tournamentId}/matches/${matchId}/referee`, null, {
+      params: new HttpParams().set('refereeId', refereeId),
+      withCredentials: true,
+    });
   }
 }

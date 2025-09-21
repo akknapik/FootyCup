@@ -78,6 +78,7 @@
                 <div>Name</div>
                 <div>Teams</div>
                 <div>Status</div>
+                <div>Referee</div>
               </div>
 
               <div class="matches-row" *ngFor="let match of paginatedMatches">
@@ -86,7 +87,25 @@
                   {{ match?.teamHome?.name || '—' }} vs {{ match?.teamAway?.name || '—' }}
                 </div>
                 <div class="status-column">{{ match?.status || '—' }}</div>
-
+                <div class="referee-column">
+                  <div *ngIf="match; else refereePlaceholder">
+                    <div class="referee-name">
+                      {{ match.referee ? match.referee.firstname + ' ' + match.referee.lastname : 'Not assigned' }}
+                    </div>
+                    <select *ngIf="referees.length > 0"
+                            [ngModel]="selectedReferees[match.id]"
+                            (ngModelChange)="onRefereeSelected(match, $event)"
+                            [disabled]="assigning[match.id]">
+                      <option [ngValue]="null">Select referee</option>
+                      <option *ngFor="let referee of referees" [ngValue]="referee.id">
+                        {{ referee.displayName }}
+                      </option>
+                    </select>
+                    <div *ngIf="referees.length === 0" class="no-referees">No referees available</div>
+                  </div>
+                  <ng-template #refereePlaceholder>—</ng-template>
+                </div>
+                
                 <div class="row-actions" *ngIf="match" (click)="$event.stopPropagation()">
                   <button class="dots-btn" (click)="toggleMenu(match)">⋮</button>
                   <div class="dropdown-menu" *ngIf="match.showMenu">
