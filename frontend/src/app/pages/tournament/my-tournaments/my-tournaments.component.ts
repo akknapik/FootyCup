@@ -3,6 +3,7 @@ import { TournamentService } from '../../../services/tournament.service';
 import { Route, Router } from '@angular/router';
 import { AuthService } from '../../../services/auth.service';
 import { NotificationService } from '../../../services/notification.service';
+import { TournamentItemResponse } from '../../../models/tournament/tournament-item.response';
 
 @Component({
   selector: 'app-my-tournaments',
@@ -11,7 +12,7 @@ import { NotificationService } from '../../../services/notification.service';
   styleUrl: './my-tournaments.component.css'
 })
 export class MyTournamentsComponent {
-  tournaments: any[] = [];
+  tournaments: TournamentItemResponse[] = [];
   isLoading: boolean = false;
 
   constructor(private tournamentService: TournamentService, private router: Router, public auth: AuthService, private notification: NotificationService) {}

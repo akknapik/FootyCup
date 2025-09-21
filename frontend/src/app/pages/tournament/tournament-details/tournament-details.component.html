@@ -53,7 +53,7 @@
         </header>
 
         <main class="content">
-          <h2>{{ tournament?.name }}</h2>
+          <h2>{{ tournament.name }}</h2>
 
           <div *ngIf="tournament" class="form-card">
             <h3 style="text-align: center; margin-bottom: 2rem;">Information</h3>
@@ -121,7 +121,7 @@
                   </thead>
                   <tbody>
                     <tr *ngFor="let referee of referees">
-                      <td>{{ referee.firstname }} {{ referee.lastname }}</td>
+                      <td>{{ referee.displayName }}</td>
                       <td>{{ referee.email }}</td>
                       <td style="text-align:right;">
                         <button

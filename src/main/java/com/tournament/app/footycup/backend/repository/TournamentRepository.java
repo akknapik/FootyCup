@@ -9,7 +9,6 @@ import java.util.List;
 import java.util.Optional;
 
 public interface TournamentRepository extends JpaRepositoryImplementation<Tournament, Long> {
-    List<Tournament> findAllByOrganizerId(Long organizerId);
     List<Tournament> findByOrganizer(User organizer);
 
     @EntityGraph(attributePaths = "referees")

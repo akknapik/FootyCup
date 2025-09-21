@@ -4,6 +4,12 @@ import { Tournament } from "../models/tournament.model";
 import { BehaviorSubject, filter } from "rxjs";
 import { NavigationEnd, Router } from "@angular/router";
 import { User } from "../models/user.model";
+import { TournamentItemResponse } from "../models/tournament/tournament-item.response";
+import { CreateTournamentRequest } from "../models/tournament/create-tournament.request";
+import { TournamentResponse } from "../models/tournament/tournament.response";
+import { UpdateTournamentRequest } from "../models/tournament/update-tournament.request";
+import { UserRef } from "../models/common/user-ref.model";
+import { AddRefereeRequest } from "../models/tournament/add-referee.request";
 
 @Injectable({ providedIn: 'root' })
 export class TournamentService {
@@ -20,38 +26,36 @@ export class TournamentService {
   }
 
   getMyTournaments() {
-    return this.http.get<Tournament[]>('/api/tournaments/my', { withCredentials: true });
+    return this.http.get<TournamentItemResponse[]>('/api/tournaments/my', { withCredentials: true });
   }
 
-  createTournament(data: any) {
-    return this.http.post('/api/tournaments', data, { withCredentials: true });
+  createTournament(data: CreateTournamentRequest) {
+    return this.http.post<TournamentResponse>('/api/tournaments', data, { withCredentials: true });
   }
 
   getTournamentById(id: number) {
-    return this.http.get<Tournament>(`/api/tournaments/${id}`, { withCredentials: true });
+    return this.http.get<TournamentResponse>(`/api/tournaments/${id}`, { withCredentials: true });
   }
   
-  updateTournament(id: number, data: any) {
-    return this.http.put(`/api/tournaments/${id}`, data, { withCredentials: true });
+  updateTournament(id: number, data: UpdateTournamentRequest) {
+    return this.http.put<TournamentResponse>(`/api/tournaments/${id}`, data, { withCredentials: true });
   }
 
   deleteTournament(id: number) {
-    return this.http.delete(`/api/tournaments/${id}`, { withCredentials: true });
+    return this.http.delete<void>(`/api/tournaments/${id}`, { withCredentials: true });
   }
 
   getReferees(tournamentId: number) {
-    return this.http.get<User[]>(`/api/tournaments/${tournamentId}/referees`, { withCredentials: true });
+    return this.http.get<UserRef[]>(`/api/tournaments/${tournamentId}/referees`, { withCredentials: true });
   }
 
   addReferee(id: number, email: string) {
-    return this.http.post<User[]>(`/api/tournaments/${id}/referees`, null, {
-      params: new HttpParams().set('email', email),
-      withCredentials: true,
-    });
+    const body: AddRefereeRequest = { email };
+    return this.http.post<UserRef[]>(`/api/tournaments/${id}/referees`, body, { withCredentials: true });
   }
 
   removeReferee(tournamentId: number, userId: number) {
-    return this.http.delete<Tournament>(`/api/tournaments/${tournamentId}/referees/${userId}`, { withCredentials: true });
+    return this.http.delete<void>(`/api/tournaments/${tournamentId}/referees/${userId}`, { withCredentials: true });
   }
   
   get currentId(): string | null {

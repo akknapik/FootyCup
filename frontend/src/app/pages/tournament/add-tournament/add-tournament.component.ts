@@ -3,6 +3,7 @@ import { TournamentService } from '../../../services/tournament.service';
 import { Router } from '@angular/router';
 import { AuthService } from '../../../services/auth.service';
 import { NotificationService } from '../../../services/notification.service';
+import { CreateTournamentRequest } from '../../../models/tournament/create-tournament.request';
 
 @Component({
   selector: 'app-add-tournament',
@@ -11,7 +12,7 @@ import { NotificationService } from '../../../services/notification.service';
   styleUrl: './add-tournament.component.css'
 })
 export class AddTournamentComponent {
-  form = {
+  form: CreateTournamentRequest = {
     name: '',
     startDate: '',
     endDate: '',
