@@ -77,18 +77,26 @@
             </div>
 
             <div class="teams-row" *ngFor="let team of paginatedTeams" (click)="team && openDetails(team.id)">
-              <div>{{ team?.name || '—' }}</div>
+              <div>{{ team?.name }}</div>
               <div>
-                {{ team?.coach ? team.coach.firstname + ' ' + team.coach.lastname : '—' }}
+                {{ team?.coach?.displayName }}
               </div>
-              <div class="players-column">
-                {{ team?.playerList?.length ?? '—' }}
-                <span *ngIf="team?.playerList" class="icon-person">👤</span>
+              <div class="players-column" *ngIf="team as t">
+                {{ t.playersCount }}
+                <span *ngIf="t.playersCount !== null && t.playersCount !== undefined" class="icon-person">👤</span>
               </div>
 
               <div class="row-actions" *ngIf="team" (click)="$event.stopPropagation()">
-                <button class="dots-btn" (click)="toggleMenu(team)">⋮</button>
-                <div class="dropdown-menu" *ngIf="team.showMenu">
+                <button
+                  class="dots-btn"
+                  (click)="toggleMenu(team.id); $event.stopPropagation()"
+                  aria-haspopup="true"
+                  [attr.aria-expanded]="isMenuOpen(team.id)"
+                >
+                  ⋮
+                </button>
+
+                <div class="dropdown-menu" *ngIf="isMenuOpen(team.id)">
                   <button (click)="openDetails(team.id)">Edit</button>
                   <button (click)="deleteTeam(team.id)">Delete</button>
                 </div>

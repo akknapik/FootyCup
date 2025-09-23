@@ -12,25 +12,28 @@
         <div class="sidebar-header">
           <img src="assets/images/logo1_3.png" alt="FootyCup Logo" class="sidebar-logo">
         </div>
+
         <nav class="sidebar-nav">
           <a routerLink="/dashboard" class="nav-link">Dashboard</a>
           <a routerLink="/tournaments/my" class="nav-link active">Tournaments</a>
+
           <div *ngIf="tournamentId" class="submenu">
-            <a routerLink="/tournaments/{{ tournamentId }}" class="nav-link">General</a>
-            <a routerLink="/tournament/{{ tournamentId }}/teams" class="nav-link active">Teams</a>
-            <a routerLink="/tournament/{{ tournamentId }}/format" class="nav-link">Format</a>
-            <a routerLink="/tournament/{{ tournamentId }}/matches" class="nav-link">Matches</a>
-            <a routerLink="/tournament/{{ tournamentId }}/schedule" class="nav-link">Schedule</a>
-            <a routerLink="/tournament/{{ tournamentId }}/results" class="nav-link">Results</a>
+            <a [routerLink]="['/tournaments', tournamentId]" class="nav-link">General</a>
+            <a [routerLink]="['/tournament', tournamentId, 'teams']" class="nav-link active">Teams</a>
+            <a [routerLink]="['/tournament', tournamentId, 'format']" class="nav-link">Format</a>
+            <a [routerLink]="['/tournament', tournamentId, 'matches']" class="nav-link">Matches</a>
+            <a [routerLink]="['/tournament', tournamentId, 'schedule']" class="nav-link">Schedule</a>
+            <a [routerLink]="['/tournament', tournamentId, 'results']" class="nav-link">Results</a>
           </div>
 
-          <a routerLink="/settings"class="nav-link">Settings</a>
-            <a *ngIf="(auth.currentUser$ | async)?.userRole === 'ADMIN'"
-              routerLink="/admin/users"
-              class="nav-link">
-              Admin Panel
-            </a>
+          <a routerLink="/settings" class="nav-link">Settings</a>
+          <a *ngIf="(auth.currentUser$ | async)?.userRole === 'ADMIN'"
+            routerLink="/admin/users"
+            class="nav-link">
+            Admin Panel
+          </a>
         </nav>
+
         <nav class="sidebar-footer">
           <a routerLink="/aboutus">About us</a>
           <a routerLink="/contact">Contact</a>
@@ -40,13 +43,10 @@
       <div class="main">
         <header class="header">
           <div class="header-spacer"></div>
-
           <div class="user-info">
-            <div class="user-text">
-              <span *ngIf="auth.currentUser$ | async as user">
-                <div class="user-name">{{ user.firstname }} {{ user.lastname }}</div>
-                <button class="logout-btn" (click)="logout()">Log out</button>
-              </span>
+            <div class="user-text" *ngIf="auth.currentUser$ | async as user">
+              <div class="user-name">{{ user.firstname }} {{ user.lastname }}</div>
+              <button class="logout-btn" (click)="logout()">Log out</button>
             </div>
             <div class="avatar"></div>
           </div>
@@ -55,19 +55,21 @@
         <main class="content">
           <h2>Edit team</h2>
 
-          <div class="form-card">
+          <div class="form-card" *ngIf="team as t">
             <div class="one-row">
               <div class="input-group">
                 <label>Team's name</label>
-                <input type="text" [(ngModel)]="team.name" />
+                <input type="text" [(ngModel)]="t.name" />
               </div>
+
               <div class="input-group">
                 <label>Coach's email</label>
-                <input type="email" [(ngModel)]="team.coach.email" />
+                <input type="email" [(ngModel)]="t.coach.email" />
               </div>
+
               <div class="input-group">
                 <label>Country</label>
-                <input type="text" [(ngModel)]="team.country" />
+                <input type="text" [(ngModel)]="t.country" />
               </div>
             </div>
 
@@ -97,20 +99,17 @@
                 <div>#</div>
                 <div>Name</div>
                 <div>Date of birth</div>
+                <div></div>
               </div>
 
-              <div
-                class="players-row"
-                *ngFor="let player of paginatedPlayers"
-                (click)="player && startEdit(player)"
-              >
-                <div>{{ player?.number || '—' }}</div>
-                <div>{{ player?.name || '—' }}</div>
-                <div>{{ player?.birthDate || '—' }}</div>
+              <div class="players-row" *ngFor="let player of paginatedPlayers" (click)="startEdit(player)">
+                <div>{{ player.number || '—' }}</div>
+                <div>{{ player.name || '—' }}</div>
+                <div>{{ player.birthDate || '—' }}</div>
 
-                <div class="row-actions" *ngIf="player" (click)="$event.stopPropagation()">
-                  <button class="dots-btn" (click)="toggleMenu(player)">⋮</button>
-                  <div class="dropdown-menu" *ngIf="player.showMenu">
+                <div class="row-actions" (click)="$event.stopPropagation()">
+                  <button class="dots-btn" (click)="toggleMenu(player.id)">⋮</button>
+                  <div class="dropdown-menu" *ngIf="isMenuOpen(player.id)">
                     <button (click)="startEdit(player)">Edit</button>
                     <button (click)="deletePlayer(player.id)">Delete</button>
                   </div>
@@ -126,19 +125,22 @@
           </div>
         </main>
 
-        <div class="edit-modal" *ngIf="editMode">
+        <div class="edit-modal" *ngIf="editMode && selectedPlayer as sp">
           <h4>Edit Player</h4>
+
           <div class="input-group">
             <label>Number</label>
-            <input type="number" [(ngModel)]="selectedPlayer.number" />
+            <input type="number" [(ngModel)]="sp.number" />
           </div>
+
           <div class="input-group">
             <label>Name</label>
-            <input type="text" [(ngModel)]="selectedPlayer.name" />
+            <input type="text" [(ngModel)]="sp.name" />
           </div>
+
           <div class="input-group">
             <label>Date of birth</label>
-            <input type="date" [(ngModel)]="selectedPlayer.birthDate" />
+            <input type="date" [(ngModel)]="sp.birthDate" />
           </div>
 
           <div class="form-actions">
@@ -152,5 +154,6 @@
         </footer>
       </div>
     </div>
+
   </body>
 </html>

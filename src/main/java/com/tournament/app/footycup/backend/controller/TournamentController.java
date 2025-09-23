@@ -35,7 +35,7 @@ public class TournamentController {
             @RequestBody @Valid CreateTournamentRequest request,
             @AuthenticationPrincipal User organizer) {
         var saved = tournamentService.createTournament(request, organizer);
-        var body = tournamentMapper.toResponse(saved, commonMapper);
+        var body = tournamentMapper.toResponse(saved);
         var location = UriComponentsBuilder.fromPath("/tournaments/{id}").buildAndExpand(saved.getId()).toUri();
         return ResponseEntity.created(location).body(body);
     }
@@ -45,7 +45,7 @@ public class TournamentController {
             @PathVariable Long id,
             @AuthenticationPrincipal User organizer) {
         var tournament = tournamentService.getTournamentById(id, organizer);
-        return ResponseEntity.ok(tournamentMapper.toResponse(tournament, commonMapper));
+        return ResponseEntity.ok(tournamentMapper.toResponse(tournament));
     }
 
     @PutMapping("/{id}")
@@ -54,7 +54,7 @@ public class TournamentController {
             @RequestBody @Valid UpdateTournamentRequest updatedData,
             @AuthenticationPrincipal User organizer) {
         var updated = tournamentService.updateTournament(id, updatedData, organizer);
-        return ResponseEntity.ok(tournamentMapper.toResponse(updated, commonMapper));
+        return ResponseEntity.ok(tournamentMapper.toResponse(updated));
     }
 
     @DeleteMapping("/{id}")

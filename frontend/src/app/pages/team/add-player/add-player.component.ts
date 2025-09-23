@@ -14,7 +14,7 @@ export class AddPlayerComponent {
   tournamentId!: number;
   teamId!: number;
   form = {
-    number: '',
+    number: 0,
     name: '',
     birthDate: ''
   }

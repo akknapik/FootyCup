@@ -28,7 +28,7 @@ constructor(private teamService: TeamService, public router: Router, private rou
         this.tournamentId = +id;
       } else {
         this.notification.showError('Tournament ID not found!');
-        this.router.navigate(['/tournament', 'my']);
+        this.router.navigate(['/tournaments', 'my']);
       }
     });
   }
