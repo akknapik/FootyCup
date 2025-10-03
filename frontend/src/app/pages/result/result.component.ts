@@ -4,13 +4,13 @@ import { ScheduleEntry } from '../../models/schedule-entry.model';
 import { Schedule } from '../../models/schedule.model';
 import { MatchService } from '../../services/match.service';
 import { ScheduleService } from '../../services/schedule.service';
-import { Match } from '../../models/match.model';
 import { AuthService } from '../../services/auth.service';
 import { NotificationService } from '../../services/notification.service';
 import { ResultService } from '../../services/result.service';
 import { BracketNode } from '../../models/bracket-node.model';
 import { Group } from '../../models/group.model';
 import { GroupTeam } from '../../models/group-team.model';
+import { MatchResponse } from '../../models/match/match.response';
 
 
 @Component({
@@ -88,7 +88,7 @@ selectSchedule(scheduleId: number): void {
     });
 }
 
-  onResultChange(match: Match | null): void {
+  onResultChange(match: MatchResponse | null): void {
   if (!match) return;
 
   this.resultService.updateMatchResult(this.tournamentId, {

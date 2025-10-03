@@ -2,13 +2,14 @@ import { HttpClient } from '@angular/common/http';
 import { Component } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { MatchService } from '../../services/match.service';
-import { Match } from '../../models/match.model';
 import { AuthService } from '../../services/auth.service';
 import { NotificationService } from '../../services/notification.service';
 import { FormatService } from '../../services/format.service';
 import { User } from '../../models/user.model';
 import { TournamentService } from '../../services/tournament.service';
 import { UserRef } from '../../models/common/user-ref.model';
+import { MatchResponse } from '../../models/match/match.response';
+import { MatchItemResponse } from '../../models/match/match-item.response';
 
 @Component({
   selector: 'app-match',
@@ -18,7 +19,7 @@ import { UserRef } from '../../models/common/user-ref.model';
 })
 export class MatchComponent {
   tournamentId!: number;
-  matches: Match[] = [];
+  matches: MatchItemResponse[] = [];
   showGenerateButton = false;
   groups: any[] = [];
   pageSize = 10;
@@ -102,7 +103,26 @@ export class MatchComponent {
     match.showMenu = !match.showMenu;
   }
 
-  onRefereeSelected(match: Match, refereeId: number | null) {
+  canManageEvents(match: MatchItemResponse | null): boolean {
+    const currentUser = this.auth.currentUser;
+    if (!match || !currentUser) {
+      return false;
+    }
+    if (currentUser.userRole === 'ADMIN') {
+      return true;
+    }
+    return match.referee?.id === currentUser.id;
+  }
+
+  openMatchEvents(match: MatchItemResponse | null): void {
+    if (!match || !match.id) {
+      return;
+    }
+    (match as any).showMenu = false;
+    this.router.navigate([`/tournament/${this.tournamentId}/matches/${match.id}/events`]);
+  }
+
+  onRefereeSelected(match: MatchResponse, refereeId: number | null) {
     if (!match) {
       return;
     }

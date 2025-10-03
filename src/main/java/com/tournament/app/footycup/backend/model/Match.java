@@ -14,6 +14,8 @@ import lombok.Setter;
 
 import java.time.LocalDate;
 import java.time.LocalTime;
+import java.util.ArrayList;
+import java.util.List;
 
 @Getter
 @Setter
@@ -86,4 +88,9 @@ public class Match {
     @JoinColumn(name = "id_referee")
     @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
     private User referee;
+
+    @OneToMany(mappedBy = "match", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OrderBy("minute ASC")
+    @JsonIgnore
+    private List<MatchEvent> events = new ArrayList<>();
 }

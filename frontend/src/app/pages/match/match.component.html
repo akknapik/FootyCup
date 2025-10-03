@@ -90,7 +90,7 @@
                 <div class="referee-column">
                   <div *ngIf="match; else refereePlaceholder">
                     <div class="referee-name">
-                      {{ match.referee ? match.referee.firstname + ' ' + match.referee.lastname : 'Not assigned' }}
+                      {{ match.referee ? match.referee.displayName : 'Not assigned' }}
                     </div>
                     <select *ngIf="referees.length > 0"
                             [ngModel]="selectedReferees[match.id]"
@@ -109,6 +109,7 @@
                 <div class="row-actions" *ngIf="match" (click)="$event.stopPropagation()">
                   <button class="dots-btn" (click)="toggleMenu(match)">⋮</button>
                   <div class="dropdown-menu" *ngIf="match.showMenu">
+                    <button *ngIf="canManageEvents(match)" (click)="openMatchEvents(match)">Manage events</button>
                     <button (click)="deleteMatch(match.id)">Delete</button>
                   </div>
                 </div>

@@ -1,17 +1,13 @@
 package com.tournament.app.footycup.backend.controller;
 
-import com.tournament.app.footycup.backend.model.Match;
+import com.tournament.app.footycup.backend.dto.match.MatchItemResponse;
+import com.tournament.app.footycup.backend.dto.match.MatchResponse;
+import com.tournament.app.footycup.backend.mapper.MatchMapper;
 import com.tournament.app.footycup.backend.model.User;
 import com.tournament.app.footycup.backend.service.MatchService;
-import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.Parameter;
-import io.swagger.v3.oas.annotations.media.Content;
-import io.swagger.v3.oas.annotations.media.Schema;
-import io.swagger.v3.oas.annotations.responses.ApiResponse;
-import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import lombok.AllArgsConstructor;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.Authentication;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -22,83 +18,58 @@ import java.util.List;
 public class MatchController {
 
     private final MatchService matchService;
+    private final MatchMapper matchMapper;
 
-    @Operation(summary = "Get all matches in a tournament")
-    @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Matches retrieved successfully",
-                    content = @Content(mediaType = "application/json", schema = @Schema(implementation = Match.class))),
-            @ApiResponse(responseCode = "401", description = "Unauthorized", content = @Content)
-    })
     @GetMapping
-    public ResponseEntity<List<Match>> getMatches(
-            @Parameter(description = "Tournament ID") @PathVariable Long tournamentId,
-            Authentication authentication) {
-        User user = (User) authentication.getPrincipal();
-        List<Match> matches = matchService.getMatches(tournamentId, user);
-        return ResponseEntity.ok(matches);
+    public ResponseEntity<List<MatchItemResponse>> getMatches(
+            @PathVariable Long tournamentId,
+            @AuthenticationPrincipal User organizer) {
+        var matches = matchService.getMatches(tournamentId, organizer);
+        var dto = matches.stream().map(matchMapper::toItem).toList();
+        return ResponseEntity.ok(dto);
     }
 
-    @Operation(summary = "Generate group stage matches for a tournament")
-    @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Group matches generated successfully"),
-            @ApiResponse(responseCode = "401", description = "Unauthorized", content = @Content),
-            @ApiResponse(responseCode = "409", description = "Cannot generate matches due to conflicts or invalid state", content = @Content)
-    })
+    @GetMapping("/{matchId}")
+    public ResponseEntity<MatchResponse> getMatch(
+            @PathVariable Long tournamentId,
+            @PathVariable Long matchId,
+            @AuthenticationPrincipal User organizer) {
+        var match = matchService.getMatch(tournamentId, matchId, organizer);
+        return ResponseEntity.ok(matchMapper.toResponse(match));
+    }
+
     @PostMapping
     public ResponseEntity<Void> generateGroupMatches(
-            @Parameter(description = "Tournament ID") @PathVariable Long tournamentId,
-            Authentication authentication) {
-        User user = (User) authentication.getPrincipal();
-        matchService.generateGroupMatches(tournamentId, user);
+            @PathVariable Long tournamentId,
+            @AuthenticationPrincipal User organizer) {
+        matchService.generateGroupMatches(tournamentId, organizer);
         return ResponseEntity.ok().build();
     }
 
-    @Operation(summary = "Delete all matches in a tournament")
-    @ApiResponses(value = {
-            @ApiResponse(responseCode = "204", description = "All matches deleted successfully"),
-            @ApiResponse(responseCode = "401", description = "Unauthorized", content = @Content)
-    })
     @DeleteMapping
     public ResponseEntity<Void> deleteAllMatches(
-            @Parameter(description = "Tournament ID") @PathVariable Long tournamentId,
-            Authentication authentication) {
-        User user = (User) authentication.getPrincipal();
-        matchService.deleteAllMatches(tournamentId, user);
+            @PathVariable Long tournamentId,
+            @AuthenticationPrincipal User organizer) {
+        matchService.deleteAllMatches(tournamentId, organizer);
         return ResponseEntity.noContent().build();
     }
 
-    @Operation(summary = "Delete a specific match from a tournament")
-    @ApiResponses(value = {
-            @ApiResponse(responseCode = "204", description = "Match deleted successfully"),
-            @ApiResponse(responseCode = "404", description = "Match not found", content = @Content),
-            @ApiResponse(responseCode = "401", description = "Unauthorized", content = @Content)
-    })
     @DeleteMapping("/{matchId}")
     public ResponseEntity<Void> deleteMatch(
-            @Parameter(description = "Tournament ID") @PathVariable Long tournamentId,
-            @Parameter(description = "Match ID") @PathVariable Long matchId,
-            Authentication authentication) {
-        User user = (User) authentication.getPrincipal();
-        matchService.deleteMatch(tournamentId, matchId, user);
+            @PathVariable Long tournamentId,
+            @PathVariable Long matchId,
+            @AuthenticationPrincipal User organizer) {
+        matchService.deleteMatch(tournamentId, matchId, organizer);
         return ResponseEntity.noContent().build();
     }
 
-    @Operation(summary = "Assign a referee to a match")
-    @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Referee assigned successfully",
-                    content = @Content(mediaType = "application/json", schema = @Schema(implementation = Match.class))),
-            @ApiResponse(responseCode = "400", description = "Invalid request", content = @Content),
-            @ApiResponse(responseCode = "401", description = "Unauthorized", content = @Content),
-            @ApiResponse(responseCode = "404", description = "Match or referee not found", content = @Content)
-    })
     @PutMapping("/{matchId}/referee")
-    public ResponseEntity<Match> assignReferee(
-            @Parameter(description = "Tournament ID") @PathVariable Long tournamentId,
-            @Parameter(description = "Match ID") @PathVariable Long matchId,
-            @Parameter(description = "Referee ID") @RequestParam Long refereeId,
-            Authentication authentication) {
-        User user = (User) authentication.getPrincipal();
-        Match match = matchService.assignReferee(tournamentId, matchId, refereeId, user);
-        return ResponseEntity.ok(match);
+    public ResponseEntity<MatchItemResponse> assignReferee(
+            @PathVariable Long tournamentId,
+            @PathVariable Long matchId,
+            @RequestParam Long refereeId,
+            @AuthenticationPrincipal User organizer) {
+        var match = matchService.assignReferee(tournamentId, matchId, refereeId, organizer);
+        return ResponseEntity.ok(matchMapper.toItem(match));
     }
 }

@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="pl">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FootyCup</title>
+    <link rel="stylesheet" href="match-events.component.css">
+  </head>
+  <body>
+    <div class="app-container">
+      <aside class="sidebar">
+        <div class="sidebar-header">
+          <img src="assets/images/logo1_3.png" alt="FootyCup Logo" class="sidebar-logo">
+        </div>
+        <nav class="sidebar-nav">
+          <a routerLink="/dashboard" class="nav-link">Dashboard</a>
+          <a routerLink="/tournaments/my" class="nav-link active">Tournaments</a>
+          <div *ngIf="tournamentId" class="submenu">
+            <a routerLink="/tournaments/{{ tournamentId }}" class="nav-link">General</a>
+            <a routerLink="/tournament/{{ tournamentId }}/teams" class="nav-link">Teams</a>
+            <a routerLink="/tournament/{{ tournamentId }}/format" class="nav-link">Format</a>
+            <a routerLink="/tournament/{{ tournamentId }}/matches" class="nav-link active">Matches</a>
+            <a routerLink="/tournament/{{ tournamentId }}/schedule" class="nav-link">Schedule</a>
+            <a routerLink="/tournament/{{ tournamentId }}/results" class="nav-link">Results</a>
+          </div>
+
+          <a routerLink="/settings"class="nav-link">Settings</a>
+            <a *ngIf="(auth.currentUser$ | async)?.userRole === 'ADMIN'"
+              routerLink="/admin/users"
+              class="nav-link">
+              Admin Panel
+            </a>
+        </nav>
+        <nav class="sidebar-footer">
+          <a routerLink="/aboutus">About us</a>
+          <a routerLink="/contact">Contact</a>
+        </nav>
+      </aside>
+
+      <div class="main">
+        <header class="header">
+          <div class="header-spacer"></div>
+
+          <div class="user-info">
+            <div class="user-text">
+              <span *ngIf="auth.currentUser$ | async as user">
+                <div class="user-name">{{ user.firstname }} {{ user.lastname }}</div>
+                <button class="logout-btn" (click)="logout()">Log out</button>
+              </span>
+            </div>
+            <div class="avatar"></div>
+          </div>
+        </header>
+
+        <main class="content">
+          <div class="header-row">
+            <h2>Match event</h2>
+          </div>
+
+            <section class="match-summary" *ngIf="match">
+              <div class="teams">
+                <div class="team-name">{{ match.teamHome.name || 'TBD' }}</div>
+                <div class="score">{{ formattedScore }}</div>
+                <div class="team-name">{{ match.teamAway.name || 'TBD' }}</div>
+              </div>
+              <div class="details">
+                <span>Status: {{ match.status || 'UNKNOWN' }}</span>
+                <span>Referee: {{ match.referee ? match.referee.displayName : 'Not assigned' }}</span>
+              </div>
+            </section>
+
+            <section class="events-list">
+              <h3>Recorded events</h3>
+              <p *ngIf="events.length === 0" class="empty">No events have been recorded yet.</p>
+              <ul *ngIf="events.length > 0">
+                <li *ngFor="let event of events">
+                  <div class="event-minute">{{ event.minute }}'</div>
+                  <div class="event-description">
+                    <span class="type">{{ event.eventType }}</span>
+                    <span class="team">{{ event.team.name || 'Unknown team' }}</span>
+                    <span *ngIf="event.player" class="player">- {{ event.player.name }} (#{{ event.player.number }})</span>
+                  </div>
+                  <button *ngIf="canManageEvents" class="delete-button" (click)="deleteEvent(event)">Delete</button>
+                </li>
+              </ul>
+            </section>
+
+            <section *ngIf="canManageEvents" class="event-form">
+              <h3>Add event</h3>
+              <form (ngSubmit)="submitEvent()" #eventForm="ngForm">
+                <div class="form-row">
+                  <label>Event type
+                    <select [(ngModel)]="selectedEventType" name="eventType">
+                      <option *ngFor="let type of eventTypes" [ngValue]="type">{{ type }}</option>
+                    </select>
+                  </label>
+                  <label>Minute
+                    <input type="number" [(ngModel)]="eventMinute" name="minute" min="0" required>
+                  </label>
+                </div>
+                <div class="form-row">
+                  <label>Team
+                    <select [(ngModel)]="selectedTeamId" name="teamId" (ngModelChange)="onTeamChange($event)" required>
+                      <option [ngValue]="null">Select team</option>
+                      <option *ngIf="match?.teamHome" [ngValue]="match?.teamHome?.id">{{ match?.teamHome?.name }}</option>
+                      <option *ngIf="match?.teamAway" [ngValue]="match?.teamAway?.id">{{ match?.teamAway?.name }}</option>
+                    </select>
+                  </label>
+                  <label>Player (optional)
+                    <select [(ngModel)]="selectedPlayerId" name="playerId">
+                      <option [ngValue]="null">No player</option>
+                      <option *ngFor="let player of availablePlayers" [ngValue]="player.id">
+                        #{{ player.number }} {{ player.name }}
+                      </option>
+                    </select>
+                  </label>
+                </div>
+                <button type="submit" class="submit-button" [disabled]="isSubmitting">{{ isSubmitting ? 'Saving...' : 'Add event' }}</button>
+              </form>
+            </section>
+
+            <div *ngIf="!canManageEvents" class="restricted">
+              Only the assigned referee or administrators can record events for this match.
+            </div>
+
+          <ng-template #loading>
+            <div class="loading-state">Loading match data...</div>
+          </ng-template>
+        </main>
+        <footer class="footer">
+          <p>&copy; 2025 FootyCup. All rights reserved.</p>
+        </footer>
+      </div>
+    </div>
+  </body>
+</html>

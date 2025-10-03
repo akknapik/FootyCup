@@ -6,9 +6,9 @@ import { ScheduleService } from '../../services/schedule.service';
 import { MatchService } from '../../services/match.service';
 import { AuthService } from '../../services/auth.service';
 import { NotificationService } from '../../services/notification.service';
-import { Match } from '../../models/match.model';
 import { ScheduleEntry } from '../../models/schedule-entry.model';
 import { Schedule } from '../../models/schedule.model';
+import { MatchItemResponse } from '../../models/match/match-item.response';
 
 @Component({
   selector: 'app-schedule',
@@ -21,7 +21,7 @@ export class ScheduleComponent implements OnInit {
   schedules: { id: number; startDateTime: Date }[] = [];
   selectedSchedule!: Schedule;  
   selectedScheduleId!: number;
-  allMatches: Match[] = [];
+  allMatches: MatchItemResponse[] = [];
   scheduleEntries: ScheduleEntry[] = [];
   breakDuration: number = 15;
   isLoading: boolean = false;

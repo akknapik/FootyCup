@@ -1,6 +1,5 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { Match } from '../models/match.model';
 import { Observable } from 'rxjs';
 import { BracketNode } from '../models/bracket-node.model';
 import { Group } from '../models/group.model';

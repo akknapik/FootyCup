@@ -16,6 +16,7 @@ import { AuthGuard } from './guards/auth.guard';
 import { ResultComponent } from './pages/result/result.component';
 import { AdminGuard } from './guards/admin.guard';
 import { AdminUsersComponent } from './pages/admin-users/admin-users.component';
+import { MatchEventsComponent } from './pages/match-events/match-events.component';
 
 const routes: Routes = [
   { path: 'register', component: RegisterComponent },
@@ -29,6 +30,7 @@ const routes: Routes = [
   { path: 'tournament/:tournamentId/teams/:teamId/add-player', component: AddPlayerComponent, canActivate: [AuthGuard] },
   { path: 'tournament/:tournamentId/format', component: FormatComponent, canActivate: [AuthGuard] },
   { path: 'tournament/:tournamentId/matches', component: MatchComponent, canActivate: [AuthGuard] },
+  { path: 'tournament/:tournamentId/matches/:matchId/events', component: MatchEventsComponent, canActivate: [AuthGuard] },
   { path: 'tournament/:tournamentId/schedule', component: ScheduleComponent, canActivate: [AuthGuard] },
   { path: 'tournament/:tournamentId/results', component: ResultComponent, canActivate: [AuthGuard] },
   { path: 'admin/users', component: AdminUsersComponent, canActivate: [AuthGuard] },

@@ -48,7 +48,6 @@ public class TeamController {
         var team = teamService.createTeam(tournamentId, request, organizer);
         var body = teamMapper.toResponse(team);
         var location =
-
                 UriComponentsBuilder.fromPath("tournament/{tournamentId}/teams").buildAndExpand(team.getId()).toUri();
         return ResponseEntity.created(location).body(body);
     }

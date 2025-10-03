@@ -239,7 +239,7 @@ public class FormatService{
 
         List<Group> groups = getGroups(tournamentId, user);
         for(Group group : groups) {
-            List<Match> matches = matchService.getGroupMatches(tournamentId, user, group.getId());
+            List<Match> matches = matchService.getGroupMatches(tournamentId, group.getId(), user);
             matchRepository.deleteAll(matches);
             groupRepository.delete(group);
         }
@@ -327,6 +327,24 @@ public class FormatService{
         }
 
         return groups;
+    }
+
+    public void recomputeStandingsForMatch(Match match) {
+        if (match == null || match.getGroup() == null) {
+            return;
+        }
+
+        Group group = groupRepository.findById(match.getGroup().getId())
+                .orElseThrow(() -> new NoSuchElementException("Group not found"));
+
+        List<GroupTeam> groupTeams = groupTeamRepository.findByGroupId(group.getId());
+        for (GroupTeam gt : groupTeams) {
+            if (gt.getTeam() == null) {
+                continue;
+            }
+            computeStatsForGroupTeam(gt);
+            groupTeamRepository.save(gt);
+        }
     }
 
     private void computeStatsForGroupTeam(GroupTeam gt) {

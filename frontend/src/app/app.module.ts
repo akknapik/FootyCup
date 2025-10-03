@@ -26,6 +26,7 @@ import { ErrorService } from './interceptors/error.service';
 import { CommonModule } from '@angular/common';
 import { ResultComponent } from './pages/result/result.component';
 import { AdminUsersComponent } from './pages/admin-users/admin-users.component';
+import { MatchEventsComponent } from './pages/match-events/match-events.component';
 
 
 @NgModule({
@@ -44,7 +45,8 @@ import { AdminUsersComponent } from './pages/admin-users/admin-users.component';
     MatchComponent,
     ScheduleComponent,
     ResultComponent,
-    AdminUsersComponent
+    AdminUsersComponent,
+    MatchEventsComponent
   ],
   imports: [
     BrowserModule,

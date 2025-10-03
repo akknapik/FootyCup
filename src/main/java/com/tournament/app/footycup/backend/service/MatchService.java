@@ -6,6 +6,7 @@ import com.tournament.app.footycup.backend.repository.*;
 import lombok.AllArgsConstructor;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.NoSuchElementException;
@@ -20,52 +21,56 @@ public class MatchService {
     private final BracketNodeRepository bracketNodeRepository;
     private final UserRepository userRepository;
 
-    public List<Match> getMatches(Long tournamentId, User user) {
-        Tournament tournament = tournamentRepository.findById(tournamentId)
+    @Transactional(readOnly = true)
+    public List<Match> getMatches(Long tournamentId, User organizer) {
+        var tournament = tournamentRepository.findById(tournamentId)
                 .orElseThrow(() -> new NoSuchElementException("Tournament not found"));
-        if(!tournament.getOrganizer().getId().equals(user.getId())) {
+        if(!tournament.getOrganizer().getId().equals(organizer.getId())) {
             throw new IllegalArgumentException("Lack of authorization");
         }
 
-        List<Match> matches = matchRepository.findByTournamentId(tournamentId);
+        var matches = matchRepository.findByTournamentId(tournamentId);
         return matches;
     }
 
-    public Match getMatch(Long tournamentId, Long matchId, User user) {
-        Tournament tournament = tournamentRepository.findById(tournamentId)
+    @Transactional(readOnly = true)
+    public Match getMatch(Long tournamentId, Long matchId, User organizer) {
+        var tournament = tournamentRepository.findById(tournamentId)
                 .orElseThrow(() -> new NoSuchElementException("Tournament not found"));
-        if(!tournament.getOrganizer().getId().equals(user.getId())) {
+        if(!tournament.getOrganizer().getId().equals(organizer.getId())) {
             throw new IllegalArgumentException("Lack of authorization");
         }
 
-        Match match = matchRepository.findById(matchId)
+        var match = matchRepository.findById(matchId)
                 .orElseThrow(() -> new NoSuchElementException("Match not found"));
         return match;
     }
 
-    public List<Match> getGroupMatches(Long tournamentId, User user, Long groupId) {
-        Tournament tournament = tournamentRepository.findById(tournamentId)
+    @Transactional(readOnly = true)
+    public List<Match> getGroupMatches(Long tournamentId, Long groupId, User organizer) {
+        var tournament = tournamentRepository.findById(tournamentId)
                 .orElseThrow(() -> new NoSuchElementException("Tournament not found"));
-        if(!tournament.getOrganizer().getId().equals(user.getId())) {
+        if(!tournament.getOrganizer().getId().equals(organizer.getId())) {
             throw new IllegalArgumentException("Lack of authorization");
         }
-        Group group = groupRepository.findById(groupId)
+        var group = groupRepository.findById(groupId)
                 .orElseThrow(() -> new NoSuchElementException("Group not found"));
-        List<Match> matches = matchRepository.findByGroupId(groupId);
+        var matches = matchRepository.findByGroupId(group.getId());
         return matches;
     }
 
-    public void generateGroupMatches(Long tournamentId, User user) {
-        Tournament tournament = tournamentRepository.findById(tournamentId)
+    @Transactional
+    public void generateGroupMatches(Long tournamentId, User organizer) {
+        var tournament = tournamentRepository.findById(tournamentId)
                 .orElseThrow(() -> new NoSuchElementException("Tournament not found"));
-        if(!tournament.getOrganizer().getId().equals(user.getId())) {
+        if(!tournament.getOrganizer().getId().equals(organizer.getId())) {
             throw new IllegalArgumentException("Lack of authorization");
         }
 
-        List<Group> groups = groupRepository.findByTournamentId(tournamentId);
+        var groups = groupRepository.findByTournamentId(tournamentId);
 
-        for (Group group : groups) {
-            List<Team> teams = group.getGroupTeams().stream()
+        for (var group : groups) {
+            var teams = group.getGroupTeams().stream()
                     .map(GroupTeam::getTeam)
                     .filter(Objects::nonNull)
                     .toList();
@@ -75,10 +80,10 @@ public class MatchService {
 
             for (int i = 0; i < teams.size(); i++) {
                 for (int j = i + 1; j < teams.size(); j++) {
-                    Team home = teams.get(i);
-                    Team away = teams.get(j);
+                    var home = teams.get(i);
+                    var away = teams.get(j);
 
-                    Match match = new Match();
+                    var match = new Match();
                     match.setTournament(tournament);
                     match.setGroup(group);
                     match.setTeamHome(home);
@@ -91,36 +96,39 @@ public class MatchService {
         }
     }
 
-    public void deleteMatch(Long tournamentId, Long matchId, User user) {
-        Tournament tournament = tournamentRepository.findById(tournamentId)
+    @Transactional
+    public void deleteMatch(Long tournamentId, Long matchId, User organizer) {
+        var tournament = tournamentRepository.findById(tournamentId)
                 .orElseThrow(() -> new NoSuchElementException("Tournament not found"));
-        if(!tournament.getOrganizer().getId().equals(user.getId())) {
+        if(!tournament.getOrganizer().getId().equals(organizer.getId())) {
             throw new IllegalArgumentException("Lack of authorization");
         }
 
-        Match match = getMatch(tournamentId, matchId, user);
+        var match = getMatch(tournamentId, matchId, organizer);
         matchRepository.delete(match);
     }
 
-    public void deleteAllMatches(Long tournamentId, User user) {
-        Tournament tournament = tournamentRepository.findById(tournamentId)
+    @Transactional
+    public void deleteAllMatches(Long tournamentId, User organizer) {
+        var tournament = tournamentRepository.findById(tournamentId)
                 .orElseThrow(() -> new NoSuchElementException("Tournament not found"));
-        if(!tournament.getOrganizer().getId().equals(user.getId())) {
+        if(!tournament.getOrganizer().getId().equals(organizer.getId())) {
             throw new IllegalArgumentException("Lack of authorization");
         }
 
-        List<Match> matches = getMatches(tournamentId, user);
+        var matches = getMatches(tournamentId, organizer);
         matchRepository.deleteAll(matches);
     }
 
-    public void updateSingleMatchResult(Long tournamentId, Long matchId, Match updated, User user) {
-        Tournament tournament = tournamentRepository.findById(tournamentId)
+    @Transactional
+    public void updateSingleMatchResult(Long tournamentId, Long matchId, Match updated, User organizer) {
+        var tournament = tournamentRepository.findById(tournamentId)
                 .orElseThrow(() -> new IllegalArgumentException("Tournament not found"));
-        if(!tournament.getOrganizer().getId().equals(user.getId())) {
+        if(!tournament.getOrganizer().getId().equals(organizer.getId())) {
             throw new IllegalArgumentException("Lack of authorization");
         }
 
-        Match match = matchRepository.findById(matchId)
+        var match = matchRepository.findById(matchId)
                 .orElseThrow(() -> new IllegalArgumentException("Match not found"));
 
         if (!match.getTournament().getId().equals(tournamentId)) {
@@ -134,21 +142,22 @@ public class MatchService {
         propagateWinner(match);
     }
 
+    @Transactional
     public void propagateWinner(Match finishedMatch) {
-        Team winner = determineWinner(finishedMatch);
+        var winner = determineWinner(finishedMatch);
         if (winner == null) {
             return;
         }
 
-        BracketNode currentNode = bracketNodeRepository.findByMatch(finishedMatch);
+        var currentNode = bracketNodeRepository.findByMatch(finishedMatch);
         if (currentNode == null) {
             return;
         }
 
-        List<BracketNode> nextNodes = bracketNodeRepository.findByParentHomeNodeOrParentAwayNode(currentNode, currentNode);
+        var nextNodes = bracketNodeRepository.findByParentHomeNodeOrParentAwayNode(currentNode, currentNode);
 
         for (BracketNode next : nextNodes) {
-            Match m = next.getMatch();
+            var m = next.getMatch();
 
             if (currentNode.equals(next.getParentHomeNode())) {
                 m.setTeamHome(winner);
@@ -172,14 +181,15 @@ public class MatchService {
         }
     }
 
-    public Match assignReferee(Long tournamentId, Long matchId, Long refereeId, User user) {
-        Tournament tournament = tournamentRepository.findWithRefereesById(tournamentId)
+    @Transactional
+    public Match assignReferee(Long tournamentId, Long matchId, Long refereeId, User organizer) {
+        var tournament = tournamentRepository.findWithRefereesById(tournamentId)
                 .orElseThrow(() -> new NoSuchElementException("Tournament not found"));
-        if(!tournament.getOrganizer().getId().equals(user.getId())) {
+        if(!tournament.getOrganizer().getId().equals(organizer.getId())) {
             throw new IllegalArgumentException("Lack of authorization");
         }
 
-        Match match = matchRepository.findById(matchId)
+        var match = matchRepository.findById(matchId)
                 .orElseThrow(() -> new NoSuchElementException("Match not found"));
 
         if (match.getTournament() == null || !match.getTournament().getId().equals(tournamentId)) {
@@ -192,11 +202,11 @@ public class MatchService {
             throw new IllegalArgumentException("Referee not assigned to tournament");
         }
 
-        User resolvedReferee = userRepository.findById(refereeId)
+        var resolvedReferee = userRepository.findById(refereeId)
                 .orElseThrow(() -> new NoSuchElementException("Referee not found"));
 
         match.setReferee(resolvedReferee);
-        Match saved = matchRepository.save(match);
+        var saved = matchRepository.save(match);
         saved.setReferee(resolvedReferee);
         return saved;
     }
