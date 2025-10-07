@@ -27,6 +27,7 @@ import { CommonModule } from '@angular/common';
 import { ResultComponent } from './pages/result/result.component';
 import { AdminUsersComponent } from './pages/admin-users/admin-users.component';
 import { MatchEventsComponent } from './pages/match-events/match-events.component';
+import { InlinePickerComponent } from './component/inline-picker/inline-picker.component';
 
 
 @NgModule({
@@ -46,7 +47,8 @@ import { MatchEventsComponent } from './pages/match-events/match-events.componen
     ScheduleComponent,
     ResultComponent,
     AdminUsersComponent,
-    MatchEventsComponent
+    MatchEventsComponent,
+    InlinePickerComponent
   ],
   imports: [
     BrowserModule,

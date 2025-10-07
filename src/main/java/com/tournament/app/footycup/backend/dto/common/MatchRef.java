@@ -4,6 +4,8 @@ public record MatchRef(
         Long id,
         String name,
         Long teamHomeId,
-        Long teamAwayId
+        Long teamAwayId,
+        String teamHomeName,
+        String teamAwayName
 ) {
 }

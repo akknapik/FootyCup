@@ -119,14 +119,40 @@
                     <tbody>
                       <tr *ngFor="let slot of group.groupTeams" (click)="editSlot(slot)">
                         <td>
-                          <ng-container *ngIf="editedSlot?.id === slot.id; else showName">
-                            <select [(ngModel)]="slot.team" (change)="assignTeamToSlot(slot)">
-                              <option *ngFor="let team of availableTeams" [ngValue]="team">{{ team.name }}</option>
-                            </select>
-                          </ng-container>
-                          <ng-template #showName>
-                            {{ slot.team?.name || 'Empty slot' }}
-                          </ng-template>
+                          <div class="inline-picker" (click)="openSlotMenu(slot, $event)">
+                            <span class="picker-label">
+                              {{ slot.team?.name || 'Select team' }}
+                            </span>
+                            <span class="picker-caret">▾</span>
+                          </div>
+
+                          <!-- Dropdown (absolutnie pozycjonowany) -->
+                          <div
+                            class="inline-picker-menu"
+                            *ngIf="slotMenuOpenForId === slot.id"
+                          >
+                            <input
+                              type="text"
+                              class="picker-search"
+                              placeholder="Search team..."
+                              [(ngModel)]="teamSearch"
+                              (click)="$event.stopPropagation()"
+                            />
+
+                            <div class="picker-list">
+                              <button
+                                class="picker-item"
+                                *ngFor="let team of filteredAvailableTeams"
+                                (click)="pickTeamForSlot(slot, team)"
+                              >
+                                {{ team.name }}
+                              </button>
+
+                              <div class="picker-empty" *ngIf="filteredAvailableTeams.length === 0">
+                                No teams
+                              </div>
+                            </div>
+                          </div>
                         </td>
                       </tr>
                     </tbody>
@@ -139,28 +165,71 @@
               <h3>Bracket</h3>
               <div class="bracket-wrapper">
                 <div *ngFor="let node of bracket" class="bracket-match">
-                  <strong>Round {{ node.match.name }}</strong> |
-                  <span (click)="editBracketTeam(node, 'home', $event)">
-                    <ng-container *ngIf="editedNode?.id === node.id && editedSide === 'home'; else showHome">
-                      <select [(ngModel)]="node.teamHome" (change)="assignTeamToBracket(node, 'home')">
-                        <option *ngFor="let team of availableTeams" [ngValue]="team">{{ team.name }}</option>
-                      </select>
-                    </ng-container>
-                    <ng-template #showHome>
-                      {{ node.match.teamHome?.name || 'Empty slot' }}
-                    </ng-template>
+                <strong>{{ node.match.name }}</strong> |
+
+                <!-- HOME -->
+                <span class="inline-picker"
+                      (click)="openNodeMenu(node, 'home', $event)">
+                  <span class="picker-label">
+                    {{
+                      node.round === 1
+                        ? (node.matchRef?.teamHomeName || 'Select team')
+                        : (node.matchRef?.teamHomeName || 'Empty slot')
+                    }}
                   </span>
-                  vs
-                  <span (click)="editBracketTeam(node, 'away', $event)">
-                    <ng-container *ngIf="editedNode?.id === node.id && editedSide === 'away'; else showAway">
-                      <select [(ngModel)]="node.teamAway" (change)="assignTeamToBracket(node, 'away')">
-                        <option *ngFor="let team of availableTeams" [ngValue]="team">{{ team.name }}</option>
-                      </select>
-                    </ng-container>
-                    <ng-template #showAway>
-                      {{ node.match.teamAway?.name || 'Empty slot' }}
-                    </ng-template>
+                  <span class="picker-caret">▾</span>
+                </span>
+
+                <!-- HOME menu -->
+                <div class="inline-picker-menu"
+                    *ngIf="nodeMenuOpenForId === node.id && nodeMenuSide === 'home'"
+                    (click)="$event.stopPropagation()">
+                  <input type="text"
+                        class="picker-search"
+                        placeholder="Search team..."
+                        [(ngModel)]="nodeTeamSearch" />
+                  <div class="picker-list">
+                    <button class="picker-item"
+                            *ngFor="let team of filteredNodeTeams"
+                            (click)="pickTeamForNode(node, 'home', team)">
+                      {{ team.name }}
+                    </button>
+                    <div class="picker-empty" *ngIf="filteredNodeTeams.length === 0">No teams</div>
+                  </div>
+                </div>
+
+                &nbsp;vs&nbsp;
+
+                <!-- AWAY -->
+                <span class="inline-picker"
+                      (click)="openNodeMenu(node, 'away', $event)">
+                  <span class="picker-label">
+                    {{
+                      node.round === 1
+                        ? (node.matchRef?.teamAwayName || 'Select team')
+                        : (node.matchRef?.teamAwayName || 'Empty slot')
+                    }}
                   </span>
+                  <span class="picker-caret">▾</span>
+                </span>
+
+                <!-- AWAY menu -->
+                <div class="inline-picker-menu"
+                    *ngIf="nodeMenuOpenForId === node.id && nodeMenuSide === 'away'"
+                    (click)="$event.stopPropagation()">
+                  <input type="text"
+                        class="picker-search"
+                        placeholder="Search team..."
+                        [(ngModel)]="nodeTeamSearch" />
+                  <div class="picker-list">
+                    <button class="picker-item"
+                            *ngFor="let team of filteredNodeTeams"
+                            (click)="pickTeamForNode(node, 'away', team)">
+                      {{ team.name }}
+                    </button>
+                    <div class="picker-empty" *ngIf="filteredNodeTeams.length === 0">No teams</div>
+                  </div>
+                </div>
                 </div>
               </div>
             </div>

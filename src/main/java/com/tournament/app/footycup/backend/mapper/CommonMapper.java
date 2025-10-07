@@ -1,13 +1,7 @@
 package com.tournament.app.footycup.backend.mapper;
 
-import com.tournament.app.footycup.backend.dto.common.MatchEventRef;
-import com.tournament.app.footycup.backend.dto.common.PlayerRef;
-import com.tournament.app.footycup.backend.dto.common.TeamRef;
-import com.tournament.app.footycup.backend.dto.common.UserRef;
-import com.tournament.app.footycup.backend.model.MatchEvent;
-import com.tournament.app.footycup.backend.model.Player;
-import com.tournament.app.footycup.backend.model.Team;
-import com.tournament.app.footycup.backend.model.User;
+import com.tournament.app.footycup.backend.dto.common.*;
+import com.tournament.app.footycup.backend.model.*;
 import org.mapstruct.Mapper;
 import org.mapstruct.Named;
 
@@ -49,6 +43,24 @@ public interface CommonMapper {
         return teams == null ? List.of() : teams.stream().map(this::toTeamRef).toList();
     }
 
+    @Named("toMatchRef")
+    default MatchRef toMatchRef(Match match) {
+        if(match == null) return null;
+        return new MatchRef(
+                match.getId(),
+                match.getName(),
+                match.getTeamHome() != null ? match.getTeamHome().getId() : null,
+                match.getTeamAway() != null ? match.getTeamAway().getId() : null,
+                match.getTeamHome() != null ? match.getTeamHome().getName() : null,
+                match.getTeamAway() != null ? match.getTeamAway().getName() : null
+        );
+    }
+
+    @Named("toMatchRefList")
+    default List<MatchRef> toMatchRefList(List <Match> matches) {
+        return matches == null ? List.of() : matches.stream().map(this::toMatchRef).toList();
+    }
+
     @Named("toMatchEventRef")
     default MatchEventRef toMatchEventRef(MatchEvent matchEvent) {
         if(matchEvent == null) return null;
@@ -56,7 +68,21 @@ public interface CommonMapper {
                 this.toPlayerRef(matchEvent.getPlayer()), matchEvent.getEventType().name(), matchEvent.getMinute());
     }
 
+    @Named("toMatchEventRefList")
     default List<MatchEventRef> toMatchEventRefList(List<MatchEvent> events) {
         return events == null ? List.of() : events.stream().map(this::toMatchEventRef).toList();
+    }
+
+    @Named("toGroupTeamRef")
+    default GroupTeamRef toGroupTeamRef(GroupTeam groupTeam) {
+        if(groupTeam == null) return null;
+        return new GroupTeamRef(groupTeam.getId(), toTeamRef(groupTeam.getTeam()), groupTeam.getPosition(),
+                groupTeam.getPoints(),
+                groupTeam.getGoalsFor(), groupTeam.getGoalsAgainst());
+    }
+
+    @Named("toGroupTeamsRefList")
+    default List<GroupTeamRef> toGroupTeamRefList(List<GroupTeam> groupTeams) {
+        return groupTeams == null ? List.of() : groupTeams.stream().map(this::toGroupTeamRef).toList();
     }
 }

@@ -3,4 +3,6 @@ export interface MatchRef {
     name: string;
     teamHomeId: number;
     teamAwayId: number;
+    teamHomeName: string;
+    teamAwayName: string;
 }

@@ -1,5 +1,10 @@
 package com.tournament.app.footycup.backend.service;
 
+import com.tournament.app.footycup.backend.dto.format.GenerateMixRequest;
+import com.tournament.app.footycup.backend.dto.format.bracket.AssignTeamToNodeRequest;
+import com.tournament.app.footycup.backend.dto.format.bracket.GenerateBracketRequest;
+import com.tournament.app.footycup.backend.dto.format.group.AssignTeamToSlotRequest;
+import com.tournament.app.footycup.backend.dto.format.group.GenerateGroupRequest;
 import com.tournament.app.footycup.backend.enums.MatchStatus;
 import com.tournament.app.footycup.backend.model.*;
 import com.tournament.app.footycup.backend.repository.*;
@@ -20,20 +25,20 @@ public class FormatService{
     private final MatchRepository matchRepository;
     private final MatchService matchService;
 
-    public void generateGroupStructure(Long tournamentId, int groupCount, int teamsPerGroup, User user) {
+    public void generateGroupStructure(Long tournamentId, GenerateGroupRequest request, User organizer) {
         Tournament tournament = tournamentRepository.findById(tournamentId)
                 .orElseThrow(() -> new NoSuchElementException("Tournament not found"));
-        if(!tournament.getOrganizer().getId().equals(user.getId())) {
+        if(!tournament.getOrganizer().getId().equals(organizer.getId())) {
             throw new IllegalArgumentException("Lack of authorization");
         }
 
-        for (int g = 0; g < groupCount; g++) {
+        for (int g = 0; g < request.groupCount(); g++) {
             Group group = new Group();
             group.setName("Group " + (char) ('A' + g));
             group.setTournament(tournament);
             groupRepository.save(group);
 
-            for (int i = 0; i < teamsPerGroup; i++) {
+            for (int i = 0; i < request.teamsPerGroup(); i++) {
                 GroupTeam slot = new GroupTeam();
                 slot.setGroup(group);
                 slot.setTeam(null);
@@ -43,15 +48,15 @@ public class FormatService{
         }
     }
 
-    public void generateBracketStructure(Long tournamentId, int totalTeams, User user) {
+    public void generateBracketStructure(Long tournamentId, GenerateBracketRequest request, User organizer) {
         Tournament tournament = tournamentRepository.findById(tournamentId)
                 .orElseThrow(() -> new NoSuchElementException("Tournament not found"));
-        if(!tournament.getOrganizer().getId().equals(user.getId())) {
+        if(!tournament.getOrganizer().getId().equals(organizer.getId())) {
             throw new IllegalArgumentException("Lack of authorization");
         }
 
         int round = 1;
-        int matchCount = totalTeams/2;
+        int matchCount = request.totalTeams()/2;
         int position = 0;
 
         List<BracketNode> previousRoundNodes = new ArrayList<>();
@@ -67,7 +72,7 @@ public class FormatService{
                 Match match = new Match();
                 match.setTournament(tournament);
                 match.setStatus(MatchStatus.NOT_SCHEDULED);
-                match.setName(getBracketMatchName(round, totalTeams));
+                match.setName(getBracketMatchName(round, request.totalTeams()));
 
                 matchRepository.save(match);
                 node.setMatch(match);
@@ -87,41 +92,41 @@ public class FormatService{
         }
     }
 
-    public void generateMixedStructure(Long tournamentId, int groupCount, int teamsPerGroup, int advancing, User user) {
+    public void generateMixedStructure(Long tournamentId, GenerateMixRequest request, User organizer) {
         Tournament tournament = tournamentRepository.findById(tournamentId)
                 .orElseThrow(() -> new NoSuchElementException("Tournament not found"));
-        if(!tournament.getOrganizer().getId().equals(user.getId())) {
+        if(!tournament.getOrganizer().getId().equals(organizer.getId())) {
             throw new IllegalArgumentException("Lack of authorization");
         }
 
-        generateGroupStructure(tournamentId, groupCount, teamsPerGroup, user);
-        generateBracketStructure(tournamentId, advancing, user);
+        generateGroupStructure(tournamentId, new GenerateGroupRequest(request.groupCount(), request.teamsPerGroup()),
+                organizer);
+        generateBracketStructure(tournamentId, new GenerateBracketRequest(request.advancing()), organizer);
     }
 
-    public void assignTeamToSlot(Long tournamentId, Long slotId, Long teamId, User user) {
+    public void assignTeamToSlot(Long tournamentId, AssignTeamToSlotRequest request, User organizer) {
         Tournament tournament = tournamentRepository.findById(tournamentId)
                 .orElseThrow(() -> new NoSuchElementException("Tournament not found"));
-        if(!tournament.getOrganizer().getId().equals(user.getId())) {
+        if(!tournament.getOrganizer().getId().equals(organizer.getId())) {
             throw new IllegalArgumentException("Lack of authorization");
         }
 
-        GroupTeam slot = groupTeamRepository.findById(slotId)
+        GroupTeam slot = groupTeamRepository.findById(request.slotId())
                 .orElseThrow(() -> new NoSuchElementException("Slot not found"));
-        Team team = teamRepository.findById(teamId)
+        Team team = teamRepository.findById(request.teamId())
                 .orElseThrow(() -> new NoSuchElementException("Team not found"));
 
         slot.setTeam(team);
         groupTeamRepository.save(slot);
     }
 
-    public void assignTeamsRandomlyToGroups(Long tournamentId, User user) {
+    public void assignTeamsRandomlyToGroups(Long tournamentId, User organizer) {
         Tournament tournament = tournamentRepository.findById(tournamentId)
                 .orElseThrow(() -> new NoSuchElementException("Tournament not found"));
-        if(!tournament.getOrganizer().getId().equals(user.getId())) {
+        if(!tournament.getOrganizer().getId().equals(organizer.getId())) {
             throw new AccessDeniedException("Lack of authorization");
         }
 
-        List<Group> groups = groupRepository.findByTournamentId(tournament.getId());
         List<Team> teams = new ArrayList<>(teamRepository.findByTournamentId(tournament.getId()));
         Collections.shuffle(teams);
 
@@ -141,19 +146,19 @@ public class FormatService{
         }
     }
 
-    public void assignTeamToNode(Long tournamentId, Long nodeId, Long teamId, boolean homeTeam, User user) {
+    public void assignTeamToNode(Long tournamentId, AssignTeamToNodeRequest request, User organizer) {
         Tournament tournament = tournamentRepository.findById(tournamentId)
                 .orElseThrow(() -> new NoSuchElementException("Tournament not found"));
-        if(!tournament.getOrganizer().getId().equals(user.getId())) {
+        if(!tournament.getOrganizer().getId().equals(organizer.getId())) {
             throw new AccessDeniedException("Lack of authorization");
         }
 
-        BracketNode node = bracketNodeRepository.findById(nodeId)
+        BracketNode node = bracketNodeRepository.findById(request.nodeId())
                 .orElseThrow(() -> new NoSuchElementException("Node not found"));
-        Team team = teamRepository.findById(teamId)
+        Team team = teamRepository.findById(request.teamId())
                 .orElseThrow(() -> new NoSuchElementException("Team not found"));
         Match match = node.getMatch();
-        if (homeTeam) {
+        if (request.homeTeam()) {
             match.setTeamHome(team);
         } else {
             match.setTeamAway(team);
@@ -162,10 +167,10 @@ public class FormatService{
     }
 
 
-    public boolean structureExists(Long tournamentId, User user) {
+    public boolean structureExists(Long tournamentId, User organizer) {
         Tournament tournament = tournamentRepository.findById(tournamentId)
                 .orElseThrow(() -> new NoSuchElementException("Tournament not found"));
-        if(!tournament.getOrganizer().getId().equals(user.getId())) {
+        if(!tournament.getOrganizer().getId().equals(organizer.getId())) {
             throw new AccessDeniedException("Lack of authorization");
         }
 
@@ -173,10 +178,10 @@ public class FormatService{
                 || !bracketNodeRepository.findByTournamentId(tournamentId).isEmpty();
     }
 
-    public Group getGroup(Long tournamentId, Long groupId, User user) {
+    public Group getGroup(Long tournamentId, Long groupId, User organizer) {
         Tournament tournament = tournamentRepository.findById(tournamentId)
                 .orElseThrow(() -> new NoSuchElementException("Tournament not found"));
-        if(!tournament.getOrganizer().getId().equals(user.getId())) {
+        if(!tournament.getOrganizer().getId().equals(organizer.getId())) {
             throw new AccessDeniedException("Lack of authorization");
         }
 
@@ -185,10 +190,10 @@ public class FormatService{
         return group;
     }
 
-    public List<Group> getGroups(Long tournamentId, User user) {
+    public List<Group> getGroups(Long tournamentId, User organizer) {
         Tournament tournament = tournamentRepository.findById(tournamentId)
                 .orElseThrow(() -> new NoSuchElementException("Tournament not found"));
-        if(!tournament.getOrganizer().getId().equals(user.getId())) {
+        if(!tournament.getOrganizer().getId().equals(organizer.getId())) {
             throw new AccessDeniedException("Lack of authorization");
         }
 
@@ -196,10 +201,10 @@ public class FormatService{
         return groups;
     }
 
-    public BracketNode getBracketNode(Long tournamentId, Long bracketId, User user) {
+    public BracketNode getBracketNode(Long tournamentId, Long bracketId, User organizer) {
         Tournament tournament = tournamentRepository.findById(tournamentId)
                 .orElseThrow(() -> new NoSuchElementException("Tournament not found"));
-        if(!tournament.getOrganizer().getId().equals(user.getId())) {
+        if(!tournament.getOrganizer().getId().equals(organizer.getId())) {
             throw new AccessDeniedException("Lack of authorization");
         }
 
@@ -208,10 +213,10 @@ public class FormatService{
         return node;
     }
 
-    public List<BracketNode> getBracketNodes(Long tournamentId, User user) {
+    public List<BracketNode> getBracketNodes(Long tournamentId, User organizer) {
         Tournament tournament = tournamentRepository.findById(tournamentId)
                 .orElseThrow(() -> new NoSuchElementException("Tournament not found"));
-        if(!tournament.getOrganizer().getId().equals(user.getId())) {
+        if(!tournament.getOrganizer().getId().equals(organizer.getId())) {
             throw new AccessDeniedException("Lack of authorization");
         }
 
@@ -219,52 +224,52 @@ public class FormatService{
         return bracketNodes;
     }
 
-    public void deleteGroup(Long tournamentId, Long groupId, User user) {
+    public void deleteGroup(Long tournamentId, Long groupId, User organizer) {
         Tournament tournament = tournamentRepository.findById(tournamentId)
                 .orElseThrow(() -> new NoSuchElementException("Tournament not found"));
-        if(!tournament.getOrganizer().getId().equals(user.getId())) {
+        if(!tournament.getOrganizer().getId().equals(organizer.getId())) {
             throw new AccessDeniedException("Lack of authorization");
         }
 
-        Group group = getGroup(tournamentId, groupId, user);
+        Group group = getGroup(tournamentId, groupId, organizer);
         groupRepository.delete(group);
     }
 
-    public void deleteGroups(Long tournamentId, User user) {
+    public void deleteGroups(Long tournamentId, User organizer) {
         Tournament tournament = tournamentRepository.findById(tournamentId)
                 .orElseThrow(() -> new NoSuchElementException("Tournament not found"));
-        if(!tournament.getOrganizer().getId().equals(user.getId())) {
+        if(!tournament.getOrganizer().getId().equals(organizer.getId())) {
             throw new AccessDeniedException("Lack of authorization");
         }
 
-        List<Group> groups = getGroups(tournamentId, user);
+        List<Group> groups = getGroups(tournamentId, organizer);
         for(Group group : groups) {
-            List<Match> matches = matchService.getGroupMatches(tournamentId, group.getId(), user);
+            List<Match> matches = matchService.getGroupMatches(tournamentId, group.getId(), organizer);
             matchRepository.deleteAll(matches);
             groupRepository.delete(group);
         }
     }
 
-    public void deleteBracket(Long tournamentId, User user) {
+    public void deleteBracket(Long tournamentId, User organizer) {
         Tournament tournament = tournamentRepository.findById(tournamentId)
                 .orElseThrow(() -> new NoSuchElementException("Tournament not found"));
-        if(!tournament.getOrganizer().getId().equals(user.getId())) {
+        if(!tournament.getOrganizer().getId().equals(organizer.getId())) {
             throw new AccessDeniedException("Lack of authorization");
         }
 
-        List<BracketNode> bracketNodes = getBracketNodes(tournamentId, user);
+        List<BracketNode> bracketNodes = getBracketNodes(tournamentId, organizer);
         bracketNodeRepository.deleteAll(bracketNodes);
     }
 
-    public void deleteAllStructures(Long tournamentId, User user) {
+    public void deleteAllStructures(Long tournamentId, User organizer) {
         Tournament tournament = tournamentRepository.findById(tournamentId)
                 .orElseThrow(() -> new NoSuchElementException("Tournament not found"));
-        if(!tournament.getOrganizer().getId().equals(user.getId())) {
+        if(!tournament.getOrganizer().getId().equals(organizer.getId())) {
             throw new AccessDeniedException("Lack of authorization");
         }
 
-        deleteGroups(tournamentId, user);
-        deleteBracket(tournamentId, user);
+        deleteGroups(tournamentId, organizer);
+        deleteBracket(tournamentId, organizer);
     }
 
     private String getBracketMatchName(int round, int totalTeams) {
@@ -311,10 +316,10 @@ public class FormatService{
         };
     }
 
-    public List<Group> getGroupsWithStandings(Long tournamentId, User user) {
+    public List<Group> getGroupsWithStandings(Long tournamentId, User organizer) {
         Tournament tournament = tournamentRepository.findById(tournamentId)
                 .orElseThrow(() -> new NoSuchElementException("Tournament not found"));
-        if (!tournament.getOrganizer().getId().equals(user.getId())) {
+        if (!tournament.getOrganizer().getId().equals(organizer.getId())) {
             throw new IllegalArgumentException("Unauthorized");
         }
 
@@ -370,5 +375,4 @@ public class FormatService{
         gt.setGoalsAgainst(goalsAgainst);
         gt.setPoints(points);
     }
-
 }

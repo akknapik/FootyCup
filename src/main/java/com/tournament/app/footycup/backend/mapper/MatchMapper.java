@@ -17,7 +17,7 @@ public interface MatchMapper {
     @Mapping(target = "status", expression = "java(match.getStatus().name())")
     @Mapping(target = "teamHome", source = "teamHome", qualifiedByName = "toTeamRef")
     @Mapping(target = "teamAway", source = "teamAway", qualifiedByName = "toTeamRef")
-    @Mapping(target = "groupId", expression = "java(match.getGroup().getId())")
+    @Mapping(target = "groupId", expression = "java(match.getGroup() != null ? match.getGroup().getId() : null)")
     @Mapping(target = "referee", source = "referee", qualifiedByName = "toUserRef")
     MatchResponse toResponse(Match match);
 }
