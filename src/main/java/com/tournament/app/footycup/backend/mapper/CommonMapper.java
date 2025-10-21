@@ -49,10 +49,10 @@ public interface CommonMapper {
         return new MatchRef(
                 match.getId(),
                 match.getName(),
-                match.getTeamHome() != null ? match.getTeamHome().getId() : null,
-                match.getTeamAway() != null ? match.getTeamAway().getId() : null,
-                match.getTeamHome() != null ? match.getTeamHome().getName() : null,
-                match.getTeamAway() != null ? match.getTeamAway().getName() : null
+                match.getTeamHome() != null ? this.toTeamRef(match.getTeamHome()) : null,
+                match.getTeamAway() != null ? this.toTeamRef(match.getTeamAway()) : null,
+                match.getHomeScore() != null ? match.getHomeScore() : null,
+                match.getAwayScore() != null ? match.getAwayScore() : null
         );
     }
 

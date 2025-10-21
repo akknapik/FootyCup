@@ -11,6 +11,12 @@ import { BracketNode } from '../../models/bracket-node.model';
 import { Group } from '../../models/group.model';
 import { GroupTeam } from '../../models/group-team.model';
 import { MatchResponse } from '../../models/match/match.response';
+import { ScheduleResponse } from '../../models/schedule/schedule.response';
+import { ScheduleEntryResponse } from '../../models/schedule/schedule-entry.response';
+import { ScheduleListItemResponse } from '../../models/schedule/schedule-list-item.response';
+import { GroupResponse } from '../../models/format/group/group.response';
+import { BracketNodeResponse } from '../../models/format/bracket/bracket-node.response';
+import { MatchRef } from '../../models/common/match-ref.model';
 
 
 @Component({
@@ -21,14 +27,14 @@ import { MatchResponse } from '../../models/match/match.response';
 })
 export class ResultComponent implements OnInit {
   tournamentId!: number;
-  schedules: Schedule[] = [];
-  selectedSchedule!: Schedule;
+  schedules: ScheduleListItemResponse[] = [];
+  selectedSchedule!: ScheduleResponse;
   selectedScheduleId!: number;
-  scheduleEntries: ScheduleEntry[] = [];
+  scheduleEntries: ScheduleEntryResponse[] = [];
   activeTab: string = 'schedule';
-  groups: Group[] = [];
-  groupTeams: GroupTeam[] = [];
-  bracket: BracketNode[] = [];
+  groups: GroupResponse[] = [];
+  // groupTeams: GroupTeam[] = [];
+  bracket: BracketNodeResponse[] = [];
   isLoadingSchedule: boolean = false;
   isLoadingGroups: boolean = false;
   isLoadingBracket: boolean = false;
@@ -88,18 +94,24 @@ selectSchedule(scheduleId: number): void {
     });
 }
 
-  onResultChange(match: MatchResponse | null): void {
+onResultChange(match: MatchRef | MatchResponse | null): void {
   if (!match) return;
 
+  const id = match.id!;
+  const isFull = (m: any): m is MatchResponse => 'durationInMin' in m;
+
+  const homeScore = isFull(match) ? (match.homeScore ?? 0) : (match.homeScore ?? 0);
+  const awayScore = isFull(match) ? (match.awayScore ?? 0) : (match.awayScore ?? 0);
+
   this.resultService.updateMatchResult(this.tournamentId, {
-    id: match.id!,
-    homeScore: match.homeScore ?? 0,
-    awayScore: match.awayScore ?? 0
+    matchId: id,
+    homeScore,
+    awayScore
   }).subscribe({
-      next: () => this.notification.showSuccess('Result saved!'),
-      error: () => this.notification.showError('Error saving result')
-    });
-  }
+    next: () => this.notification.showSuccess('Result saved!'),
+    error: () => this.notification.showError('Error saving result')
+  });
+}
 
 loadGroups(): void {
   this.isLoadingGroups = true;

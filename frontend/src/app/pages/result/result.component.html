@@ -87,10 +87,22 @@
                       <ng-container *ngIf="e.type === 'MATCH' && e.match">
                         <td>{{ e.startDateTime | date: 'HH:mm' }}</td>
                         <td>{{ e.match.name }}</td>
-                        <td>{{ e.match.teamHome.name }}</td>
-                        <td><input type="number" [(ngModel)]="e.match.homeScore" (blur)="onResultChange(e.match)" min="0" class="score-input" /></td>
-                        <td>{{ e.match.teamAway.name }}</td>
-                        <td><input type="number" [(ngModel)]="e.match.awayScore" (blur)="onResultChange(e.match)" min="0" class="score-input" /></td>
+                        <td>{{ e.match.teamHome?.name || '—' }}</td>
+                        <td>
+                          <input type="number"
+                                [(ngModel)]="e.match!.homeScore"
+                                (blur)="onResultChange(e.match)"
+                                min="0"
+                                class="score-input" />
+                        </td>
+                        <td>{{ e.match.teamAway?.name || '—' }}</td>
+                        <td>
+                          <input type="number"
+                                [(ngModel)]="e.match!.awayScore"
+                                (blur)="onResultChange(e.match)"
+                                min="0"
+                                class="score-input" />
+                        </td>
                       </ng-container>
                       <ng-container *ngIf="e.type === 'BREAK'">
                         <td>{{ e.startDateTime | date: 'HH:mm' }}</td>
@@ -138,8 +150,8 @@
 
               <ng-container *ngIf="!isLoadingBracket && bracket.length > 0">
                 <div *ngFor="let node of bracket" class="bracket-node">
-                  <p>{{ node.match.teamHome.name || '---' }} vs {{ node.match.teamAway.name || '---' }}</p>
-                  <p class="score">{{ node.match.homeScore }} : {{ node.match.awayScore }}</p>
+                  <p>{{ node.match?.teamHome?.name || '---' }} vs {{ node.match?.teamAway?.name || '---' }}</p>
+                  <p class="score">{{ node.match!.homeScore }} : {{ node.match!.awayScore }}</p>
                 </div>
               </ng-container>
             </div>

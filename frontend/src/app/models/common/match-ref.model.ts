@@ -1,8 +1,10 @@
+import { TeamRef } from "./team-ref.model";
+
 export interface MatchRef {
     id: number;
     name: string;
-    teamHomeId: number;
-    teamAwayId: number;
-    teamHomeName: string;
-    teamAwayName: string;
+    teamHome?: TeamRef;
+    teamAway?: TeamRef;
+    homeScore?: number;
+    awayScore?: number;
 }

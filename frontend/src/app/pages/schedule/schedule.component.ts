@@ -200,8 +200,8 @@ drop(event: CdkDragDrop<any[]>): void {
     id: m.id,
     name: m.name,
     status: 'NOT_SCHEDULED',
-    teamHome: { id: m.teamHomeId, name: m.teamHomeName ?? '—' },
-    teamAway: { id: m.teamAwayId, name: m.teamAwayName ?? '—' },
+    teamHome: { id: m.teamHome?.id ?? 0, name: m.teamHome?.name ?? '—' },
+    teamAway: { id: m.teamAway?.id ?? 0, name: m.teamAway?.name ?? '—' },
     referee: null
   };
 }

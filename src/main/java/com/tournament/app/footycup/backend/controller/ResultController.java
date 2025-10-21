@@ -1,5 +1,10 @@
 package com.tournament.app.footycup.backend.controller;
 
+import com.tournament.app.footycup.backend.dto.UpdateMatchResultRequest;
+import com.tournament.app.footycup.backend.dto.format.bracket.BracketNodeResponse;
+import com.tournament.app.footycup.backend.dto.format.group.GroupResponse;
+import com.tournament.app.footycup.backend.mapper.BracketMapper;
+import com.tournament.app.footycup.backend.mapper.GroupMapper;
 import com.tournament.app.footycup.backend.model.BracketNode;
 import com.tournament.app.footycup.backend.model.Group;
 import com.tournament.app.footycup.backend.model.Match;
@@ -12,9 +17,11 @@ import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -26,56 +33,39 @@ public class ResultController {
 
     private final MatchService matchService;
     private final FormatService formatService;
+    private final GroupMapper groupMapper;
+    private final BracketMapper bracketMapper;
 
-    @Operation(summary = "Update match result")
-    @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Match result updated successfully"),
-            @ApiResponse(responseCode = "403", description = "Unauthorized or forbidden"),
-            @ApiResponse(responseCode = "404", description = "Match or tournament not found")
-    })
     @PutMapping("/{matchId}")
     public ResponseEntity<Void> updateResults(
-            @Parameter(description = "Tournament ID", required = true) @PathVariable Long tournamentId,
-            @Parameter(description = "Match ID", required = true) @PathVariable Long matchId,
-            @io.swagger.v3.oas.annotations.parameters.RequestBody(
-                    description = "Updated match data",
-                    required = true,
-                    content = @Content(schema = @Schema(implementation = Match.class))
-            )
-            @RequestBody Match updated,
-            Authentication authentication
-    ) {
-        User user = (User) authentication.getPrincipal();
+            @PathVariable Long tournamentId,
+            @PathVariable Long matchId,
+            @RequestBody @Valid UpdateMatchResultRequest updated,
+            @AuthenticationPrincipal User user
+            ) {
         matchService.updateSingleMatchResult(tournamentId, matchId, updated, user);
         return ResponseEntity.ok().build();
     }
 
-    @Operation(summary = "Get current group standings")
-    @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Group standings retrieved successfully",
-                    content = @Content(mediaType = "application/json", schema = @Schema(implementation = Group.class)))
-    })
     @GetMapping("/groups")
-    public ResponseEntity<List<Group>> getGroups(
-            @Parameter(description = "Tournament ID", required = true) @PathVariable Long tournamentId,
-            Authentication authentication
+    public ResponseEntity<List<GroupResponse>> getGroups(
+            @PathVariable Long tournamentId,
+            @AuthenticationPrincipal User user
     ) {
-        User user = (User) authentication.getPrincipal();
-        return ResponseEntity.ok(formatService.getGroupsWithStandings(tournamentId, user));
+        var groups = formatService.getGroupsWithStandings(tournamentId, user);
+        var dto = groups.stream().map(groupMapper::toResponse).toList();
+        return ResponseEntity.ok(dto);
     }
 
-    @Operation(summary = "Get current bracket structure and results")
-    @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Bracket results retrieved successfully",
-                    content = @Content(mediaType = "application/json", schema = @Schema(implementation = BracketNode.class)))
-    })
+
     @GetMapping("/bracket")
-    public ResponseEntity<List<BracketNode>> getBracket(
-            @Parameter(description = "Tournament ID", required = true) @PathVariable Long tournamentId,
-            Authentication authentication
+    public ResponseEntity<List<BracketNodeResponse>> getBracket(
+            @PathVariable Long tournamentId,
+            @AuthenticationPrincipal User user
     ) {
-        User user = (User) authentication.getPrincipal();
-        return ResponseEntity.ok(formatService.getBracketNodes(tournamentId, user));
+        var bracketNodes = formatService.getBracketNodes(tournamentId, user);
+        var dto = bracketNodes.stream().map(bracketMapper::toResponse).toList();
+        return ResponseEntity.ok(dto);
     }
 
 }

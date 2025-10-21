@@ -145,8 +145,8 @@
                         />
                       </td>
                       <td>{{ e.match?.name }}</td>
-                      <td>{{ e.match?.teamHomeName || 'Empty slot'  }}</td>
-                      <td>{{ e.match?.teamAwayName || 'Empty slot'  }}</td>
+                      <td>{{ e.match?.teamHome?.name || 'Empty slot'  }}</td>
+                      <td>{{ e.match?.teamAway?.name || 'Empty slot'  }}</td>
                       <td class="remove-cell">
                         <button class="remove-btn" (click)="removeEntry(e)">✖</button>
                       </td>

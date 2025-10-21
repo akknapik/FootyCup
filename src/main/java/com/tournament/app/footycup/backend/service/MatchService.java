@@ -1,5 +1,6 @@
 package com.tournament.app.footycup.backend.service;
 
+import com.tournament.app.footycup.backend.dto.UpdateMatchResultRequest;
 import com.tournament.app.footycup.backend.enums.MatchStatus;
 import com.tournament.app.footycup.backend.model.*;
 import com.tournament.app.footycup.backend.repository.*;
@@ -121,7 +122,7 @@ public class MatchService {
     }
 
     @Transactional
-    public void updateSingleMatchResult(Long tournamentId, Long matchId, Match updated, User organizer) {
+    public void updateSingleMatchResult(Long tournamentId, Long matchId, UpdateMatchResultRequest updated, User organizer) {
         var tournament = tournamentRepository.findById(tournamentId)
                 .orElseThrow(() -> new IllegalArgumentException("Tournament not found"));
         if(!tournament.getOrganizer().getId().equals(organizer.getId())) {
@@ -135,8 +136,8 @@ public class MatchService {
             throw new IllegalArgumentException("Match does not belong to tournament");
         }
 
-        match.setHomeScore(updated.getHomeScore());
-        match.setAwayScore(updated.getAwayScore());
+        match.setHomeScore(updated.homeScore());
+        match.setAwayScore(updated.awayScore());
 
         matchRepository.save(match);
         propagateWinner(match);

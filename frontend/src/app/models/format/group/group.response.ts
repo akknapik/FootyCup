@@ -1,13 +1,7 @@
-import { TeamRef } from "../../common/team-ref.model";
+import { GroupTeamRef } from "../../common/group-team-ref.model";
 
 export interface GroupResponse {
     id: number;
     name: string;
-    slots: GroupSlotResponse[];
-}
-
-export interface GroupSlotResponse {
-    id: number;
-    position: number;
-    teamRef: TeamRef | null;
+    groupTeams: GroupTeamRef[];
 }

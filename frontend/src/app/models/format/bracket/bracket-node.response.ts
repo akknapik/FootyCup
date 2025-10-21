@@ -6,5 +6,5 @@ export interface BracketNodeResponse {
     position: number;
     parentHomeNodeId: number | null;
     parentAwayNodeId: number | null;
-    matchRef: MatchRef | null;
+    match: MatchRef | null;
 }
