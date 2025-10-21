@@ -1,11 +1,11 @@
-import { MatchResponse } from "./match/match.response";
-import { Schedule } from "./schedule.model";
+import { MatchRef } from "./common/match-ref.model";
+import { ScheduleResponse } from "./schedule/schedule.response";
 
 export interface ScheduleEntry {
     id: number;
-    schedule: Schedule;
+    schedule: ScheduleResponse;
     type: 'MATCH' | 'BREAK';
-    match: MatchResponse | null;
+    match: MatchRef | null;
     startDateTime?: string;
     durationInMin: number;
 }

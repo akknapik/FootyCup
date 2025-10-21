@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, HostListener, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { CdkDragDrop, moveItemInArray } from '@angular/cdk/drag-drop';
 import { forkJoin } from 'rxjs';
@@ -6,9 +6,10 @@ import { ScheduleService } from '../../services/schedule.service';
 import { MatchService } from '../../services/match.service';
 import { AuthService } from '../../services/auth.service';
 import { NotificationService } from '../../services/notification.service';
-import { ScheduleEntry } from '../../models/schedule-entry.model';
-import { Schedule } from '../../models/schedule.model';
 import { MatchItemResponse } from '../../models/match/match-item.response';
+import { ScheduleResponse } from '../../models/schedule/schedule.response';
+import { ScheduleEntryResponse } from '../../models/schedule/schedule-entry.response';
+import { MatchRef } from '../../models/common/match-ref.model';
 
 @Component({
   selector: 'app-schedule',
@@ -19,10 +20,10 @@ import { MatchItemResponse } from '../../models/match/match-item.response';
 export class ScheduleComponent implements OnInit {
   tournamentId!: number;
   schedules: { id: number; startDateTime: Date }[] = [];
-  selectedSchedule!: Schedule;  
+  selectedSchedule!: ScheduleResponse;
   selectedScheduleId!: number;
   allMatches: MatchItemResponse[] = [];
-  scheduleEntries: ScheduleEntry[] = [];
+  scheduleEntries: ScheduleEntryResponse[] = [];
   breakDuration: number = 15;
   isLoading: boolean = false;
   loadingMatches: boolean = false;
@@ -78,7 +79,6 @@ export class ScheduleComponent implements OnInit {
   }).subscribe({
     next: ({ sched, matches, usedIds }) => {
       this.scheduleEntries = sched.entries;
-      sched.startDateTime = new Date(sched.startDateTime);
       this.selectedSchedule = sched;
       const usedIdSet = new Set(usedIds);
       this.allMatches = matches.filter(m => !usedIdSet.has(m.id));
@@ -94,17 +94,17 @@ export class ScheduleComponent implements OnInit {
 }
 
 
-  onAddBreak(durationInMin: number): void {
-    this.scheduleService
-      .addBreak(this.tournamentId, this.selectedScheduleId, durationInMin)
-      .subscribe(() => this.selectSchedule(this.selectedScheduleId));
-  }
+onAddBreak(durationInMin: number): void {
+  this.scheduleService
+    .addBreak(this.tournamentId, this.selectedScheduleId, { durationInMin })
+    .subscribe(() => this.selectSchedule(this.selectedScheduleId));
+}
 
-  onRecompute(): void {
-    this.scheduleService
-      .recompute(this.tournamentId, this.selectedScheduleId)
-      .subscribe(() => this.selectSchedule(this.selectedScheduleId));
-  }
+onRecompute(): void {
+  this.scheduleService
+    .recompute(this.tournamentId, this.selectedScheduleId)
+    .subscribe(() => this.selectSchedule(this.selectedScheduleId));
+}
 
 drop(event: CdkDragDrop<any[]>): void {
   if (event.previousContainer === event.container) {
@@ -114,7 +114,7 @@ drop(event: CdkDragDrop<any[]>): void {
     const match = this.allMatches[event.previousIndex];
 
     this.scheduleService
-      .addMatchToSchedule(this.tournamentId, this.selectedScheduleId, match.id)
+      .addMatchToSchedule(this.tournamentId, this.selectedScheduleId, { matchId: match.id })
       .subscribe(() => {
         this.scheduleService.getScheduleById(this.tournamentId, this.selectedScheduleId)
           .subscribe(schedule => {
@@ -127,7 +127,7 @@ drop(event: CdkDragDrop<any[]>): void {
 
             const ids = this.scheduleEntries.map(e => e.id);
             this.scheduleService
-              .reorderEntries(this.tournamentId, this.selectedScheduleId, ids)
+              .reorderEntries(this.tournamentId, this.selectedScheduleId, { orderedEntryIds:ids })
               .subscribe(() => {
                 this.scheduleService
                   .recompute(this.tournamentId, this.selectedScheduleId)
@@ -138,7 +138,7 @@ drop(event: CdkDragDrop<any[]>): void {
   } else {
     const removed = this.scheduleEntries.splice(event.previousIndex, 1)[0];
     if (removed.type === 'MATCH' && removed.match) {
-      this.allMatches.push(removed.match);
+      this.allMatches.push(this.mapMatchRefToItem(removed.match));
     }
 
     this.scheduleService
@@ -147,11 +147,11 @@ drop(event: CdkDragDrop<any[]>): void {
   }
 }
 
-  updateTime(entry: ScheduleEntry, time: string): void {
+  updateTime(entry: ScheduleEntryResponse, time: string): void {
     const [datePart] = entry.startDateTime!.split('T');
     const newStart = `${datePart}T${time}:00`;
     this.scheduleService
-      .updateEntryTime(this.tournamentId, this.selectedScheduleId, entry.id, newStart)
+      .updateEntryTime(this.tournamentId, this.selectedScheduleId, entry.id, { start: newStart })
       .subscribe(() => this.selectSchedule(this.selectedScheduleId));
   }
 
@@ -165,47 +165,68 @@ drop(event: CdkDragDrop<any[]>): void {
     const local = date.toLocaleString('sv-SE').replace(' ', 'T');
 
     this.scheduleService
-      .updateScheduleStartTime(this.tournamentId, this.selectedScheduleId, local)
+      .updateScheduleStartTime(this.tournamentId, this.selectedScheduleId, {start: local})
       .subscribe(() => this.selectSchedule(this.selectedScheduleId));
   }
 
   recomputeTimesAndSave(): void {
-  if (!this.selectedSchedule) return;
+    if (!this.selectedSchedule) return;
 
-  const base = new Date(this.selectedSchedule.startDateTime);
-  const newEntries: ScheduleEntry[] = [];
+    const ids = this.scheduleEntries.map(e => e.id);
 
-  this.scheduleEntries.forEach(entry => {
-    entry.startDateTime = new Date(base).toISOString();
-    newEntries.push({
-      id: entry.id,
-      type: entry.type,
-      startDateTime: entry.startDateTime,
-      durationInMin: entry.durationInMin,
-      match: entry.match,
-      schedule: this.selectedSchedule
-    });
-    base.setMinutes(base.getMinutes() + entry.durationInMin);
-  });
+    this.scheduleService
+      .reorderEntries(this.tournamentId, this.selectedScheduleId, { orderedEntryIds: ids })
+      .subscribe(() => {
+        this.scheduleService
+          .recompute(this.tournamentId, this.selectedScheduleId)
+          .subscribe(() => this.selectSchedule(this.selectedScheduleId));
+      });
+  }
 
-  const ids = this.scheduleEntries.filter(e => e.id).map(e => e.id);
-
-  this.scheduleService.reorderEntries(this.tournamentId, this.selectedScheduleId, ids)
-    .subscribe(() => {
-      this.scheduleService.recompute(this.tournamentId, this.selectedScheduleId)
-        .subscribe(() => this.selectSchedule(this.selectedScheduleId));
-    });
-}
-
-  removeEntry(entry: ScheduleEntry): void {
-  this.scheduleService
-    .removeEntryFromSchedule(this.tournamentId, this.selectedScheduleId, entry.id)
-    .subscribe(() => this.selectSchedule(this.selectedScheduleId));
+  removeEntry(entry: ScheduleEntryResponse): void {
+    this.scheduleService
+      .removeEntryFromSchedule(this.tournamentId, this.selectedScheduleId, entry.id)
+      .subscribe(() => this.selectSchedule(this.selectedScheduleId));
   }
 
     logout(): void {
     this.auth.logout().subscribe(() => {
-      this.router.navigate(['/login']); 
+      this.router.navigate(['/login']);
     });
   }
+
+  private mapMatchRefToItem(m: MatchRef): MatchItemResponse {
+  return {
+    id: m.id,
+    name: m.name,
+    status: 'NOT_SCHEDULED',
+    teamHome: { id: m.teamHomeId, name: m.teamHomeName ?? '—' },
+    teamAway: { id: m.teamAwayId, name: m.teamAwayName ?? '—' },
+    referee: null
+  };
+}
+
+openedMenuEntryId: number | null = null;
+
+toggleEntryMenu(e: ScheduleEntryResponse) {
+  this.openedMenuEntryId = this.openedMenuEntryId === e.id ? null : e.id;
+}
+isEntryMenuOpen(e: ScheduleEntryResponse) {
+  return this.openedMenuEntryId === e.id;
+}
+
+updateTimeUI(entry: ScheduleEntryResponse, time: string) {
+  const [datePart] = entry.startDateTime.split('T');
+  const newStart = `${datePart}T${time}:00`;
+  this.scheduleService
+    .updateEntryTime(this.tournamentId, this.selectedScheduleId, entry.id, { start: newStart })
+    .subscribe(() => this.selectSchedule(this.selectedScheduleId));
+}
+
+@HostListener('document:click', ['$event'])
+closeMenusOutside(ev: MouseEvent) {
+  const el = ev.target as HTMLElement;
+  if (!el.closest('.row-actions')) this.openedMenuEntryId = null;
+}
+
 }

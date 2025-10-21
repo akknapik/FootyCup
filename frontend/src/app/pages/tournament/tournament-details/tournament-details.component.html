@@ -24,7 +24,7 @@
             <a routerLink="/tournament/{{ tournamentId }}/results" class="nav-link">Results</a>
           </div>
 
-          <a routerLink="/settings"class="nav-link">Settings</a>
+          <a routerLink="/settings" class="nav-link">Settings</a>
             <a *ngIf="(auth.currentUser$ | async)?.userRole === 'ADMIN'"
               routerLink="/admin/users"
               class="nav-link">
@@ -123,17 +123,16 @@
                     <tr *ngFor="let referee of referees">
                       <td>{{ referee.displayName }}</td>
                       <td>{{ referee.email }}</td>
-                      <td style="text-align:right;">
+                      <td class="remove-cell">
                         <button
                           type="button"
-                          class="btn"
+                          class="remove-btn"
                           (click)="removeReferee(referee.id)"
-                          style="margin: 0.25rem 0.6rem; font-size: 0.9rem; line-height: 1;"
+                          aria-label="Remove referee"
                         >
                           &times;
                         </button>
                       </td>
-
                     </tr>
                   </tbody>
                 </table>

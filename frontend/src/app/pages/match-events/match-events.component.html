@@ -24,7 +24,7 @@
             <a routerLink="/tournament/{{ tournamentId }}/results" class="nav-link">Results</a>
           </div>
 
-          <a routerLink="/settings"class="nav-link">Settings</a>
+          <a routerLink="/settings" class="nav-link">Settings</a>
             <a *ngIf="(auth.currentUser$ | async)?.userRole === 'ADMIN'"
               routerLink="/admin/users"
               class="nav-link">
@@ -59,9 +59,9 @@
 
             <section class="match-summary" *ngIf="match">
               <div class="teams">
-                <div class="team-name">{{ match.teamHome.name || 'TBD' }}</div>
+                <div class="team-name">{{ match.teamHome?.name || 'TBD' }}</div>
                 <div class="score">{{ formattedScore }}</div>
-                <div class="team-name">{{ match.teamAway.name || 'TBD' }}</div>
+                <div class="team-name">{{ match.teamAway?.name || 'TBD' }}</div>
               </div>
               <div class="details">
                 <span>Status: {{ match.status || 'UNKNOWN' }}</span>

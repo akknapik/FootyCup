@@ -24,7 +24,7 @@
             <a routerLink="/tournament/{{ tournamentId }}/results" class="nav-link">Results</a>
           </div>
 
-          <a routerLink="/settings"class="nav-link">Settings</a>
+          <a routerLink="/settings" class="nav-link">Settings</a>
             <a *ngIf="(auth.currentUser$ | async)?.userRole === 'ADMIN'"
               routerLink="/admin/users"
               class="nav-link">
@@ -108,8 +108,8 @@
                 <tbody>
                   <tr *ngFor="let m of allMatches" cdkDrag>
                     <td>{{ m.name }}</td>
-                    <td>{{ m.teamHome.name }}</td>
-                    <td>{{ m.teamAway.name }}</td>
+                    <td>{{ m.teamHome?.name || 'Empty slot' }}</td>
+                    <td>{{ m.teamAway?.name || 'Empty slot' }}</td>
                   </tr>
                 </tbody>
               </table>
@@ -145,8 +145,8 @@
                         />
                       </td>
                       <td>{{ e.match?.name }}</td>
-                      <td>{{ e.match?.teamHome?.name }}</td>
-                      <td>{{ e.match?.teamAway?.name }}</td>
+                      <td>{{ e.match?.teamHomeName || 'Empty slot'  }}</td>
+                      <td>{{ e.match?.teamAwayName || 'Empty slot'  }}</td>
                       <td class="remove-cell">
                         <button class="remove-btn" (click)="removeEntry(e)">✖</button>
                       </td>
@@ -154,10 +154,7 @@
 
                     <ng-container *ngIf="e.type === 'BREAK'">
                       <td></td>
-                      <td colspan="2" class="break-info">
-                        Break ({{ e.durationInMin }} min)
-                      </td>
-                      <td></td>
+                      <td colspan="3">Break ({{ e.durationInMin }} min)</td>
                       <td class="remove-cell">
                         <button class="remove-btn" (click)="removeEntry(e)">✖</button>
                       </td>

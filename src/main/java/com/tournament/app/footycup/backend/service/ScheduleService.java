@@ -1,8 +1,8 @@
 package com.tournament.app.footycup.backend.service;
 
+import com.tournament.app.footycup.backend.dto.schedule.*;
 import com.tournament.app.footycup.backend.enums.EntryType;
 import com.tournament.app.footycup.backend.enums.MatchStatus;
-import com.tournament.app.footycup.backend.model.Match;
 import com.tournament.app.footycup.backend.model.Schedule;
 import com.tournament.app.footycup.backend.model.ScheduleEntry;
 import com.tournament.app.footycup.backend.model.Tournament;
@@ -15,7 +15,6 @@ import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -31,30 +30,30 @@ public class ScheduleService {
     private final ScheduleEntryRepository scheduleEntryRepository;
     private final TournamentRepository tournamentRepository;
 
-    public List<Schedule> getSchedules(Long tournamentId, User user) {
-        Tournament tournament = tournamentRepository.findById(tournamentId)
+    public List<Schedule> getSchedules(Long tournamentId, User organizer) {
+        var tournament = tournamentRepository.findById(tournamentId)
                 .orElseThrow(() -> new NoSuchElementException("Tournament not found"));
-        if (!tournament.getOrganizer().getId().equals(user.getId())) throw new IllegalArgumentException();
+        if (!tournament.getOrganizer().getId().equals(organizer.getId())) throw new IllegalArgumentException();
         return scheduleRepository.findByTournamentId(tournamentId);
     }
 
-    public Schedule getScheduleById(Long tournamentId, Long scheduleId, User user) {
-        Tournament tournament = tournamentRepository.findById(tournamentId)
+    public Schedule getScheduleById(Long tournamentId, Long scheduleId, User organizer) {
+        var tournament = tournamentRepository.findById(tournamentId)
                 .orElseThrow(() -> new NoSuchElementException("Tournament not found"));
-        if (!tournament.getOrganizer().getId().equals(user.getId())) throw new IllegalArgumentException();
+        if (!tournament.getOrganizer().getId().equals(organizer.getId())) throw new IllegalArgumentException();
         return scheduleRepository.findById(scheduleId)
                 .orElseThrow(() -> new NoSuchElementException("Schedule not found"));
     }
 
-    public void createEmptySchedules(Long tournamentId, User user) {
-        Tournament tournament = tournamentRepository.findById(tournamentId)
+    public void createEmptySchedules(Long tournamentId, User organizer) {
+        var tournament = tournamentRepository.findById(tournamentId)
                 .orElseThrow(() -> new NoSuchElementException("Tournament not found"));
-        if (!tournament.getOrganizer().getId().equals(user.getId())) throw new IllegalArgumentException();
-        LocalDate start = tournament.getStartDate();
-        LocalDate end = tournament.getEndDate();
+        if (!tournament.getOrganizer().getId().equals(organizer.getId())) throw new IllegalArgumentException();
+        var start = tournament.getStartDate();
+        var end = tournament.getEndDate();
         List<Schedule> schedules = new ArrayList<>();
-        for (LocalDate date = start; !date.isAfter(end); date = date.plusDays(1)) {
-            Schedule schedule = new Schedule();
+        for (var date = start; !date.isAfter(end); date = date.plusDays(1)) {
+            var schedule = new Schedule();
             schedule.setTournament(tournament);
             schedule.setStartDateTime(date.atStartOfDay());
             schedules.add(schedule);
@@ -62,29 +61,29 @@ public class ScheduleService {
         scheduleRepository.saveAll(schedules);
     }
 
-    public void computeSchedule(Long tournamentId, Long scheduleId, User user) {
-        Tournament tournament = tournamentRepository.findById(tournamentId)
+    public void computeSchedule(Long tournamentId, Long scheduleId, User organizer) {
+        var tournament = tournamentRepository.findById(tournamentId)
                 .orElseThrow(() -> new NoSuchElementException("Tournament not found"));
-        if (!tournament.getOrganizer().getId().equals(user.getId())) throw new IllegalArgumentException();
-        Schedule schedule = scheduleRepository.findById(scheduleId)
+        if (!tournament.getOrganizer().getId().equals(organizer.getId())) throw new IllegalArgumentException();
+        var schedule = scheduleRepository.findById(scheduleId)
                 .orElseThrow(() -> new NoSuchElementException("Schedule not found"));
-        LocalDateTime cursor = schedule.getStartDateTime();
-        for (ScheduleEntry e : schedule.getEntries()) {
+        var cursor = schedule.getStartDateTime();
+        for (var e : schedule.getEntries()) {
             e.setStartDateTime(cursor);
             cursor = cursor.plusMinutes(e.getDurationInMin());
             scheduleEntryRepository.save(e);
         }
     }
 
-    public ScheduleEntry addMatch(Long tournamentId, Long scheduleId, Long matchId, User user) {
-        Tournament tournament = tournamentRepository.findById(tournamentId)
+    public ScheduleEntry addMatch(Long tournamentId, Long scheduleId, AddMatchEntryRequest request, User organizer) {
+        var tournament = tournamentRepository.findById(tournamentId)
                 .orElseThrow(() -> new NoSuchElementException("Tournament not found"));
-        if (!tournament.getOrganizer().getId().equals(user.getId())) throw new IllegalArgumentException();
-        Schedule schedule = scheduleRepository.findById(scheduleId)
+        if (!tournament.getOrganizer().getId().equals(organizer.getId())) throw new IllegalArgumentException();
+        var schedule = scheduleRepository.findById(scheduleId)
                 .orElseThrow(() -> new NoSuchElementException("Schedule not found"));
-        Match match = matchRepository.findById(matchId)
+        var match = matchRepository.findById(request.matchId())
                 .orElseThrow(() -> new NoSuchElementException("Match not found"));
-        ScheduleEntry entry = new ScheduleEntry();
+        var entry = new ScheduleEntry();
         entry.setSchedule(schedule);
         entry.setType(EntryType.MATCH);
         entry.setMatch(match);
@@ -99,45 +98,45 @@ public class ScheduleService {
         return scheduleEntryRepository.save(entry);
     }
 
-    public void removeEntry(Long tournamentId, Long scheduleId, Long entryId, User user) {
-        Tournament tournament = tournamentRepository.findById(tournamentId)
+    public void removeEntry(Long tournamentId, Long scheduleId, Long entryId, User organizer) {
+        var tournament = tournamentRepository.findById(tournamentId)
                 .orElseThrow(() -> new NoSuchElementException("Tournament not found"));
-        if (!tournament.getOrganizer().getId().equals(user.getId())) throw new IllegalArgumentException();
-        Schedule schedule = scheduleRepository.findById(scheduleId)
+        if (!tournament.getOrganizer().getId().equals(organizer.getId())) throw new IllegalArgumentException();
+        var schedule = scheduleRepository.findById(scheduleId)
                 .orElseThrow(() -> new NoSuchElementException("Schedule not found"));
-        ScheduleEntry entry = scheduleEntryRepository.findById(entryId)
+        var entry = scheduleEntryRepository.findById(entryId)
                 .orElseThrow(() -> new NoSuchElementException("Entry not found"));
         if(entry.getType().equals(EntryType.MATCH)) {
             entry.getMatch().setStatus(MatchStatus.NOT_SCHEDULED);
         }
         schedule.getEntries().removeIf(e -> e.getId().equals(entryId));
         scheduleRepository.save(schedule);
-        computeSchedule(tournamentId, scheduleId, user);
+        computeSchedule(tournamentId, scheduleId, organizer);
     }
 
-    public ScheduleEntry addBreak(Long tournamentId, Long scheduleId, int durationInMin, User user) {
-        Tournament tournament = tournamentRepository.findById(tournamentId)
+    public ScheduleEntry addBreak(Long tournamentId, Long scheduleId, AddBreakRequest request, User organizer) {
+        var tournament = tournamentRepository.findById(tournamentId)
                 .orElseThrow(() -> new NoSuchElementException("Tournament not found"));
-        if (!tournament.getOrganizer().getId().equals(user.getId())) throw new IllegalArgumentException();
-        Schedule schedule = scheduleRepository.findById(scheduleId)
+        if (!tournament.getOrganizer().getId().equals(organizer.getId())) throw new IllegalArgumentException();
+        var schedule = scheduleRepository.findById(scheduleId)
                 .orElseThrow(() -> new NoSuchElementException("Schedule not found"));
-        ScheduleEntry entry = new ScheduleEntry();
+        var entry = new ScheduleEntry();
         entry.setSchedule(schedule);
         entry.setType(EntryType.BREAK);
-        entry.setDurationInMin(durationInMin);
+        entry.setDurationInMin(request.durationInMin());
         entry.setStartDateTime(schedule.getStartDateTime());
         entry = scheduleEntryRepository.save(entry);
-        computeSchedule(tournamentId, scheduleId, user);
+        computeSchedule(tournamentId, scheduleId, organizer);
         return entry;
     }
 
-    public Schedule reorderEntries(Long tournamentId, Long scheduleId, List<Long> orderedEntryIds, User user) {
+    public Schedule reorderEntries(Long tournamentId, Long scheduleId, ReorderEntriesRequest request, User user) {
         Tournament tournament = tournamentRepository.findById(tournamentId)
                 .orElseThrow(() -> new NoSuchElementException("Tournament not found"));
         if (!tournament.getOrganizer().getId().equals(user.getId())) throw new IllegalArgumentException();
         Schedule schedule = scheduleRepository.findById(scheduleId)
                 .orElseThrow(() -> new NoSuchElementException("Schedule not found"));
-        List<ScheduleEntry> newOrder = orderedEntryIds.stream()
+        List<ScheduleEntry> newOrder = request.orderedEntryIds().stream()
                 .map(id -> scheduleEntryRepository.findById(id)
                         .orElseThrow(() -> new NoSuchElementException("Entry not found")))
                 .collect(Collectors.toList());
@@ -153,13 +152,14 @@ public class ScheduleService {
         return schedule;
     }
 
-    public ScheduleEntry updateEntryTime(Long tournamentId, Long scheduleId, Long entryId, LocalDateTime newStart, User user) {
+    public ScheduleEntry updateEntryTime(Long tournamentId, Long scheduleId, Long entryId, UpdateEntryTimeRequest request,
+                                         User user) {
         Tournament tournament = tournamentRepository.findById(tournamentId)
                 .orElseThrow(() -> new NoSuchElementException("Tournament not found"));
         if (!tournament.getOrganizer().getId().equals(user.getId())) throw new IllegalArgumentException();
         ScheduleEntry entry = scheduleEntryRepository.findById(entryId)
                 .orElseThrow(() -> new NoSuchElementException("Schedule entry not found"));
-        entry.setStartDateTime(newStart);
+        entry.setStartDateTime(request.start());
         return scheduleEntryRepository.save(entry);
     }
 
@@ -170,14 +170,15 @@ public class ScheduleService {
         return scheduleEntryRepository.findAllScheduledMatchIdsByTournamentId(tournamentId);
     }
 
-    public void updateScheduleStartTime(Long tournamentId, Long scheduleId, LocalDateTime newStart, User user) {
+    public void updateScheduleStartTime(Long tournamentId, Long scheduleId, UpdateScheduleStartTimeRequest request,
+                                        User user) {
         Tournament tournament = tournamentRepository.findById(tournamentId)
                 .orElseThrow(() -> new NoSuchElementException("Tournament not found"));
         if (!tournament.getOrganizer().getId().equals(user.getId())) throw new IllegalArgumentException();
 
         Schedule schedule = scheduleRepository.findById(scheduleId)
                 .orElseThrow(() -> new NoSuchElementException("Schedule not found"));
-        schedule.setStartDateTime(newStart);
+        schedule.setStartDateTime(request.start());
         scheduleRepository.save(schedule);
     }
 

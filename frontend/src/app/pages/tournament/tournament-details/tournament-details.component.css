@@ -265,3 +265,28 @@ hr {
   color: #2D3748;
 }
 
+/* Kolumna z iksem – wąska i wyrównana do prawej */
+.remove-cell {
+  width: 30px;
+  text-align: right;
+  padding-right: 0.5rem;
+  white-space: nowrap;
+}
+
+/* Przycisk X jak w Schedule */
+.remove-btn {
+  background: transparent;
+  border: none;
+  color: #9ca3af;           /* spokojna szarość */
+  cursor: pointer;
+  font-size: 2rem;
+  line-height: 2;
+  padding: 0;
+  margin: 0;
+  width: 20px;              /* nie rozszerza kolumny */
+  text-align: center;
+  transition: color .2s;
+}
+
+.remove-btn:hover { color: #d9534f; } /* ten sam czerwony co w Schedule */
+

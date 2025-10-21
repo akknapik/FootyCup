@@ -3,9 +3,9 @@ import { UserRef } from "../common/user-ref.model";
 
 export interface MatchItemResponse {
     id: number;
-    name: string;
+    name: string | 'Match';
     status: 'SCHEDULED' | 'NOT_SCHEDULED' | 'COMPLETED';
-    teamHome: TeamRef;
-    teamAway: TeamRef;
+    teamHome: TeamRef | null;
+    teamAway: TeamRef | null;
     referee: UserRef | null;
 }
