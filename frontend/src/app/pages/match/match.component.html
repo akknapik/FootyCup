@@ -24,7 +24,7 @@
             <a routerLink="/tournament/{{ tournamentId }}/results" class="nav-link">Results</a>
           </div>
 
-          <a routerLink="/settings"class="nav-link">Settings</a>
+          <a routerLink="/settings" class="nav-link">Settings</a>
             <a *ngIf="(auth.currentUser$ | async)?.userRole === 'ADMIN'"
               routerLink="/admin/users"
               class="nav-link">
@@ -105,10 +105,11 @@
                   </div>
                   <ng-template #refereePlaceholder>—</ng-template>
                 </div>
-                
+
                 <div class="row-actions" *ngIf="match" (click)="$event.stopPropagation()">
                   <button class="dots-btn" (click)="toggleMenu(match)">⋮</button>
                   <div class="dropdown-menu" *ngIf="match.showMenu">
+                    <button (click)="openTacticsBoard(match)">Tactics board</button>
                     <button *ngIf="canManageEvents(match)" (click)="openMatchEvents(match)">Manage events</button>
                     <button (click)="deleteMatch(match.id)">Delete</button>
                   </div>

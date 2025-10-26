@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="pl">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FootyCup</title>
+    <link rel="stylesheet" href="tactics-board.component.css">
+  </head>
+  <body>
+    <div class="app-container">
+      <aside class="sidebar">
+        <div class="sidebar-header">
+          <img src="assets/images/logo1_3.png" alt="FootyCup Logo" class="sidebar-logo">
+        </div>
+        <nav class="sidebar-nav">
+          <a routerLink="/dashboard" class="nav-link">Dashboard</a>
+          <a routerLink="/tournaments/my" class="nav-link active">Tournaments</a>
+          <div *ngIf="tournamentId" class="submenu">
+            <a routerLink="/tournaments/{{ tournamentId }}" class="nav-link">General</a>
+            <a routerLink="/tournament/{{ tournamentId }}/teams" class="nav-link">Teams</a>
+            <a routerLink="/tournament/{{ tournamentId }}/format" class="nav-link">Format</a>
+            <a routerLink="/tournament/{{ tournamentId }}/matches" class="nav-link active">Matches</a>
+            <a routerLink="/tournament/{{ tournamentId }}/schedule" class="nav-link">Schedule</a>
+            <a routerLink="/tournament/{{ tournamentId }}/results" class="nav-link">Results</a>
+          </div>
+
+          <a routerLink="/settings" class="nav-link">Settings</a>
+            <a *ngIf="(auth.currentUser$ | async)?.userRole === 'ADMIN'"
+              routerLink="/admin/users"
+              class="nav-link">
+              Admin Panel
+            </a>
+        </nav>
+        <nav class="sidebar-footer">
+          <a routerLink="/aboutus">About us</a>
+          <a routerLink="/contact">Contact</a>
+        </nav>
+      </aside>
+
+      <div class="main">
+        <header class="header">
+          <div class="header-spacer"></div>
+
+          <div class="user-info">
+            <div class="user-text">
+              <span *ngIf="auth.currentUser$ | async as user">
+                <div class="user-name">{{ user.firstname }} {{ user.lastname }}</div>
+                <button class="logout-btn" (click)="logout()">Log out</button>
+              </span>
+            </div>
+            <div class="avatar"></div>
+          </div>
+        </header>
+
+        <main class="content">
+          <div class="header-row">
+            <h2>Tactics board</h2>
+            <div class="actions">
+              <button (click)="addLayer()">New layer</button>
+              <button *ngIf="activeLayer" (click)="duplicateLayer(activeLayer)">Duplicate active</button>
+            </div>
+          </div>
+
+          <section class="match-summary" *ngIf="match as m">
+            <div class="teams">
+              <div class="team-name">{{ m.teamHome?.name || 'Home team' }}</div>
+              <div class="score">vs</div>
+              <div class="team-name">{{ m.teamAway?.name || 'Away team' }}</div>
+            </div>
+            <div class="details">
+              <span>Status: {{ m.status }}</span>
+              <span *ngIf="layerUpdatedAt">Last layer update: {{ layerUpdatedAt }}</span>
+            </div>
+          </section>
+
+          <section class="layers-panel">
+            <h3>Tactical variants</h3>
+            <div class="layers-list">
+              <button
+                *ngFor="let layer of layers"
+                [class.active]="layer.id === activeLayerId"
+                (click)="selectLayer(layer.id)">
+                {{ layer.name }}
+              </button>
+            </div>
+            <div class="layer-controls" *ngIf="activeLayer as currentLayer">
+              <button (click)="renameLayer(currentLayer)">Rename</button>
+              <button (click)="duplicateLayer(currentLayer)">Duplicate</button>
+              <button (click)="removeLayer(currentLayer)">Delete</button>
+              <button (click)="clearLayer()">Clear layer</button>
+            </div>
+          </section>
+
+          <section class="board-section" *ngIf="activeLayer as current">
+            <div class="board-columns">
+              <div class="players-column">
+                <h4>{{ match?.teamHome?.name || 'Home team' }}</h4>
+                <p *ngIf="homePlayers.length === 0" class="empty">No players available.</p>
+                <ul>
+                  <li *ngFor="let player of homePlayers">
+                    <div class="player-entry">
+                      <span class="badge">#{{ player.number }}</span>
+                      <span class="name">{{ player.name }}</span>
+                    </div>
+                    <button (click)="addPlayerToLayer(player, 'home')">+</button>
+                  </li>
+                </ul>
+              </div>
+
+              <div class="pitch-wrapper">
+               <div class="pitch" #pitch>
+                <div class="penalty penalty--left"></div>
+                <div class="penalty penalty--right"></div>
+
+                <div class="six-yard six-yard--left"></div>
+                <div class="six-yard six-yard--right"></div>
+
+                <div
+                    *ngFor="let token of current.tokens; trackBy: trackToken"
+                    class="token"
+                    [ngClass]="token.type"
+                    [ngStyle]="{ left: token.x + '%', top: token.y + '%' }"
+                    (pointerdown)="startDrag(token, $event)">
+                    <div class="token-body" [style.background]="token.color">
+                    <span class="token-label">{{ token.label }}</span>
+                    <span class="token-desc" *ngIf="token.type !== 'opponent'">{{ token.description }}</span>
+                    </div>
+                    <button class="remove-token" (click)="removeToken(token.id); $event.stopPropagation();">×</button>
+                </div>
+                </div>
+                <div class="pitch-actions">
+                  <button (click)="addOpponentToken()">Add opponent</button>
+                  <button (click)="clearLayer()">Clear board</button>
+                </div>
+              </div>
+
+              <div class="players-column opponents">
+                <h4>{{ match?.teamAway?.name || 'Away team' }}</h4>
+                <p *ngIf="awayPlayers.length === 0" class="empty">No players available.</p>
+                <ul>
+                  <li *ngFor="let player of awayPlayers">
+                    <div class="player-entry">
+                      <span class="badge">#{{ player.number }}</span>
+                      <span class="name">{{ player.name }}</span>
+                    </div>
+                    <button (click)="addPlayerToLayer(player, 'away')">+</button>
+                  </li>
+                </ul>
+              </div>
+            </div>
+
+            <div class="notes">
+              <label for="layer-notes">Variant notes</label>
+              <textarea
+                id="layer-notes"
+                [(ngModel)]="current.notes"
+                (ngModelChange)="onNotesChange()"
+                rows="4"
+                placeholder="Add optional instructions, movement descriptions or goals for this variant."></textarea>
+            </div>
+          </section>
+
+          <div *ngIf="!isLoading && !match" class="empty-state">
+            <p>Unable to load match data.</p>
+          </div>
+
+          <div *ngIf="isLoading" class="loading-state">
+            Loading tactics data...
+          </div>
+        </main>
+
+        <footer class="footer">
+          <p>&copy; 2025 FootyCup. All rights reserved.</p>
+        </footer>
+      </div>
+    </div>
+  </body>
+</html>

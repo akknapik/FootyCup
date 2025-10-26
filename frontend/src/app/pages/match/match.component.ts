@@ -1,11 +1,9 @@
-import { HttpClient } from '@angular/common/http';
 import { Component } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { MatchService } from '../../services/match.service';
 import { AuthService } from '../../services/auth.service';
 import { NotificationService } from '../../services/notification.service';
 import { FormatService } from '../../services/format.service';
-import { User } from '../../models/user.model';
 import { TournamentService } from '../../services/tournament.service';
 import { UserRef } from '../../models/common/user-ref.model';
 import { MatchResponse } from '../../models/match/match.response';
@@ -31,7 +29,7 @@ export class MatchComponent {
 
 
   constructor(private route: ActivatedRoute, public router: Router, private matchService: MatchService, public auth: AuthService, private notification: NotificationService, private formatService: FormatService, private tournamentService: TournamentService) {}
-  
+
   ngOnInit(): void {
     this.tournamentId = +this.route.snapshot.paramMap.get('tournamentId')!;
     this.loadGroups();
@@ -95,7 +93,7 @@ export class MatchComponent {
       }
     });
   }
- 
+
   toggleMenu(match: any): void {
     this.paginatedMatches.forEach(m => {
       if (m && m.id !== match.id) m.showMenu = false;
@@ -120,6 +118,14 @@ export class MatchComponent {
     }
     (match as any).showMenu = false;
     this.router.navigate([`/tournament/${this.tournamentId}/matches/${match.id}/events`]);
+  }
+
+  openTacticsBoard(match: MatchItemResponse | null): void {
+    if (!match || !match.id) {
+      return;
+    }
+    (match as any).showMenu = false;
+    this.router.navigate([`/tournament/${this.tournamentId}/matches/${match.id}/tactics`]);
   }
 
   onRefereeSelected(match: MatchResponse, refereeId: number | null) {
@@ -172,7 +178,7 @@ export class MatchComponent {
 
   logout(): void {
     this.auth.logout().subscribe(() => {
-      this.router.navigate(['/login']); 
+      this.router.navigate(['/login']);
     });
   }
 }
