@@ -3,6 +3,7 @@ import { Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
 import { MatchEventRef } from '../models/common/match-event-ref.model';
 import { CreateMatchEventRequest } from '../models/match/create-match-event.request';
+import { MatchStatisticsResponse } from '../models/match/match-statistics.response';
 
 @Injectable({
   providedIn: 'root'
@@ -13,6 +14,12 @@ export class MatchEventService {
 
   getEvents(tournamentId: number, matchId: number): Observable<MatchEventRef[]> {
     return this.http.get<MatchEventRef[]>(`/api/tournament/${tournamentId}/matches/${matchId}/events`, { withCredentials: true });
+  }
+
+  getStatistics(tournamentId: number, matchId: number): Observable<MatchStatisticsResponse> {
+    return this.http.get<MatchStatisticsResponse>(`/api/tournament/${tournamentId}/matches/${matchId}/events/statistics`, {
+      withCredentials: true
+    });
   }
 
   addEvent(tournamentId: number, matchId: number, payload: CreateMatchEventRequest): Observable<MatchEventRef> {

@@ -55,6 +55,9 @@
         <main class="content">
           <div class="header-row">
             <h2>Match event</h2>
+              <div class="actions">
+                <button class="btn-add secondary" (click)="openStatistics()">Statistics</button>
+              </div>
           </div>
 
             <section class="match-summary" *ngIf="match">
@@ -78,7 +81,19 @@
                   <div class="event-description">
                     <span class="type">{{ event.eventType }}</span>
                     <span class="team">{{ event.team.name || 'Unknown team' }}</span>
-                    <span *ngIf="event.player" class="player">- {{ event.player.name }} (#{{ event.player.number }})</span>
+                    <ng-container [ngSwitch]="event.eventType">
+                      <span *ngSwitchCase="'SUBSTITUTION'" class="player">
+                        <span *ngIf="event.secondaryPlayer">↓ {{ event.secondaryPlayer.name }} (#{{ event.secondaryPlayer.number }})</span>
+                        <span *ngIf="event.player && event.secondaryPlayer"> &nbsp;|&nbsp; </span>
+                        <span *ngIf="event.player">↑ {{ event.player.name }} (#{{ event.player.number }})</span>
+                      </span>
+                      <ng-container *ngSwitchDefault>
+                          <span class="player" *ngIf="event.player">
+                            - {{ event.player.name }} (#{{ event.player.number }})
+                          </span>
+                        </ng-container>      
+                    </ng-container>
+                    <span *ngIf="event.description" class="description">- {{ event.description }}</span>
                   </div>
                   <button *ngIf="canManageEvents" class="delete-button" (click)="deleteEvent(event)">Delete</button>
                 </li>
@@ -90,7 +105,7 @@
               <form (ngSubmit)="submitEvent()" #eventForm="ngForm">
                 <div class="form-row">
                   <label>Event type
-                    <select [(ngModel)]="selectedEventType" name="eventType">
+                    <select [(ngModel)]="selectedEventType" name="eventType" (ngModelChange)="onEventTypeChange($event)">
                       <option *ngFor="let type of eventTypes" [ngValue]="type">{{ type }}</option>
                     </select>
                   </label>
@@ -106,13 +121,36 @@
                       <option *ngIf="match?.teamAway" [ngValue]="match?.teamAway?.id">{{ match?.teamAway?.name }}</option>
                     </select>
                   </label>
-                  <label>Player (optional)
-                    <select [(ngModel)]="selectedPlayerId" name="playerId">
+                  <label *ngIf="selectedEventType !== 'SUBSTITUTION'">Player (optional)
+                    <select [(ngModel)]="selectedPrimaryPlayerId" name="playerId">
                       <option [ngValue]="null">No player</option>
                       <option *ngFor="let player of availablePlayers" [ngValue]="player.id">
                         #{{ player.number }} {{ player.name }}
                       </option>
                     </select>
+                  </label>
+                </div>
+                <div class="form-row" *ngIf="selectedEventType === 'SUBSTITUTION'">
+                  <label>Player coming in
+                    <select [(ngModel)]="selectedPrimaryPlayerId" name="playerInId">
+                      <option [ngValue]="null">Select player</option>
+                      <option *ngFor="let player of availablePlayers" [ngValue]="player.id">
+                        #{{ player.number }} {{ player.name }}
+                      </option>
+                    </select>
+                  </label>
+                  <label>Player going out
+                    <select [(ngModel)]="selectedSecondaryPlayerId" name="playerOutId">
+                      <option [ngValue]="null">Select player</option>
+                      <option *ngFor="let player of availablePlayers" [ngValue]="player.id">
+                        #{{ player.number }} {{ player.name }}
+                      </option>
+                    </select>
+                  </label>
+                </div>
+                <div class="form-row" *ngIf="selectedEventType === 'OTHER'">
+                  <label>Description (optional)
+                    <input type="text" [(ngModel)]="eventDescription" name="eventDescription" maxlength="500" placeholder="Describe the event">
                   </label>
                 </div>
                 <button type="submit" class="submit-button" [disabled]="isSubmitting">{{ isSubmitting ? 'Saving...' : 'Add event' }}</button>
@@ -130,6 +168,66 @@
         <footer class="footer">
           <p>&copy; 2025 FootyCup. All rights reserved.</p>
         </footer>
+      </div>
+    </div>
+    <div class="modal-backdrop" *ngIf="showStatistics" (click)="closeStatistics()">
+      <div class="modal" (click)="$event.stopPropagation()">
+        <div class="modal-header">
+          <h3>Match statistics</h3>
+          <button class="close-btn" (click)="closeStatistics()">×</button>
+        </div>
+        <div class="modal-body">
+          <div *ngIf="statisticsLoading" class="modal-loading">Loading statistics...</div>
+          <div *ngIf="statisticsError" class="modal-error">{{ statisticsError }}</div>
+          <ng-container *ngIf="!statisticsLoading && !statisticsError">
+            <div *ngIf="statistics; else noStats">
+              <table class="stats-table">
+                <thead>
+                  <tr>
+                    <th>Statistic</th>
+                    <th>{{ statistics.homeTeam?.teamName || match?.teamHome?.name || 'Home team' }}</th>
+                    <th>{{ statistics.awayTeam?.teamName || match?.teamAway?.name || 'Away team' }}</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td>Goals</td>
+                    <td>{{ statistics.homeTeam?.goals ?? 0 }}</td>
+                    <td>{{ statistics.awayTeam?.goals ?? 0 }}</td>
+                  </tr>
+                  <tr>
+                    <td>Yellow cards</td>
+                    <td>{{ statistics.homeTeam?.yellowCards ?? 0 }}</td>
+                    <td>{{ statistics.awayTeam?.yellowCards ?? 0 }}</td>
+                  </tr>
+                  <tr>
+                    <td>Red cards</td>
+                    <td>{{ statistics.homeTeam?.redCards ?? 0 }}</td>
+                    <td>{{ statistics.awayTeam?.redCards ?? 0 }}</td>
+                  </tr>
+                  <tr>
+                    <td>Substitutions</td>
+                    <td>{{ statistics.homeTeam?.substitutions ?? 0 }}</td>
+                    <td>{{ statistics.awayTeam?.substitutions ?? 0 }}</td>
+                  </tr>
+                  <tr>
+                    <td>Other events</td>
+                    <td>{{ statistics.homeTeam?.otherEvents ?? 0 }}</td>
+                    <td>{{ statistics.awayTeam?.otherEvents ?? 0 }}</td>
+                  </tr>
+                  <tr class="total-row">
+                    <td>Total events</td>
+                    <td>{{ statistics.homeTeam?.totalEvents ?? 0 }}</td>
+                    <td>{{ statistics.awayTeam?.totalEvents ?? 0 }}</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+            <ng-template #noStats>
+              <div class="modal-empty">No statistics available yet.</div>
+            </ng-template>
+          </ng-container>
+        </div>
       </div>
     </div>
   </body>

@@ -12,7 +12,8 @@ import { FormatService } from '../../services/format.service';
 import { TournamentService } from '../../services/tournament.service';
 import { MatchResponse } from '../../models/match/match.response';
 import { MatchEventRef } from '../../models/common/match-event-ref.model';
-import { CreateMatchEventRequest } from '../../models/match/create-match-event.request';
+import { CreateMatchEventRequest, MatchEventType } from '../../models/match/create-match-event.request';
+import { MatchStatisticsResponse } from '../../models/match/match-statistics.response';
 
 @Component({
   selector: 'app-match-events',
@@ -25,11 +26,13 @@ export class MatchEventsComponent implements OnInit, OnDestroy {
   matchId!: number;
   match?: MatchResponse;
   events: MatchEventRef[] = [];
-  eventTypes: Array<'GOAL' | 'YELLOW_CARD' | 'RED_CARD'> = ['GOAL', 'YELLOW_CARD', 'RED_CARD'];
-  selectedEventType: 'GOAL' | 'YELLOW_CARD' | 'RED_CARD' = 'GOAL';
+  eventTypes: MatchEventType[] = ['GOAL', 'YELLOW_CARD', 'RED_CARD', 'SUBSTITUTION', 'OTHER'];
+  selectedEventType: MatchEventType = 'GOAL';
   selectedTeamId: number | null = null;
-  selectedPlayerId: number | null = null;
+  selectedPrimaryPlayerId: number | null = null;
+  selectedSecondaryPlayerId: number | null = null;
   eventMinute = 0;
+  eventDescription = '';
   isSubmitting = false;
   isLoading = false;
   currentUser: User | null = null;
@@ -38,6 +41,11 @@ export class MatchEventsComponent implements OnInit, OnDestroy {
   homePlayers: PlayerRef[] = [];
   awayPlayers: PlayerRef[] = [];
   availablePlayers: PlayerRef[] = [];
+
+  showStatistics = false;
+  statistics?: MatchStatisticsResponse;
+  statisticsLoading = false;
+  statisticsError: string | null = null;
 
   private subscription?: Subscription;
   constructor(
@@ -119,7 +127,7 @@ export class MatchEventsComponent implements OnInit, OnDestroy {
 
   onTeamChange(teamId: number | null): void {
     this.selectedTeamId = teamId ?? null;
-    this.selectedPlayerId = null;
+    this.resetPlayerSelections();
     this.updateAvailablePlayers();
   }
 
@@ -135,6 +143,14 @@ export class MatchEventsComponent implements OnInit, OnDestroy {
       this.availablePlayers = this.awayPlayers;
     } else {
       this.availablePlayers = [];
+    }
+  }
+
+  onEventTypeChange(eventType: MatchEventType): void {
+    this.selectedEventType = eventType;
+    this.resetPlayerSelections();
+    if (eventType !== 'OTHER') {
+      this.eventDescription = '';
     }
   }
 
@@ -154,11 +170,24 @@ export class MatchEventsComponent implements OnInit, OnDestroy {
       return;
     }
 
+    if (this.selectedEventType === 'SUBSTITUTION') {
+      if (this.selectedPrimaryPlayerId === null || this.selectedSecondaryPlayerId === null) {
+        this.notification.showError('Please select both players for the substitution.');
+        return;
+      }
+      if (this.selectedPrimaryPlayerId === this.selectedSecondaryPlayerId) {
+        this.notification.showError('Substitution players must be different.');
+        return;
+      }
+    }
+
     const payload: CreateMatchEventRequest = {
       eventType: this.selectedEventType,
       minute: this.eventMinute,
       teamId: this.selectedTeamId,
-      playerId: this.selectedPlayerId ?? undefined
+      playerId: this.selectedPrimaryPlayerId ?? undefined,
+      secondaryPlayerId: this.selectedEventType === 'SUBSTITUTION' ? this.selectedSecondaryPlayerId ?? undefined : undefined,
+      description: this.selectedEventType === 'OTHER' ? (this.eventDescription?.trim() || undefined) : undefined  
     };
 
     this.isSubmitting = true;
@@ -166,12 +195,18 @@ export class MatchEventsComponent implements OnInit, OnDestroy {
       next: () => {
         this.notification.showSuccess('Event recorded successfully.');
         this.isSubmitting = false;
-        this.selectedPlayerId = null;
+        this.resetPlayerSelections();
+        if (this.selectedEventType !== 'OTHER') {
+          this.eventDescription = '';
+        }
         if (this.selectedEventType === 'GOAL') {
           this.eventMinute = Math.min(this.eventMinute + 1, 200);
         }
         this.loadEvents();
         this.loadMatch();
+        if (this.showStatistics) {
+          this.loadStatistics();
+        }
       },
       error: () => {
         this.isSubmitting = false;
@@ -191,6 +226,9 @@ export class MatchEventsComponent implements OnInit, OnDestroy {
           this.notification.showSuccess('Event removed.');
           this.loadEvents();
           this.loadMatch();
+          if (this.showStatistics) {
+            this.loadStatistics();
+          }
         },
         error: () => this.notification.showError('Failed to delete event.')
       });
@@ -221,9 +259,39 @@ export class MatchEventsComponent implements OnInit, OnDestroy {
     this.router.navigate([`/tournament/${this.tournamentId}/matches`]);
   }
 
+openStatistics(): void {
+    this.showStatistics = true;
+    this.statistics = undefined;
+    this.loadStatistics();
+  }
+
+  closeStatistics(): void {
+    this.showStatistics = false;
+  }
+
+  private loadStatistics(): void {
+    this.statisticsLoading = true;
+    this.statisticsError = null;
+    this.matchEventService.getStatistics(this.tournamentId, this.matchId).subscribe({
+      next: (stats) => {
+        this.statistics = stats;
+        this.statisticsLoading = false;
+      },
+      error: () => {
+        this.statisticsLoading = false;
+        this.statisticsError = 'Failed to load match statistics.';
+      }
+    });
+  }
+
+  private resetPlayerSelections(): void {
+    this.selectedPrimaryPlayerId = null;
+    this.selectedSecondaryPlayerId = null;
+  }
+
   logout(): void {
     this.auth.logout().subscribe(() => {
-      this.router.navigate(['/login']); 
+      this.router.navigate(['/login']);
     });
   }
 }

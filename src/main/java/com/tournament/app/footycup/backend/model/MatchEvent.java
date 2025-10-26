@@ -36,6 +36,11 @@ public class MatchEvent {
     private Player player;
 
     @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "id_secondary_player")
+    @JsonIgnoreProperties({"team"})
+    private Player secondaryPlayer;
+
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "id_team")
     @JsonIgnoreProperties({"playerList", "tournament"})
     private Team team;
@@ -46,6 +51,9 @@ public class MatchEvent {
 
     @Column(nullable = false)
     private Integer minute;
+
+    @Column(name = "description", length = 500)
+    private String description;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "id_recorded_by", nullable = false)

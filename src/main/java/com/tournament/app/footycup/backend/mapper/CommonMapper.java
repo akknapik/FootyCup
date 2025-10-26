@@ -64,8 +64,15 @@ public interface CommonMapper {
     @Named("toMatchEventRef")
     default MatchEventRef toMatchEventRef(MatchEvent matchEvent) {
         if(matchEvent == null) return null;
-        return new MatchEventRef(matchEvent.getId(), this.toTeamRef(matchEvent.getTeam()),
-                this.toPlayerRef(matchEvent.getPlayer()), matchEvent.getEventType().name(), matchEvent.getMinute());
+        return new MatchEventRef(
+                matchEvent.getId(),
+                this.toTeamRef(matchEvent.getTeam()),
+                this.toPlayerRef(matchEvent.getPlayer()),
+                this.toPlayerRef(matchEvent.getSecondaryPlayer()),
+                matchEvent.getEventType().name(),
+                matchEvent.getMinute(),
+                matchEvent.getDescription()
+        );
     }
 
     @Named("toMatchEventRefList")

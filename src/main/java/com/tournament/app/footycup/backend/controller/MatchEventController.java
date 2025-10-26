@@ -2,6 +2,7 @@ package com.tournament.app.footycup.backend.controller;
 
 import com.tournament.app.footycup.backend.dto.common.MatchEventRef;
 import com.tournament.app.footycup.backend.dto.match.CreateMatchEventRequest;
+import com.tournament.app.footycup.backend.dto.match.MatchStatisticsResponse;
 import com.tournament.app.footycup.backend.mapper.CommonMapper;
 import com.tournament.app.footycup.backend.model.User;
 import com.tournament.app.footycup.backend.service.MatchEventService;
@@ -28,6 +29,15 @@ public class MatchEventController {
         var matches = matchEventService.getEvents(tournamentId, matchId, organizer);
         var dto = matches.stream().map(commonMapper::toMatchEventRef).toList();
         return ResponseEntity.ok(dto);
+    }
+
+    @GetMapping("/statistics")
+    public ResponseEntity<MatchStatisticsResponse> getStatistics(
+            @PathVariable Long tournamentId,
+            @PathVariable Long matchId,
+            @AuthenticationPrincipal User organizer) {
+        var statistics = matchEventService.getStatistics(tournamentId, matchId, organizer);
+        return ResponseEntity.ok(statistics);
     }
 
     @PostMapping
