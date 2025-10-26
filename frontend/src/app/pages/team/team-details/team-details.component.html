@@ -53,7 +53,10 @@
         </header>
 
         <main class="content">
-          <h2>Edit team</h2>
+          <div class="page-header">
+            <h2>Edit team</h2>
+            <button *ngIf="team" class="btn stats-btn" (click)="openTeamStatistics()">Team statistics</button>
+          </div>
 
           <div class="form-card" *ngIf="team as t">
             <div class="one-row">
@@ -111,6 +114,7 @@
                   <button class="dots-btn" (click)="toggleMenu(player.id)">⋮</button>
                   <div class="dropdown-menu" *ngIf="isMenuOpen(player.id)">
                     <button (click)="startEdit(player)">Edit</button>
+                    <button (click)="$event.stopPropagation(); openPlayerStatistics(player)">Statistics</button>
                     <button (click)="deletePlayer(player.id)">Delete</button>
                   </div>
                 </div>
@@ -124,6 +128,120 @@
             <button (click)="nextPage()" [disabled]="currentPage === totalPages">Next</button>
           </div>
         </main>
+
+        <div class="modal-backdrop" *ngIf="showPlayerStatsModal" (click)="closePlayerStatistics()">
+          <div class="modal" (click)="$event.stopPropagation()">
+            <div class="modal-header">
+              <h3>Player statistics</h3>
+              <button class="close-btn" (click)="closePlayerStatistics()">×</button>
+            </div>
+            <div class="modal-body">
+              <h4 class="modal-subtitle">{{ playerStatistics?.playerName || currentStatsPlayerName || 'Player' }}</h4>
+              <div *ngIf="playerStatsLoading" class="modal-loading">Loading statistics...</div>
+              <div *ngIf="playerStatsError" class="modal-error">{{ playerStatsError }}</div>
+              <ng-container *ngIf="!playerStatsLoading && !playerStatsError">
+                <div *ngIf="playerStatistics; else noPlayerStats">
+                  <table class="stats-table">
+                    <tbody>
+                      <tr>
+                        <td>Matches played</td>
+                        <td>{{ playerStatistics.matchesPlayed }}</td>
+                      </tr>
+                      <tr>
+                        <td>Minutes played</td>
+                        <td>{{ playerStatistics.minutesPlayed }}</td>
+                      </tr>
+                      <tr>
+                        <td>Goals</td>
+                        <td>{{ playerStatistics.goals }}</td>
+                      </tr>
+                      <tr>
+                        <td>Yellow cards</td>
+                        <td>{{ playerStatistics.yellowCards }}</td>
+                      </tr>
+                      <tr>
+                        <td>Red cards</td>
+                        <td>{{ playerStatistics.redCards }}</td>
+                      </tr>
+                      <tr>
+                        <td>Substitutions</td>
+                        <td>{{ playerStatistics.substitutions }}</td>
+                      </tr>
+                      <tr>
+                        <td>Other events</td>
+                        <td>{{ playerStatistics.otherEvents }}</td>
+                      </tr>
+                      <tr class="total-row">
+                        <td>Total events</td>
+                        <td>{{ playerStatistics.totalEvents }}</td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+                <ng-template #noPlayerStats>
+                  <div class="modal-empty">No statistics available for this player yet.</div>
+                </ng-template>
+              </ng-container>
+            </div>
+          </div>
+        </div>
+
+        <div class="modal-backdrop" *ngIf="showTeamStatsModal" (click)="closeTeamStatistics()">
+          <div class="modal" (click)="$event.stopPropagation()">
+            <div class="modal-header">
+              <h3>Team statistics</h3>
+              <button class="close-btn" (click)="closeTeamStatistics()">×</button>
+            </div>
+            <div class="modal-body">
+              <h4 class="modal-subtitle">{{ teamStatistics?.teamName || team?.name || 'Team' }}</h4>
+              <div *ngIf="teamStatsLoading" class="modal-loading">Loading statistics...</div>
+              <div *ngIf="teamStatsError" class="modal-error">{{ teamStatsError }}</div>
+              <ng-container *ngIf="!teamStatsLoading && !teamStatsError">
+                <div *ngIf="teamStatistics; else noTeamStats">
+                  <table class="stats-table">
+                    <tbody>
+                      <tr>
+                        <td>Matches played</td>
+                        <td>{{ teamStatistics.matchesPlayed }}</td>
+                      </tr>
+                      <tr>
+                        <td>Total minutes</td>
+                        <td>{{ teamStatistics.minutesPlayed }}</td>
+                      </tr>
+                      <tr>
+                        <td>Goals</td>
+                        <td>{{ teamStatistics.goals }}</td>
+                      </tr>
+                      <tr>
+                        <td>Yellow cards</td>
+                        <td>{{ teamStatistics.yellowCards }}</td>
+                      </tr>
+                      <tr>
+                        <td>Red cards</td>
+                        <td>{{ teamStatistics.redCards }}</td>
+                      </tr>
+                      <tr>
+                        <td>Substitutions</td>
+                        <td>{{ teamStatistics.substitutions }}</td>
+                      </tr>
+                      <tr>
+                        <td>Other events</td>
+                        <td>{{ teamStatistics.otherEvents }}</td>
+                      </tr>
+                      <tr class="total-row">
+                        <td>Total events</td>
+                        <td>{{ teamStatistics.totalEvents }}</td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+                <ng-template #noTeamStats>
+                  <div class="modal-empty">No statistics available for this team yet.</div>
+                </ng-template>
+              </ng-container>
+            </div>
+          </div>
+        </div>
 
         <div class="edit-modal" *ngIf="editMode && selectedPlayer as sp">
           <h4>Edit Player</h4>

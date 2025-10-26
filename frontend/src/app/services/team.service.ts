@@ -7,6 +7,8 @@ import { CreateTeamRequest } from '../models/team/create-team.request';
 import { UpdateTeamRequest } from '../models/team/update-team.request';
 import { CreatePlayerRequest } from '../models/team/create-player.request';
 import { UpdatePlayerRequest } from '../models/team/update-player.request';
+import { PlayerStatisticsResponse } from '../models/team/player-statistics.response';
+import { TeamStatisticsResponse } from '../models/team/team-statistics.response';
 
 @Injectable({
   providedIn: 'root'
@@ -45,5 +47,19 @@ export class TeamService {
 
   removePlayerFromTeam(tournamentId: number, teamId: number, playerId: number) {
     return this.http.delete<TeamResponse>(`/api/tournament/${tournamentId}/teams/${teamId}/players/${playerId}`, { withCredentials: true });
+  }
+
+  getPlayerStatistics(tournamentId: number, teamId: number, playerId: number) {
+    return this.http.get<PlayerStatisticsResponse>(
+      `/api/tournament/${tournamentId}/teams/${teamId}/players/${playerId}/statistics`,
+      { withCredentials: true }
+    );
+  }
+
+  getTeamStatistics(tournamentId: number, teamId: number) {
+    return this.http.get<TeamStatisticsResponse>(
+      `/api/tournament/${tournamentId}/teams/${teamId}/statistics`,
+      { withCredentials: true }
+    );
   }
 }

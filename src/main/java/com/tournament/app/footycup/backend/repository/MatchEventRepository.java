@@ -7,4 +7,5 @@ import java.util.List;
 
 public interface MatchEventRepository extends JpaRepository<MatchEvent, Long> {
     List<MatchEvent> findByMatchIdOrderByMinuteDesc(Long matchId);
+    List<MatchEvent> findByMatch_Tournament_IdAndTeam_Id(Long tournamentId, Long teamId);
 }

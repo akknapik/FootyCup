@@ -4,6 +4,7 @@ import com.tournament.app.footycup.backend.dto.team.*;
 import com.tournament.app.footycup.backend.mapper.TeamMapper;
 import com.tournament.app.footycup.backend.model.User;
 import com.tournament.app.footycup.backend.service.TeamService;
+import com.tournament.app.footycup.backend.service.TeamStatisticsService;
 import com.tournament.app.footycup.backend.service.TournamentService;
 import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
@@ -21,6 +22,8 @@ public class TeamController {
 
     private final TeamService teamService;
     private final TeamMapper teamMapper;
+    private final TeamStatisticsService teamStatisticsService;
+
 
     @GetMapping
     public ResponseEntity<List<TeamItemResponse>> getTeams(
@@ -69,6 +72,25 @@ public class TeamController {
             @AuthenticationPrincipal User organizer) {
         teamService.deleteTeam(tournamentId, id, organizer);
         return ResponseEntity.noContent().build();
+    }
+
+    @GetMapping("/{teamId}/players/{playerId}/statistics")
+    public ResponseEntity<PlayerStatisticsResponse> getPlayerStatistics(
+            @PathVariable Long tournamentId,
+            @PathVariable Long teamId,
+            @PathVariable Long playerId,
+            @AuthenticationPrincipal User organizer) {
+        var statistics = teamStatisticsService.getPlayerStatistics(tournamentId, teamId, playerId, organizer);
+        return ResponseEntity.ok(statistics);
+    }
+
+    @GetMapping("/{teamId}/statistics")
+    public ResponseEntity<TeamStatisticsResponse> getTeamStatistics(
+            @PathVariable Long tournamentId,
+            @PathVariable Long teamId,
+            @AuthenticationPrincipal User organizer) {
+        var statistics = teamStatisticsService.getTeamStatistics(tournamentId, teamId, organizer);
+        return ResponseEntity.ok(statistics);
     }
 
     @PostMapping("/{id}/players")

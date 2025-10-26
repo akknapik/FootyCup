@@ -17,6 +17,16 @@ public interface MatchRepository extends JpaRepository<Match, Long> {
     SELECT m FROM Match m
     WHERE (m.teamHome = :team OR m.teamAway = :team)
       AND m.group.id = :groupId
-""")
+    """)
     public List<Match> findByTeamInGroup(Team team, Long groupId);
+
+    @Query("""
+    SELECT m FROM Match m
+    WHERE m.tournament.id = :tournamentId
+      AND (
+        (m.teamHome IS NOT NULL AND m.teamHome.id = :teamId)
+        OR (m.teamAway IS NOT NULL AND m.teamAway.id = :teamId)
+      )
+    """)
+    List<Match> findByTournamentIdAndTeamId(Long tournamentId, Long teamId);
 }

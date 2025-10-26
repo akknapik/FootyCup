@@ -7,6 +7,8 @@ import { TeamResponse } from '../../../models/team/team.response';
 import { PlayerRef } from '../../../models/common/player-ref.model';
 import { UpdatePlayerRequest } from '../../../models/team/update-player.request';
 import { UpdateTeamRequest } from '../../../models/team/update-team.request';
+import { TeamStatisticsResponse } from '../../../models/team/team-statistics.response';
+import { PlayerStatisticsResponse } from '../../../models/team/player-statistics.response';
 
 interface EditablePlayer {
   id: number;
@@ -39,6 +41,17 @@ export class TeamDetailsComponent {
   pageSize = 8;
   currentPage = 1;
   isLoading = false;
+
+  showPlayerStatsModal = false;
+  playerStatsLoading = false;
+  playerStatsError: string | null = null;
+  playerStatistics: PlayerStatisticsResponse | null = null;
+  currentStatsPlayerName: string | null = null;
+
+  showTeamStatsModal = false;
+  teamStatsLoading = false;
+  teamStatsError: string | null = null;
+  teamStatistics: TeamStatisticsResponse | null = null;
 
   constructor(
     private route: ActivatedRoute,
@@ -123,8 +136,7 @@ export class TeamDetailsComponent {
     });
   }
 
-  // ----- menu -----
-  toggleMenu(playerId: number): void {
+toggleMenu(playerId: number): void {
     this.openedPlayerId = (this.openedPlayerId === playerId) ? null : playerId;
   }
   isMenuOpen(playerId: number): boolean {
@@ -132,9 +144,74 @@ export class TeamDetailsComponent {
   }
   closeAllMenus(): void {
     this.openedPlayerId = null;
+}
+
+openPlayerStatistics(player: PlayerRef): void {
+    if (!player?.id) {
+      return;
+    }
+
+    this.closeAllMenus();
+    this.showPlayerStatsModal = true;
+    this.playerStatsLoading = true;
+    this.playerStatsError = null;
+    this.playerStatistics = null;
+    this.currentStatsPlayerName = player.name || 'Player';
+
+    this.teamService.getPlayerStatistics(this.tournamentId, this.teamId, player.id).subscribe({
+      next: (stats) => {
+        this.playerStatistics = stats;
+        this.playerStatsLoading = false;
+        if (!this.currentStatsPlayerName && stats?.playerName) {
+          this.currentStatsPlayerName = stats.playerName;
+        }
+      },
+      error: () => {
+        this.playerStatsError = 'Failed to load player statistics.';
+        this.playerStatsLoading = false;
+        this.notification.showError('Failed to load player statistics.');
+      }
+    });
   }
 
-  // ----- edycja gracza -----
+  closePlayerStatistics(): void {
+    this.showPlayerStatsModal = false;
+    this.playerStatsLoading = false;
+    this.playerStatsError = null;
+    this.playerStatistics = null;
+    this.currentStatsPlayerName = null;
+  }
+
+  openTeamStatistics(): void {
+    if (!this.team) {
+      return;
+    }
+
+    this.showTeamStatsModal = true;
+    this.teamStatsLoading = true;
+    this.teamStatsError = null;
+    this.teamStatistics = null;
+
+    this.teamService.getTeamStatistics(this.tournamentId, this.teamId).subscribe({
+      next: (stats) => {
+        this.teamStatistics = stats;
+        this.teamStatsLoading = false;
+      },
+      error: () => {
+        this.teamStatsError = 'Failed to load team statistics.';
+        this.teamStatsLoading = false;
+        this.notification.showError('Failed to load team statistics.');
+      }
+    });
+  }
+
+  closeTeamStatistics(): void {
+    this.showTeamStatsModal = false;
+    this.teamStatsLoading = false;
+    this.teamStatsError = null;
+    this.teamStatistics = null;
+  }
+
   startEdit(player: PlayerRef): void {
     this.selectedPlayer = {
       id: player.id,
