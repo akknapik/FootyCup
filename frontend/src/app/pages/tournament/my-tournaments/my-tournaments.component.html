@@ -55,23 +55,82 @@
             <p>Loading tournaments...</p>
           </div>
 
-        <div *ngIf="!isLoading && tournaments.length === 0" class="empty-state">
-          <p>No tournaments found. Click "New tournament" to create one.</p>
+        <div *ngIf="!isLoading && !hasAnyTournaments" class="empty-state">
+          <p>No tournaments found. Click "New tournament" to create one or start following a tournament.</p>
         </div>
 
-        <div *ngIf="!isLoading && tournaments.length > 0" class="tournament-grid">
-          <div class="tournament-card" *ngFor="let t of tournaments" (click)="openDetails(t.id)">
-            <div class="card-date">{{ t.startDate }}</div>
-            <div class="card-title">{{ t.name }}</div>
-            <div class="card-actions" (click)="$event.stopPropagation()">
-              <button class="dots-btn" (click)="toggleMenu(t.id)">⋮</button>
-              <div class="card-menu" *ngIf="openedMenu === t.id">
-                <button (click)="openDetails(t.id)">Edit</button>
-                <button (click)="deleteTournament(t.id)">Delete</button>
+        <ng-container *ngIf="!isLoading && hasAnyTournaments">
+          <section class="tournament-section" *ngIf="organized.length > 0">
+            <div class="section-header">
+              <h3>Organized by me</h3>
+            </div>
+            <div class="tournament-grid">
+              <div class="tournament-card" *ngFor="let t of organized" (click)="openDetails(t.id)">
+                <div class="card-row">
+                  <div>
+                    <div class="card-date">{{ t.startDate }}</div>
+                    <div class="card-title">{{ t.name }}</div>
+                  </div>
+                  <div class="card-actions" (click)="$event.stopPropagation()">
+                    <button class="dots-btn" (click)="toggleMenu(t.id)">⋮</button>
+                    <div class="card-menu" *ngIf="openedMenu === t.id">
+                      <button (click)="openDetails(t.id)">Edit</button>
+                      <button (click)="deleteTournament(t.id)">Delete</button>
+                    </div>
+                  </div>
+                </div>
+                <div class="card-footer">
+                  <span class="card-badge organizer">Organizer</span>
+                </div>
               </div>
             </div>
-          </div>
-        </div>
+          </section>
+
+          <section class="tournament-section" *ngIf="refereeing.length > 0">
+            <div class="section-header">
+              <h3>Refereeing</h3>
+            </div>
+            <div class="tournament-grid">
+              <div class="tournament-card" *ngFor="let t of refereeing" (click)="openDetails(t.id)">
+                <div class="card-date">{{ t.startDate }}</div>
+                <div class="card-title">{{ t.name }}</div>
+                <div class="card-footer">
+                  <span class="card-badge referee">Referee</span>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          <section class="tournament-section" *ngIf="coaching.length > 0">
+            <div class="section-header">
+              <h3>Coaching</h3>
+            </div>
+            <div class="tournament-grid">
+              <div class="tournament-card" *ngFor="let t of coaching" (click)="openDetails(t.id)">
+                <div class="card-date">{{ t.startDate }}</div>
+                <div class="card-title">{{ t.name }}</div>
+                <div class="card-footer">
+                  <span class="card-badge coach">Coach</span>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          <section class="tournament-section" *ngIf="observing.length > 0">
+            <div class="section-header">
+              <h3>Watching</h3>
+            </div>
+            <div class="tournament-grid">
+              <div class="tournament-card" *ngFor="let t of observing" (click)="openDetails(t.id)">
+                <div class="card-date">{{ t.startDate }}</div>
+                <div class="card-title">{{ t.name }}</div>
+                <div class="card-footer">
+                  <span class="card-badge observing">Observing</span>
+                </div>
+              </div>
+            </div>
+          </section>
+        </ng-container>
         </main>
         <footer class="footer">
           <p>&copy; 2025 FootyCup. All rights reserved.</p>

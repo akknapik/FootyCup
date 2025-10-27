@@ -24,10 +24,16 @@ public class TournamentController {
     private final TournamentMapper tournamentMapper;
 
     @GetMapping("/my")
-    public ResponseEntity<List<TournamentItemResponse>> getMyTournaments(@AuthenticationPrincipal User organizer) {
-        var tournaments = tournamentService.getTournamentsByOrganizer(organizer);
-        var dto = tournaments.stream().map(tournamentMapper::toItem).toList();
-        return  ResponseEntity.ok(dto);
+    public ResponseEntity<MyTournamentsResponse> getMyTournaments(@AuthenticationPrincipal User organizer) {
+        var organized = tournamentService.getTournamentsByOrganizer(organizer)
+                .stream().map(tournamentMapper::toItem).toList();
+        var refereeing = tournamentService.getTournamentsAsReferee(organizer)
+                .stream().map(tournamentMapper::toItem).toList();
+        var coaching = tournamentService.getTournamentsAsCoach(organizer)
+                .stream().map(tournamentMapper::toItem).toList();
+        var observing = tournamentService.getFollowedTournaments(organizer)
+                .stream().map(t -> tournamentMapper.toItem(t, true)).toList();
+        return  ResponseEntity.ok(new MyTournamentsResponse(organized, refereeing, coaching, observing));
     }
 
     @GetMapping("/public")
@@ -47,21 +53,22 @@ public class TournamentController {
         return ResponseEntity.created(location).body(body);
     }
 
-    @GetMapping("/{id}")
+    @GetMapping("/{id:\\d+}")
     public ResponseEntity<TournamentResponse> getById(
             @PathVariable Long id,
             @AuthenticationPrincipal User organizer) {
         var tournament = tournamentService.getTournamentById(id, organizer);
-        return ResponseEntity.ok(tournamentMapper.toResponse(tournament));
+        var followed = tournamentService.isFollowing(tournament, organizer);
+        return ResponseEntity.ok(tournamentMapper.toResponse(tournament, followed));
     }
 
-    @GetMapping("/public/{id}")
+    @GetMapping("/public/{id:\\d+}")
     public ResponseEntity<TournamentResponse> getPublicById(@PathVariable Long id) {
         var tournament = tournamentService.getTournamentById(id, null);
         return ResponseEntity.ok(tournamentMapper.toResponse(tournament));
     }
 
-    @PutMapping("/{id}")
+    @PutMapping("/{id:\\d+}")
     public ResponseEntity<TournamentResponse> updateTournament(
             @PathVariable Long id,
             @RequestBody @Valid UpdateTournamentRequest updatedData,
@@ -70,7 +77,7 @@ public class TournamentController {
         return ResponseEntity.ok(tournamentMapper.toResponse(updated));
     }
 
-    @DeleteMapping("/{id}")
+    @DeleteMapping("/{id:\\d+}")
     public ResponseEntity<Void> deleteTournament(
             @PathVariable Long id,
             @AuthenticationPrincipal User organizer) {
@@ -78,7 +85,7 @@ public class TournamentController {
         return ResponseEntity.noContent().build();
     }
 
-    @GetMapping("/{id}/referees")
+    @GetMapping("/{id:\\d+}/referees")
     public ResponseEntity<List<UserRef>> getReferees(
             @PathVariable Long id,
             @AuthenticationPrincipal User organizer) {
@@ -87,7 +94,7 @@ public class TournamentController {
         return ResponseEntity.ok(dto);
     }
 
-    @PostMapping("/{id}/referees")
+    @PostMapping("/{id:\\d+}/referees")
     public ResponseEntity<List<UserRef>> addReferee(
             @PathVariable Long id,
             @RequestBody @Valid AddRefereeRequest addRefereeRequest,
@@ -97,12 +104,30 @@ public class TournamentController {
         return ResponseEntity.ok(dto);
     }
 
-    @DeleteMapping("/{id}/referees/{refereeId}")
+    @DeleteMapping("/{id:\\d+}/referees/{refereeId:\\d+}")
     public ResponseEntity<Void> removeReferee(
             @PathVariable Long id,
             @PathVariable Long refereeId,
             @AuthenticationPrincipal User organizer) {
         tournamentService.removeReferee(id, refereeId, organizer);
+        return ResponseEntity.noContent().build();
+    }
+
+    @PostMapping("/{id:\\d+}/follow")
+    public ResponseEntity<Void> followTournament(
+            @PathVariable Long id,
+            @AuthenticationPrincipal User user
+    ) {
+        tournamentService.followTournament(id, user);
+        return ResponseEntity.noContent().build();
+    }
+
+    @DeleteMapping("/{id:\\d+}/follow")
+    public ResponseEntity<Void> unfollowTournament(
+            @PathVariable Long id,
+            @AuthenticationPrincipal User user
+    ) {
+        tournamentService.unfollowTournament(id, user);
         return ResponseEntity.noContent().build();
     }
 }

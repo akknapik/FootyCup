@@ -19,6 +19,7 @@ export class TournamentDetailsComponent implements OnInit {
   referees: UserRef[] = [];
   newRefereeEmail = '';
   currentUser: User | null = null;
+  isProcessingFollow = false;
 
   constructor(
     private route: ActivatedRoute,
@@ -140,5 +141,33 @@ export class TournamentDetailsComponent implements OnInit {
   get canManageTournament(): boolean {
     return !!this.currentUser && !!this.tournament &&
       this.tournament.organizer?.id === this.currentUser.id;
+  }
+
+  get canFollowTournament(): boolean {
+    return !!this.currentUser;
+  }
+
+  toggleFollow(): void {
+    if (!this.canFollowTournament || !this.tournament) {
+      this.notification.showInfo('Log in to observe tournaments.');
+      return;
+    }
+
+    this.isProcessingFollow = true;
+    const request$ = this.tournament.followed
+      ? this.tournamentService.unfollowTournament(this.tournamentId)
+      : this.tournamentService.followTournament(this.tournamentId);
+
+    request$.subscribe({
+      next: () => {
+        this.tournament.followed = !this.tournament.followed;
+        this.notification.showSuccess(this.tournament.followed ? 'You are now observing this tournament.' : 'You stopped observing this tournament.');
+      },
+      error: () => {
+        this.notification.showError('Could not update observation status');
+        this.isProcessingFollow = false;
+      },
+      complete: () => this.isProcessingFollow = false
+    });
   }
 }

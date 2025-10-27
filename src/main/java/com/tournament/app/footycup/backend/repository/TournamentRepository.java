@@ -11,8 +11,12 @@ import java.util.Optional;
 public interface TournamentRepository extends JpaRepositoryImplementation<Tournament, Long> {
     List<Tournament> findByOrganizer(User organizer);
 
-    @EntityGraph(attributePaths = "referees")
+    @EntityGraph(attributePaths = {"referees", "followers"})
     Optional<Tournament> findWithRefereesById(Long id);
 
     List<Tournament> findByPublicVisibleTrueOrderByStartDateAsc();
+
+    List<Tournament> findDistinctByReferees_Id(Long refereeId);
+
+    List<Tournament> findDistinctByFollowers_Id(Long userId);
 }

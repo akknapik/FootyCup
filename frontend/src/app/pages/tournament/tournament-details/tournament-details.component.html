@@ -53,8 +53,18 @@
         </header>
 
         <main class="content">
-          <h2>{{ tournament.name }}</h2>
-
+          <div class="details-header">
+            <h2>{{ tournament.name }}</h2>
+            <button
+              *ngIf="canFollowTournament"
+              class="follow-btn"
+              [class.following]="tournament.followed"
+              (click)="toggleFollow()"
+              [disabled]="isProcessingFollow"
+            >
+              {{ tournament.followed ? 'Observing' : 'Observe' }}
+            </button>
+          </div>
           <div *ngIf="tournament" class="form-card">
             <h3 style="text-align: center; margin-bottom: 2rem;">Information</h3>
 

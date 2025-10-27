@@ -178,6 +178,41 @@ html, body {
   overflow-y: auto;
 }
 
+.details-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.details-header h2 {
+  margin: 0;
+  font-size: 1.5rem;
+  color: #2D3748;
+}
+
+.follow-btn {
+  padding: 0.5rem 1.25rem;
+  border-radius: 999px;
+  border: 1px solid #2F855A;
+  background: #2F855A;
+  color: #fff;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.follow-btn.following {
+  background: #fff;
+  color: #2F855A;
+}
+
+.follow-btn:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
 .footer {
   height: 48px;
   background: #fff;

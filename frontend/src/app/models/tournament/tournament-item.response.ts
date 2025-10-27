@@ -10,4 +10,5 @@ export interface TournamentItemResponse {
     system?: 'GROUP' | 'BRACKET' | 'MIXED';
     organizer: UserRef;
     publicVisible: boolean;
+    followed: boolean;
 }

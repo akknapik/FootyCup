@@ -4,6 +4,7 @@ import { Route, Router } from '@angular/router';
 import { AuthService } from '../../../services/auth.service';
 import { NotificationService } from '../../../services/notification.service';
 import { TournamentItemResponse } from '../../../models/tournament/tournament-item.response';
+import { MyTournamentsResponse } from '../../../models/tournament/my-tournaments.response';
 
 @Component({
   selector: 'app-my-tournaments',
@@ -12,7 +13,10 @@ import { TournamentItemResponse } from '../../../models/tournament/tournament-it
   styleUrl: './my-tournaments.component.css'
 })
 export class MyTournamentsComponent {
-  tournaments: TournamentItemResponse[] = [];
+  organized: TournamentItemResponse[] = [];
+  refereeing: TournamentItemResponse[] = [];
+  coaching: TournamentItemResponse[] = [];
+  observing: TournamentItemResponse[] = [];
   isLoading: boolean = false;
 
   constructor(private tournamentService: TournamentService, private router: Router, public auth: AuthService, private notification: NotificationService) {}
@@ -22,18 +26,22 @@ export class MyTournamentsComponent {
   }
 
   loadTournaments() {
-  this.isLoading = true;
-  this.tournamentService.getMyTournaments().subscribe({
-    next: (data) => {
-      this.tournaments = data;
-      this.isLoading = false;
-    },
-    error: () => {
-      this.notification.showError('Error loading tournaments');
-      this.isLoading = false;
-    }
-  });
-}
+    this.isLoading = true;
+    this.tournamentService.getMyTournaments().subscribe({
+      next: (data: MyTournamentsResponse) => {
+        this.organized = data.organized ?? [];
+        this.refereeing = data.refereeing ?? [];
+        this.coaching = data.coaching ?? [];
+        this.observing = data.observing ?? [];
+        this.openedMenu = null;
+        this.isLoading = false;
+      },
+      error: () => {
+        this.notification.showError('Error loading tournaments');
+        this.isLoading = false;
+      }
+    });
+  }
 
   goToCreate() {
     this.router.navigate(['/tournaments/new']);
@@ -62,6 +70,10 @@ export class MyTournamentsComponent {
 
   openDetails(id: number): void {
     this.router.navigate(['/tournaments', id]);
+  }
+
+  get hasAnyTournaments(): boolean {
+    return this.organized.length > 0 || this.refereeing.length > 0 || this.coaching.length > 0 || this.observing.length > 0;
   }
 
   logout(): void {

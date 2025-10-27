@@ -234,6 +234,65 @@ table {
   transition: transform 0.2s ease;
 }
 
+.tournament-section {
+  margin-bottom: 2.5rem;
+}
+
+.section-header {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  margin-bottom: 1rem;
+}
+
+.section-header h3 {
+  font-size: 1.15rem;
+  color: #2F855A;
+}
+
+.card-row {
+  display: flex;
+  justify-content: space-between;
+  gap: 0.5rem;
+}
+
+.card-footer {
+  margin-top: 1rem;
+  display: flex;
+  justify-content: flex-start;
+}
+
+.card-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.25rem 0.5rem;
+  border-radius: 999px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
+.card-badge.organizer {
+  background: rgba(56, 161, 105, 0.12);
+  color: #22543D;
+}
+
+.card-badge.referee {
+  background: rgba(66, 153, 225, 0.15);
+  color: #1A365D;
+}
+
+.card-badge.coach {
+  background: rgba(236, 201, 75, 0.2);
+  color: #744210;
+}
+
+.card-badge.observing {
+  background: rgba(160, 174, 192, 0.18);
+  color: #2D3748;
+}
+
 .tournament-card:hover {
   transform: scale(1.02);
 }

@@ -1,5 +1,6 @@
 package com.tournament.app.footycup.backend.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.tournament.app.footycup.backend.enums.TournamentStatus;
 import com.tournament.app.footycup.backend.enums.TournamentSystem;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -73,6 +74,14 @@ public class Tournament implements Serializable {
             joinColumns = @JoinColumn(name = "tournament_id"),
             inverseJoinColumns = @JoinColumn(name = "referee_id"))
     private List<User> referees = new ArrayList<>();
+
+    @Schema(description = "Users observing the tournament")
+    @ManyToMany
+    @JoinTable(name = "tournament_followers",
+            joinColumns = @JoinColumn(name = "tournament_id"),
+            inverseJoinColumns = @JoinColumn(name = "user_id"))
+    @JsonIgnore
+    private Set<User> followers = new HashSet<>();
 
     @Schema(description = "Scoring rules for the tournament (e.g. WIN = 3)")
     @ElementCollection

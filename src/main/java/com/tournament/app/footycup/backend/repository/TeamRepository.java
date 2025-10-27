@@ -9,4 +9,6 @@ public interface TeamRepository extends JpaRepository<Team, Long> {
     List<Team> findByTournamentId(Long tournamentId);
     Team findTournamentByTournamentId(Long tournamentId);
     boolean existsByTournamentIdAndCoach_Id(Long tournamentId, Long coachId);
+
+    List<Team> findByCoach_Id(Long coachId);
 }

@@ -3,6 +3,7 @@ package com.tournament.app.footycup.backend.service;
 import com.tournament.app.footycup.backend.dto.tournament.CreateTournamentRequest;
 import com.tournament.app.footycup.backend.dto.tournament.UpdateTournamentRequest;
 import com.tournament.app.footycup.backend.enums.TournamentStatus;
+import com.tournament.app.footycup.backend.model.Team;
 import com.tournament.app.footycup.backend.model.Tournament;
 import com.tournament.app.footycup.backend.model.User;
 import com.tournament.app.footycup.backend.repository.TeamRepository;
@@ -14,9 +15,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.NoSuchElementException;
+import java.util.*;
 
 @AllArgsConstructor
 @Service
@@ -71,14 +70,42 @@ public class TournamentService {
     @Transactional(readOnly = true)
     public List<Tournament> getTournamentsByOrganizer(User organizer) {
         var tournaments = tournamentRepository.findByOrganizer(organizer);
-        var today = LocalDate.now();
-        tournaments.forEach(t -> {
-            var s =
-                    t.getEndDate().isBefore(today) ? TournamentStatus.FINISHED :
-                    (!t.getStartDate().isAfter(today) && !t.getEndDate().isBefore(today)) ? TournamentStatus.ONGOING :
-                    TournamentStatus.UPCOMING;
-            t.setStatus(s);
-        });
+        refreshStatuses(tournaments);
+        return tournaments;
+    }
+
+    @Transactional(readOnly = true)
+    public List<Tournament> getTournamentsAsReferee(User referee) {
+        if (referee == null) {
+            return List.of();
+        }
+        var tournaments = tournamentRepository.findDistinctByReferees_Id(referee.getId());
+        refreshStatuses(tournaments);
+        return tournaments;
+    }
+
+    @Transactional(readOnly = true)
+    public List<Tournament> getTournamentsAsCoach(User coach) {
+        if (coach == null) {
+            return List.of();
+        }
+        var teams = teamRepository.findByCoach_Id(coach.getId());
+        var tournaments = teams.stream()
+                .map(Team::getTournament)
+                .filter(Objects::nonNull)
+                .distinct()
+                .toList();
+        refreshStatuses(tournaments);
+        return tournaments;
+    }
+
+    @Transactional(readOnly = true)
+    public List<Tournament> getFollowedTournaments(User user) {
+        if (user == null) {
+            return List.of();
+        }
+        var tournaments = tournamentRepository.findDistinctByFollowers_Id(user.getId());
+        refreshStatuses(tournaments);
         return tournaments;
     }
 
@@ -133,9 +160,44 @@ public class TournamentService {
     @Transactional(readOnly = true)
     public List<Tournament> getPublicTournaments() {
         var tournaments = tournamentRepository.findByPublicVisibleTrueOrderByStartDateAsc();
+        refreshStatuses(tournaments);
+        return tournaments;
+    }
+
+    @Transactional
+    public void followTournament(Long tournamentId, User user) {
+        var tournament = tournamentRepository.findById(tournamentId)
+                .orElseThrow(() -> new NoSuchElementException("Tournament not found"));
+        if (user == null) {
+            throw new AccessDeniedException("Lack of authorization");
+        }
+        tournament.getFollowers().add(user);
+        tournamentRepository.save(tournament);
+    }
+
+    @Transactional
+    public void unfollowTournament(Long tournamentId, User user) {
+        var tournament = tournamentRepository.findById(tournamentId)
+                .orElseThrow(() -> new NoSuchElementException("Tournament not found"));
+        if (user == null) {
+            throw new AccessDeniedException("Lack of authorization");
+        }
+        tournament.getFollowers().removeIf(u -> Objects.equals(u.getId(), user.getId()));
+        tournamentRepository.save(tournament);
+    }
+
+    @Transactional(readOnly = true)
+    public boolean isFollowing(Tournament tournament, User user) {
+        if (tournament == null || user == null) {
+            return false;
+        }
+        return tournament.getFollowers().stream()
+                .anyMatch(follower -> Objects.equals(follower.getId(), user.getId()));
+    }
+
+    private void refreshStatuses(List<Tournament> tournaments) {
         var today = LocalDate.now();
         tournaments.forEach(t -> refreshStatus(t, today));
-        return tournaments;
     }
 
     private void refreshStatus(Tournament tournament) {

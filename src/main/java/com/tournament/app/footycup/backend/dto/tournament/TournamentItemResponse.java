@@ -12,6 +12,7 @@ public record TournamentItemResponse(
         String location,
         String status,
         UserRef organizer,
-        boolean publicVisible
+        boolean publicVisible,
+        boolean followed
 ) {
 }

@@ -10,6 +10,7 @@ import { TournamentResponse } from "../models/tournament/tournament.response";
 import { UpdateTournamentRequest } from "../models/tournament/update-tournament.request";
 import { UserRef } from "../models/common/user-ref.model";
 import { AddRefereeRequest } from "../models/tournament/add-referee.request";
+import { MyTournamentsResponse } from "../models/tournament/my-tournaments.response";
 
 @Injectable({ providedIn: 'root' })
 export class TournamentService {
@@ -26,7 +27,7 @@ export class TournamentService {
   }
 
   getMyTournaments() {
-    return this.http.get<TournamentItemResponse[]>('/api/tournaments/my', { withCredentials: true });
+    return this.http.get<MyTournamentsResponse>('/api/tournaments/my', { withCredentials: true });
   }
 
   getPublicTournaments() {
@@ -64,6 +65,14 @@ export class TournamentService {
 
   removeReferee(tournamentId: number, userId: number) {
     return this.http.delete<void>(`/api/tournaments/${tournamentId}/referees/${userId}`, { withCredentials: true });
+  }
+
+  followTournament(id: number) {
+    return this.http.post<void>(`/api/tournaments/${id}/follow`, {}, { withCredentials: true });
+  }
+
+  unfollowTournament(id: number) {
+    return this.http.delete<void>(`/api/tournaments/${id}/follow`, { withCredentials: true });
   }
   
   get currentId(): string | null {
