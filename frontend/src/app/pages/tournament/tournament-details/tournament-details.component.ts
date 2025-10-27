@@ -18,12 +18,13 @@ export class TournamentDetailsComponent implements OnInit {
   tournament!: TournamentResponse;
   referees: UserRef[] = [];
   newRefereeEmail = '';
-  
+  currentUser: User | null = null;
+
   constructor(
     private route: ActivatedRoute,
     private tournamentService: TournamentService,
     private router: Router,
-    public auth: AuthService, 
+    public auth: AuthService,
     private notification: NotificationService
   ) {
     this.tournamentService.tournamentId$.subscribe((id) => {
@@ -33,6 +34,7 @@ export class TournamentDetailsComponent implements OnInit {
       }
     }
     );
+    this.auth.currentUser$.subscribe(user => this.currentUser = user);
   }
 
   ngOnInit(): void {
@@ -45,14 +47,22 @@ export class TournamentDetailsComponent implements OnInit {
   }
 
   goBack(): void {
-    this.router.navigate(['/tournaments/my']);
+    if (this.auth.isLoggedIn()) {
+      this.router.navigate(['/tournaments/my']);
+    } else {
+      this.router.navigate(['/dashboard']);
+    }
   }
 
   updateTournament() {
+    if (!this.canManageTournament) {
+      return;
+    }
     const payload = {
       name: this.tournament.name,
-      location: this.tournament.location
-    };
+      location: this.tournament.location,
+      publicVisible: this.tournament.publicVisible
+      };
 
     this.tournamentService.updateTournament(this.tournamentId, payload).subscribe({
       next: () => {
@@ -62,7 +72,10 @@ export class TournamentDetailsComponent implements OnInit {
     });
   }
 
- onAddReferee(email: string): void {
+  onAddReferee(email: string): void {
+    if (!this.canManageTournament) {
+      return;
+    }
     const trimmedEmail = email.trim();
 
     if (!trimmedEmail) {
@@ -81,12 +94,20 @@ export class TournamentDetailsComponent implements OnInit {
   }
 
   private loadTournamentDetails(id: number): void {
-    this.tournamentService.getTournamentById(id).subscribe({
-      next: (data) => this.tournament = data,
+    const request$ = this.auth.isLoggedIn()
+      ? this.tournamentService.getTournamentById(id)
+      : this.tournamentService.getPublicTournamentById(id);
+
+    request$.subscribe({
+      next: (data) => {
+        this.tournament = data;
+        this.referees = data.referees ?? [];
+        if (this.canManageTournament) {
+          this.loadReferees(id);
+        }
+      },
       error: () => this.notification.showError('Error loading tournament details')
     });
-
-    this.loadReferees(id);
   }
 
   private loadReferees(id: number): void {
@@ -97,6 +118,9 @@ export class TournamentDetailsComponent implements OnInit {
   }
 
   removeReferee(userId: number) {
+    if (!this.canManageTournament) {
+      return;
+    }
     this.tournamentService.removeReferee(this.tournamentId, userId).subscribe({
       next: () => {
         this.notification.showSuccess('Referee removed');
@@ -111,5 +135,10 @@ export class TournamentDetailsComponent implements OnInit {
     this.auth.logout().subscribe(() => {
       this.router.navigate(['/login']);
     });
+  }
+
+  get canManageTournament(): boolean {
+    return !!this.currentUser && !!this.tournament &&
+      this.tournament.organizer?.id === this.currentUser.id;
   }
 }

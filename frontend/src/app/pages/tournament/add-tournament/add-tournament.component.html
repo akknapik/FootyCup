@@ -13,8 +13,8 @@
           <img src="assets/images/logo1_3.png" alt="FootyCup Logo" class="sidebar-logo">
         </div>
         <nav class="sidebar-nav">
-          <a routerLink="/dashboard" class="nav-link active">Dashboard</a>
-          <a routerLink="/tournaments" class="nav-link">Tournaments</a>
+          <a routerLink="/dashboard" class="nav-link">Dashboard</a>
+          <a routerLink="/tournaments" class="nav-link active">Tournaments</a>
           <a routerLink="/settings"class="nav-link">Settings</a>
             <a *ngIf="(auth.currentUser$ | async)?.userRole === 'ADMIN'"
               routerLink="/admin/users"
@@ -76,14 +76,26 @@
                       name="location" 
                       placeholder="Location" />
                 </div>
+                
+                <div class="toggle-group">
+                  <label class="toggle-label">
+                    <input
+                        type="checkbox"
+                        [(ngModel)]="form.publicVisible"
+                        name="publicVisible"
+                        class="toggle-input" />
+                    <span class="toggle-text">Public tournament</span>
+                  </label>
+                  <p class="toggle-hint">Enable to make this tournament visible on the public dashboard.</p>
+                </div>
 
                 <div class="form-actions">
                   <button type="button" class="btn btn-cancel" (click)="router.navigate(['/tournaments/my'])">
                     Cancel
-                  </button> 
+                  </button>
                   <button type="submit" class="btn btn-create">
                     Create
-                  </button>                 
+                  </button>           
                 </div>
                 </form>
             </div>

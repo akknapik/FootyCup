@@ -240,6 +240,25 @@ hr {
   margin-top: 2rem;
 }
 
+.visibility-toggle {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+.toggle-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.6rem;
+  font-weight: 600;
+  color: #2F855A;
+}
+
+.toggle-hint {
+  font-size: 0.8rem;
+  color: #4A5568;
+}
+
 .btn {
   padding: 0.75rem 1.5rem;
   background: #68D391;
@@ -265,7 +284,6 @@ hr {
   color: #2D3748;
 }
 
-/* Kolumna z iksem – wąska i wyrównana do prawej */
 .remove-cell {
   width: 30px;
   text-align: right;
@@ -273,20 +291,19 @@ hr {
   white-space: nowrap;
 }
 
-/* Przycisk X jak w Schedule */
 .remove-btn {
   background: transparent;
   border: none;
-  color: #9ca3af;           /* spokojna szarość */
+  color: #9ca3af;
   cursor: pointer;
   font-size: 2rem;
   line-height: 2;
   padding: 0;
   margin: 0;
-  width: 20px;              /* nie rozszerza kolumny */
+  width: 20px;
   text-align: center;
   transition: color .2s;
 }
 
-.remove-btn:hover { color: #d9534f; } /* ten sam czerwony co w Schedule */
+.remove-btn:hover { color: #d9534f; }
 

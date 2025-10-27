@@ -9,6 +9,7 @@ public record CreateTournamentRequest(
         @NotBlank String name,
         @NotNull LocalDate startDate,
         @NotNull LocalDate endDate,
-        String location
+        String location,
+        boolean publicVisible
         ) {
 }

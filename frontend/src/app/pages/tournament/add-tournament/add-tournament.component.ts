@@ -17,6 +17,7 @@ export class AddTournamentComponent {
     startDate: '',
     endDate: '',
     location: '',
+    publicVisible: true,
   };
 
   constructor(private tournamentService: TournamentService, public router: Router, public auth: AuthService, private notification: NotificationService) {}

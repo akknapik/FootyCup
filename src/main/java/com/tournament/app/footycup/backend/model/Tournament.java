@@ -63,6 +63,10 @@ public class Tournament implements Serializable {
     @Enumerated(EnumType.STRING)
     private TournamentSystem system;
 
+    @Schema(description = "Determines if the tournament is visible to all users", example = "true")
+    @Column(name = "is_public", nullable = false)
+    private boolean publicVisible = false;
+
     @Schema(description = "Referees assigned to the tournament")
     @ManyToMany
     @JoinTable(name = "tournament_referees",

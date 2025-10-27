@@ -60,7 +60,7 @@
 
             <div class="input-group">
               <label>Name of the tournament</label>
-              <input type="text" [(ngModel)]="tournament.name" />
+              <input type="text" [(ngModel)]="tournament.name" [readonly]="!canManageTournament" />
             </div>
 
             <div class="input-group">
@@ -75,7 +75,23 @@
 
             <div class="input-group">
               <label>Location</label>
-              <input type="text" [(ngModel)]="tournament.location" />
+              <input type="text" [(ngModel)]="tournament.location" [readonly]="!canManageTournament" />
+            </div>
+
+            <div class="input-group">
+              <label>Visibility</label>
+              <div class="visibility-toggle" *ngIf="canManageTournament; else visibilityInfo">
+                <label class="toggle-label">
+                  <input type="checkbox" [(ngModel)]="tournament.publicVisible" />
+                  <span>Public tournament</span>
+                </label>
+                <span class="toggle-hint">Public tournaments appear on the dashboard for all visitors.</span>
+              </div>
+              <ng-template #visibilityInfo>
+                <div class="static-field">
+                  {{ tournament.publicVisible ? 'Public tournament' : 'Private tournament' }}
+                </div>
+              </ng-template>
             </div>
 
             <div class="input-group">
@@ -83,8 +99,7 @@
               <div class="static-field">{{ tournament.status }}</div>
             </div>
 
-            <!-- dodawanie -->
-            <div class="input-group">
+            <div *ngIf="canManageTournament" class="input-group">
               <label for="refereeEmail">Referees</label>
               <input
                 id="refereeEmail"
@@ -96,13 +111,12 @@
               />
             </div>
 
-            <div class="form-actions">
+            <div class="form-actions" *ngIf="canManageTournament">
               <button class="btn" (click)="onAddReferee(newRefereeEmail)" [disabled]="!newRefereeEmail">
                 Add
               </button>
             </div>
 
-            <!-- lista -->
             <div class="input-group">
               <label>Assigned referees</label>
 
@@ -116,14 +130,14 @@
                     <tr>
                       <th style="text-align:left;">Name</th>
                       <th style="text-align:left;">Email</th>
-                      <th></th>
+                      <th *ngIf="canManageTournament"></th>
                     </tr>
                   </thead>
                   <tbody>
                     <tr *ngFor="let referee of referees">
                       <td>{{ referee.displayName }}</td>
                       <td>{{ referee.email }}</td>
-                      <td class="remove-cell">
+                      <td class="remove-cell" *ngIf="canManageTournament">
                         <button
                           type="button"
                           class="remove-btn"
@@ -139,8 +153,8 @@
               </div>
             </div>
 
-            <div class="form-actions">
-              <button class="btn btn-create" (click)="updateTournament()">Zapisz</button>
+            <div class="form-actions" *ngIf="canManageTournament">
+              <button class="btn btn-create" (click)="updateTournament()">Save</button>
             </div>
           </div>
         </main>

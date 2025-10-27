@@ -29,6 +29,7 @@ import { AdminUsersComponent } from './pages/admin-users/admin-users.component';
 import { MatchEventsComponent } from './pages/match-events/match-events.component';
 import { InlinePickerComponent } from './component/inline-picker/inline-picker.component';
 import { TacticsBoardComponent } from './pages/tactics-board/tactics-board.component';
+import { DashboardComponent } from './pages/dashboard/dashboard.component';
 
 
 @NgModule({
@@ -50,7 +51,8 @@ import { TacticsBoardComponent } from './pages/tactics-board/tactics-board.compo
     AdminUsersComponent,
     MatchEventsComponent,
     InlinePickerComponent,
-    TacticsBoardComponent
+    TacticsBoardComponent,
+    DashboardComponent
   ],
   imports: [
     BrowserModule,

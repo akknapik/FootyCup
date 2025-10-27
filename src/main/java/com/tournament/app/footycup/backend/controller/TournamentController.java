@@ -30,6 +30,13 @@ public class TournamentController {
         return  ResponseEntity.ok(dto);
     }
 
+    @GetMapping("/public")
+    public ResponseEntity<List<TournamentItemResponse>> getPublicTournaments() {
+        var tournaments = tournamentService.getPublicTournaments();
+        var dto = tournaments.stream().map(tournamentMapper::toItem).toList();
+        return ResponseEntity.ok(dto);
+    }
+
     @PostMapping
     public ResponseEntity<TournamentResponse> createTournament(
             @RequestBody @Valid CreateTournamentRequest request,
@@ -45,6 +52,12 @@ public class TournamentController {
             @PathVariable Long id,
             @AuthenticationPrincipal User organizer) {
         var tournament = tournamentService.getTournamentById(id, organizer);
+        return ResponseEntity.ok(tournamentMapper.toResponse(tournament));
+    }
+
+    @GetMapping("/public/{id}")
+    public ResponseEntity<TournamentResponse> getPublicById(@PathVariable Long id) {
+        var tournament = tournamentService.getTournamentById(id, null);
         return ResponseEntity.ok(tournamentMapper.toResponse(tournament));
     }
 

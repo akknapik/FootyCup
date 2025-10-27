@@ -17,13 +17,16 @@ import { ResultComponent } from './pages/result/result.component';
 import { AdminUsersComponent } from './pages/admin-users/admin-users.component';
 import { MatchEventsComponent } from './pages/match-events/match-events.component';
 import { TacticsBoardComponent } from './pages/tactics-board/tactics-board.component';
+import { DashboardComponent } from './pages/dashboard/dashboard.component';
 
 const routes: Routes = [
+  { path: '', component: DashboardComponent },
+  { path: 'dashboard', component: DashboardComponent },
   { path: 'register', component: RegisterComponent },
   { path: 'login', component: LoginComponent },
   { path: 'tournaments/my', component: MyTournamentsComponent, canActivate: [AuthGuard] },
   { path: 'tournaments/new', component: AddTournamentComponent, canActivate: [AuthGuard] },
-  { path: 'tournaments/:tournamentId', component: TournamentDetailsComponent, canActivate: [AuthGuard] },
+  { path: 'tournaments/:tournamentId', component: TournamentDetailsComponent},
   { path: 'tournament/:tournamentId/teams', component: TeamsComponent, canActivate: [AuthGuard] },
   { path: 'tournament/:tournamentId/teams/new', component: AddTeamComponent, canActivate: [AuthGuard] },
   { path: 'tournament/:tournamentId/teams/:teamId', component: TeamDetailsComponent, canActivate: [AuthGuard] },
@@ -35,7 +38,7 @@ const routes: Routes = [
   { path: 'tournament/:tournamentId/schedule', component: ScheduleComponent, canActivate: [AuthGuard] },
   { path: 'tournament/:tournamentId/results', component: ResultComponent, canActivate: [AuthGuard] },
   { path: 'admin/users', component: AdminUsersComponent, canActivate: [AuthGuard] },
-  { path: '**', redirectTo: 'login' }
+  { path: '**', redirectTo: '' }
 ];
 
 @NgModule({

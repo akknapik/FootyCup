@@ -11,6 +11,7 @@ public record TournamentItemResponse(
         LocalDate endDate,
         String location,
         String status,
-        UserRef organizer
+        UserRef organizer,
+        boolean publicVisible
 ) {
 }

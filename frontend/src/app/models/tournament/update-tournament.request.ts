@@ -3,4 +3,5 @@ export interface UpdateTournamentRequest {
     startDate?: string;
     endDate?: string;
     location?: string | null;
+    publicVisible?: boolean;
 }

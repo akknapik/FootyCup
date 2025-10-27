@@ -15,6 +15,7 @@ public record TournamentResponse(
         String status,
         String system,
         UserRef organizer,
+        boolean publicVisible,
         List<UserRef> referees,
         Map<String, Integer> scoringRules
 ) {

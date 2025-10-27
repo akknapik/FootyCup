@@ -13,4 +13,6 @@ public interface TournamentRepository extends JpaRepositoryImplementation<Tourna
 
     @EntityGraph(attributePaths = "referees")
     Optional<Tournament> findWithRefereesById(Long id);
+
+    List<Tournament> findByPublicVisibleTrueOrderByStartDateAsc();
 }

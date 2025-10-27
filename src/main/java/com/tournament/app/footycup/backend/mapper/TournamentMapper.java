@@ -10,11 +10,13 @@ import org.mapstruct.Mapping;
 public interface TournamentMapper {
     @Mapping(target = "status", expression = "java(tournament.getStatus().name())")
     @Mapping(target = "organizer", source = "organizer", qualifiedByName = "toUserRef")
+    @Mapping(target = "publicVisible", source = "publicVisible")
     TournamentItemResponse toItem(Tournament tournament);
 
     @Mapping(target = "status", expression = "java(tournament.getStatus().name())")
     @Mapping(target = "system", expression = "java(tournament.getSystem() != null ? tournament.getSystem().name() : null)")
     @Mapping(target = "organizer", source = "organizer", qualifiedByName = "toUserRef")
     @Mapping(target = "referees", source = "referees", qualifiedByName = "toUserRefList")
+    @Mapping(target = "publicVisible", source = "publicVisible")
     TournamentResponse toResponse(Tournament tournament);
 }

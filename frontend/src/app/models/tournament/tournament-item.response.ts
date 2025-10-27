@@ -9,4 +9,5 @@ export interface TournamentItemResponse {
     status: 'UPCOMING' | 'ONGOING' | 'FINISHED';
     system?: 'GROUP' | 'BRACKET' | 'MIXED';
     organizer: UserRef;
+    publicVisible: boolean;
 }

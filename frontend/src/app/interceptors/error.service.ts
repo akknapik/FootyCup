@@ -23,7 +23,7 @@ export class ErrorService implements HttpInterceptor {
         }
 
         if (error.status === 401 || error.status === 403) {
-          if (!onLoginPage && !isLoginCall) {
+          if (!onLoginPage && !isLoginCall && !isMeEndpoint) {
             const returnUrl = this.router.url;
             this.router.navigate(['/login'], { queryParams: { returnUrl }});
           }

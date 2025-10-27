@@ -29,6 +29,14 @@ export class TournamentService {
     return this.http.get<TournamentItemResponse[]>('/api/tournaments/my', { withCredentials: true });
   }
 
+  getPublicTournaments() {
+    return this.http.get<TournamentItemResponse[]>('/api/tournaments/public');
+  }
+
+  getPublicTournamentById(id: number) {
+    return this.http.get<TournamentResponse>(`/api/tournaments/public/${id}`);
+  }
+
   createTournament(data: CreateTournamentRequest) {
     return this.http.post<TournamentResponse>('/api/tournaments', data, { withCredentials: true });
   }

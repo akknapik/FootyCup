@@ -6,6 +6,7 @@ public record UpdateTournamentRequest(
         String name,
         LocalDate startDate,
         LocalDate endDate,
-        String location
+        String location,
+        Boolean publicVisible
 ) {
 }

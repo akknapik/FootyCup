@@ -1,0 +1,116 @@
+<div class="dashboard">
+  <header class="topbar">
+    <div class="brand" (click)="navigateHome()">FootyCup</div>
+    <nav class="topnav">
+      <a routerLink="/dashboard" routerLinkActive="active">Home</a>
+      <a routerLink="/tournaments/my" *ngIf="auth.isLoggedIn()" routerLinkActive="active">My tournaments</a>
+      <a routerLink="/register">For organizers</a>
+    </nav>
+    <div class="auth-actions" *ngIf="!(user$ | async) as guest; else loggedIn">
+      <button class="btn-outline" routerLink="/login">Log in</button>
+      <button class="btn-primary" routerLink="/register">Register</button>
+    </div>
+    <ng-template #loggedIn>
+      <div class="logged-actions" *ngIf="user$ | async as user">
+        <span class="welcome">Hi, {{ user.firstname }}!</span>
+        <button class="btn-primary" routerLink="/tournaments/my">Go to dashboard</button>
+      </div>
+    </ng-template>
+  </header>
+
+  <main>
+    <section class="hero">
+      <div class="hero-content">
+        <h1>Organize football tournaments with confidence</h1>
+        <p>
+          FootyCup helps organizers, coaches, referees and fans stay in sync with live schedules,
+          detailed match events and powerful team management tools.
+        </p>
+        <div class="hero-actions">
+          <button class="btn-primary" routerLink="/register">Start organizing</button>
+          <button class="btn-outline" routerLink="/tournaments/my" *ngIf="auth.isLoggedIn(); else loginPrompt">Explore your tournaments</button>
+          <ng-template #loginPrompt>
+            <button class="btn-outline" routerLink="/login">Browse as organizer</button>
+          </ng-template>
+        </div>
+      </div>
+      <div class="hero-visual">
+        <div class="stat-card">
+          <span class="stat-value">24</span>
+          <span class="stat-label">Active tournaments</span>
+        </div>
+        <div class="stat-card">
+          <span class="stat-value">180+</span>
+          <span class="stat-label">Teams registered</span>
+        </div>
+        <div class="stat-card">
+          <span class="stat-value">1.2k</span>
+          <span class="stat-label">Matches tracked</span>
+        </div>
+      </div>
+    </section>
+
+    <section class="features">
+      <div class="feature">
+        <h3>Transparent for fans</h3>
+        <p>Public tournaments showcase schedules, fixtures and standings without requiring an account.</p>
+      </div>
+      <div class="feature">
+        <h3>Control for organizers</h3>
+        <p>Design brackets, manage teams and assign referees with role-based access control.</p>
+      </div>
+      <div class="feature">
+        <h3>Power for coaches</h3>
+        <p>Coaches update their squads, tactics and line-ups while referees record every match event.</p>
+      </div>
+    </section>
+
+    <section class="tournaments">
+      <div class="section-heading">
+        <h2>Public tournaments</h2>
+        <p>Discover open competitions shared by our community.</p>
+      </div>
+      <div class="tournament-grid" *ngIf="!isLoading && tournaments.length > 0; else emptyState">
+        <article class="tournament-card" *ngFor="let tournament of tournaments">
+          <div class="card-header">
+            <h3>{{ tournament.name }}</h3>
+            <span [ngClass]="statusClass(tournament.status)">{{ statusLabel(tournament.status) }}</span>
+          </div>
+          <div class="card-body">
+            <div class="meta">
+              <span class="meta-item">
+                <span class="icon">📅</span>
+                {{ tournament.startDate | date:'d MMM' }} – {{ tournament.endDate | date:'d MMM yyyy' }}
+              </span>
+              <span class="meta-item" *ngIf="tournament.location">
+                <span class="icon">📍</span>
+                {{ tournament.location }}
+              </span>
+            </div>
+            <p class="organizer">Organized by {{ tournament.organizer.displayName }}</p>
+          </div>
+          <div class="card-footer">
+            <button class="btn-secondary" (click)="viewDetails(tournament.id)">View details</button>
+          </div>
+        </article>
+      </div>
+      <ng-template #emptyState>
+        <div class="empty-state" *ngIf="!isLoading; else loading">
+          <h3>No public tournaments yet</h3>
+          <p>Be the first to share your competition with the world.</p>
+          <button class="btn-primary" (click)="onCreateTournamentClick()">Create a tournament</button>
+        </div>
+      </ng-template>
+      <ng-template #loading>
+        <div class="loading-state">
+          <div class="spinner"></div>
+          <p>Loading tournaments...</p>
+        </div>
+      </ng-template>
+    </section>
+  </main>
+
+    <footer class="footer">
+        <p>&copy; 2025 FootyCup. All rights reserved.</p>
+    </footer>
+</div>
