@@ -20,8 +20,9 @@ public class TacticsBoardController {
     public ResponseEntity<TacticsBoardResponse> getBoard(
             @PathVariable Long tournamentId,
             @PathVariable Long matchId,
-            @AuthenticationPrincipal User organizer) {
-        var response = tacticsBoardService.getBoard(tournamentId, matchId, organizer);
+            @RequestParam(required = false) Long teamId,
+            @AuthenticationPrincipal User user) {
+        var response = tacticsBoardService.getBoard(tournamentId, matchId, user, teamId);
         return ResponseEntity.ok(response);
     }
 
@@ -29,9 +30,10 @@ public class TacticsBoardController {
     public ResponseEntity<TacticsBoardResponse> saveBoard(
             @PathVariable Long tournamentId,
             @PathVariable Long matchId,
+            @RequestParam(required = false) Long teamId,
             @RequestBody TacticsBoardStateRequest state,
-            @AuthenticationPrincipal User organizer) {
-        var response = tacticsBoardService.saveBoard(tournamentId, matchId, organizer, state);
+            @AuthenticationPrincipal User user) {
+        var response = tacticsBoardService.saveBoard(tournamentId, matchId, user, teamId, state);
         return ResponseEntity.ok(response);
     }
 
@@ -39,8 +41,9 @@ public class TacticsBoardController {
     public ResponseEntity<Void> deleteBoard(
             @PathVariable Long tournamentId,
             @PathVariable Long matchId,
-            @AuthenticationPrincipal User organizer) {
-        tacticsBoardService.deleteBoard(tournamentId, matchId, organizer);
+            @RequestParam(required = false) Long teamId,
+            @AuthenticationPrincipal User user) {
+        tacticsBoardService.deleteBoard(tournamentId, matchId, user, teamId);
         return ResponseEntity.noContent().build();
     }
 }

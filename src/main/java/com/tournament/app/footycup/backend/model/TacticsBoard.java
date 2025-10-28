@@ -13,7 +13,8 @@ import java.time.Instant;
 @NoArgsConstructor
 @AllArgsConstructor
 @Entity
-@Table(name = "tactics_board")
+@Table(name = "tactics_board",
+        uniqueConstraints = @UniqueConstraint(name = "uq_tactics_board_match_team", columnNames = {"match_id", "team_id"}))
 public class TacticsBoard {
 
     @Id
@@ -21,8 +22,12 @@ public class TacticsBoard {
     private Long id;
 
     @OneToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(name = "match_id", nullable = false, unique = true)
+    @JoinColumn(name = "match_id", nullable = false)
     private Match match;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "team_id")
+    private Team team;
 
     @Lob
     @Column(name = "state_json", nullable = false)

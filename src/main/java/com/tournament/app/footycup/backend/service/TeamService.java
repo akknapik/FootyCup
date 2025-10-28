@@ -27,6 +27,7 @@ public class TeamService {
     private final TeamRepository teamRepository;
     private final TournamentRepository tournamentRepository;
     private final UserRepository userRepository;
+    private final AuthorizationService authorizationService;
 
     @Transactional(readOnly = true)
     public Team getTeamById(Long tournamentId, Long id, User user) {
@@ -36,14 +37,14 @@ public class TeamService {
         if(!team.getTournament().getId().equals(tournamentId)) {
             throw new IllegalArgumentException("Team for that tournament ID not found");
         }
-        ensureCanViewTournament(tournament, user);
+        authorizationService.ensureCanViewTournament(tournament, user);
         return team;
     }
 
     @Transactional(readOnly = true)
     public List<Team> getTeamsByTournamentId(Long tournamentId, User user) {
         var tournament = resolveTournament(tournamentId);
-        ensureCanViewTournament(tournament, user);
+        authorizationService.ensureCanViewTournament(tournament, user);
         var teams = teamRepository.findByTournamentId(tournamentId);
         return teams;
     }
@@ -52,7 +53,7 @@ public class TeamService {
     public Team createTeam(Long tournamentId, CreateTeamRequest request, User organizer) {
         var tournament = tournamentRepository.findById(tournamentId)
                 .orElseThrow(() -> new NoSuchElementException("Tournament not found"));
-        ensureOrganizer(tournament, organizer);
+        authorizationService.ensureOrganizer(tournament, organizer);
         var coach = userRepository.findByEmail(request.coachEmail())
                 .orElseThrow(() -> new NoSuchElementException("Coach not found"));
         var team = new Team();
@@ -66,7 +67,7 @@ public class TeamService {
     @Transactional
     public Team updateTeam(Long tournamentId, Long id, UpdateTeamRequest updated, User user) {
         var team = getTeamById(tournamentId, id, user);
-        ensureTeamManager(team, user);
+        authorizationService.ensureTeamManager(team, user);
         if(updated.name() != null) team.setName(updated.name());
         if(updated.coachEmail() != null) {
             var coach = userRepository.findByEmail(updated.coachEmail())
@@ -80,7 +81,7 @@ public class TeamService {
     @Transactional
     public void deleteTeam(Long tournamentId, Long id, User user) {
         var team = getTeamById(tournamentId, id, user);
-        ensureTeamManager(team, user);
+        authorizationService.ensureTeamManager(team, user);
         teamRepository.delete(team);
     }
 
@@ -88,7 +89,7 @@ public class TeamService {
     public void deleteTeams(Long tournamentId, User organizer) {
         var tournament = tournamentRepository.findById(tournamentId)
                 .orElseThrow(() -> new NoSuchElementException("Tournament not found"));
-        ensureOrganizer(tournament, organizer);
+        authorizationService.ensureOrganizer(tournament, organizer);
         var teams = teamRepository.findByTournamentId(tournamentId);
         teamRepository.deleteAll(teams);
     }
@@ -96,7 +97,7 @@ public class TeamService {
     @Transactional
     public Team addPlayer(Long tournamentId, Long id, CreatePlayerRequest request, User user) {
         var team = getTeamById(tournamentId, id, user);
-        ensureTeamManager(team, user);
+        authorizationService.ensureTeamManager(team, user);
         var player = new Player();
         player.setName(request.name());
         player.setNumber(request.number());
@@ -110,7 +111,7 @@ public class TeamService {
     @Transactional
     public Team updatePlayer(Long tournamentId, Long id, Long playerId, UpdatePlayerRequest updated, User user) {
         var team = getTeamById(tournamentId, id, user);
-        ensureTeamManager(team, user);
+        authorizationService.ensureTeamManager(team, user);
         var player = playerRepository.findById(playerId)
                 .orElseThrow(() -> new NoSuchElementException("Player not found"));
         if(!player.getTeam().getId().equals(team.getId())) {
@@ -127,7 +128,7 @@ public class TeamService {
     @Transactional
     public Team removePlayer(Long tournamentId, Long id, Long playerId, User user) {
         var team = getTeamById(tournamentId, id, user);
-        ensureTeamManager(team, user);
+        authorizationService.ensureTeamManager(team, user);
         var player = playerRepository.findById(playerId)
                 .orElseThrow(() -> new NoSuchElementException("Player not found"));
         if(!player.getTeam().getId().equals(team.getId())) {
@@ -142,58 +143,5 @@ public class TeamService {
         return tournamentRepository.findWithRefereesById(tournamentId)
                 .orElseGet(() -> tournamentRepository.findById(tournamentId)
                         .orElseThrow(() -> new NoSuchElementException("Tournament not found")));
-    }
-
-    private void ensureCanViewTournament(Tournament tournament, User user) {
-        if (tournament.isPublicVisible()) {
-            return;
-        }
-        if (user == null) {
-            throw new AccessDeniedException("Lack of authorization");
-        }
-        if (isOrganizer(tournament, user)) {
-            return;
-        }
-        if (isReferee(tournament, user)) {
-            return;
-        }
-        if (!teamRepository.existsByTournamentIdAndCoach_Id(tournament.getId(), user.getId())) {
-            throw new AccessDeniedException("Lack of authorization");
-        }
-    }
-
-    private void ensureOrganizer(Tournament tournament, User user) {
-        if (!isOrganizer(tournament, user)) {
-            throw new AccessDeniedException("Lack of authorization");
-        }
-    }
-
-    private void ensureTeamManager(Team team, User user) {
-        if (user == null) {
-            throw new AccessDeniedException("Lack of authorization");
-        }
-        if (isOrganizer(team.getTournament(), user)) {
-            return;
-        }
-        if (!isCoach(team, user)) {
-            throw new AccessDeniedException("Lack of authorization");
-        }
-    }
-
-    private boolean isOrganizer(Tournament tournament, User user) {
-        return tournament.getOrganizer() != null && user != null &&
-                tournament.getOrganizer().getId().equals(user.getId());
-    }
-
-    private boolean isReferee(Tournament tournament, User user) {
-        if (user == null) {
-            return false;
-        }
-        return tournament.getReferees().stream()
-                .anyMatch(r -> r.getId().equals(user.getId()));
-    }
-
-    private boolean isCoach(Team team, User user) {
-        return team.getCoach() != null && user != null && team.getCoach().getId().equals(user.getId());
     }
 }

@@ -6,6 +6,7 @@ import java.util.List;
 public record TacticsBoardResponse(
         Long id,
         Long matchId,
+        Long teamId,
         List<TacticsLayerDto> layers,
         String activeLayerId,
         Instant lastUpdated,

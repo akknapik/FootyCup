@@ -6,11 +6,13 @@ import com.tournament.app.footycup.backend.dto.tactics.TacticsBoardResponse;
 import com.tournament.app.footycup.backend.dto.tactics.TacticsBoardStateRequest;
 import com.tournament.app.footycup.backend.model.Match;
 import com.tournament.app.footycup.backend.model.TacticsBoard;
+import com.tournament.app.footycup.backend.model.Team;
 import com.tournament.app.footycup.backend.model.User;
 import com.tournament.app.footycup.backend.repository.MatchRepository;
 import com.tournament.app.footycup.backend.repository.TacticsBoardRepository;
-import com.tournament.app.footycup.backend.repository.TournamentRepository;
+import com.tournament.app.footycup.backend.repository.TeamRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -22,26 +24,33 @@ import java.util.NoSuchElementException;
 @RequiredArgsConstructor
 public class TacticsBoardService {
 
-    private final TournamentRepository tournamentRepository;
     private final MatchRepository matchRepository;
     private final TacticsBoardRepository tacticsBoardRepository;
+    private final TeamRepository teamRepository;
+    private final AuthorizationService authorizationService;
     private final ObjectMapper objectMapper;
 
     @Transactional(readOnly = true)
-    public TacticsBoardResponse getBoard(Long tournamentId, Long matchId, User organizer) {
-        Match match = getAuthorizedMatch(tournamentId, matchId, organizer);
-        return tacticsBoardRepository.findByMatch(match)
-                .map(this::toResponse)
-                .orElseGet(() -> emptyResponse(match));
+    public TacticsBoardResponse getBoard(Long tournamentId, Long matchId, User user, Long teamId) {
+        Match match = resolveMatch(tournamentId, matchId);
+        Team boardTeam = resolveTeamForBoard(match, user, teamId);
+        var boardOpt = findBoard(match, boardTeam);
+        return boardOpt.map(this::toResponse)
+                .orElseGet(() -> emptyResponse(match, boardTeam));
     }
 
     @Transactional
-    public TacticsBoardResponse saveBoard(Long tournamentId, Long matchId, User organizer, TacticsBoardStateRequest state) {
-        Match match = getAuthorizedMatch(tournamentId, matchId, organizer);
-        TacticsBoard board = tacticsBoardRepository.findByMatch(match)
+    public TacticsBoardResponse saveBoard(Long tournamentId, Long matchId, User user, Long teamId,
+                                          TacticsBoardStateRequest state) {
+        Match match = resolveMatch(tournamentId, matchId);
+        Team boardTeam = resolveTeamForBoard(match, user, teamId);
+        ensureBoardWritePermissions(match, user, boardTeam);
+
+        TacticsBoard board = findBoard(match, boardTeam)
                 .orElseGet(() -> {
                     TacticsBoard created = new TacticsBoard();
                     created.setMatch(match);
+                    created.setTeam(boardTeam);
                     return created;
                 });
 
@@ -49,30 +58,77 @@ public class TacticsBoardService {
 
         board.setStateJson(serializeState(sanitized));
         board.setUpdatedAt(Instant.now());
+        board.setTeam(boardTeam);
 
         TacticsBoard saved = tacticsBoardRepository.save(board);
         return toResponse(saved);
     }
 
     @Transactional
-    public void deleteBoard(Long tournamentId, Long matchId, User organizer) {
-        Match match = getAuthorizedMatch(tournamentId, matchId, organizer);
-        tacticsBoardRepository.findByMatch(match).ifPresent(tacticsBoardRepository::delete);
+    public void deleteBoard(Long tournamentId, Long matchId, User user, Long teamId) {
+        Match match = resolveMatch(tournamentId, matchId);
+        Team boardTeam = resolveTeamForBoard(match, user, teamId);
+        ensureBoardWritePermissions(match, user, boardTeam);
+        findBoard(match, boardTeam).ifPresent(tacticsBoardRepository::delete);
     }
 
-    private Match getAuthorizedMatch(Long tournamentId, Long matchId, User organizer) {
-        var tournament = tournamentRepository.findById(tournamentId)
-                .orElseThrow(() -> new NoSuchElementException("Tournament not found"));
-        if (!tournament.getOrganizer().getId().equals(organizer.getId())) {
-            throw new IllegalArgumentException("Lack of authorization");
-        }
-
+    private Match resolveMatch(Long tournamentId, Long matchId) {
         Match match = matchRepository.findById(matchId)
                 .orElseThrow(() -> new NoSuchElementException("Match not found"));
         if (match.getTournament() == null || !match.getTournament().getId().equals(tournamentId)) {
             throw new IllegalArgumentException("Match does not belong to tournament");
         }
         return match;
+    }
+
+    private Team resolveTeamForBoard(Match match, User user, Long teamId) {
+        var tournament = match.getTournament();
+        if (authorizationService.isOrganizer(tournament, user)) {
+            return teamId == null ? null : resolveMatchTeam(match, teamId);
+        }
+
+        if (authorizationService.isCoachOfTeam(match.getTeamHome(), user)) {
+            if (teamId == null || match.getTeamHome().getId().equals(teamId)) {
+                return match.getTeamHome();
+            }
+            throw new AccessDeniedException("Lack of authorization");
+        }
+
+        if (authorizationService.isCoachOfTeam(match.getTeamAway(), user)) {
+            if (teamId == null || match.getTeamAway().getId().equals(teamId)) {
+                return match.getTeamAway();
+            }
+            throw new AccessDeniedException("Lack of authorization");
+        }
+
+        throw new AccessDeniedException("Lack of authorization");
+    }
+
+    private void ensureBoardWritePermissions(Match match, User user, Team team) {
+        if (team == null) {
+            authorizationService.ensureOrganizer(match.getTournament(), user);
+        } else {
+            authorizationService.ensureCoachForMatchTeam(match, user, team);
+        }
+    }
+
+    private Team resolveMatchTeam(Match match, Long teamId) {
+        if (match.getTeamHome() != null && match.getTeamHome().getId().equals(teamId)) {
+            return match.getTeamHome();
+        }
+        if (match.getTeamAway() != null && match.getTeamAway().getId().equals(teamId)) {
+            return match.getTeamAway();
+        }
+        return teamRepository.findById(teamId)
+                .filter(team -> team.getTournament() != null
+                        && team.getTournament().getId().equals(match.getTournament().getId()))
+                .orElseThrow(() -> new IllegalArgumentException("Team is not part of this match"));
+    }
+
+    private java.util.Optional<TacticsBoard> findBoard(Match match, Team team) {
+        return team == null
+                ? tacticsBoardRepository.findByMatchAndTeamIsNull(match)
+                : tacticsBoardRepository.findByMatchAndTeam(match, team);
     }
 
     private TacticsBoardStateRequest parseState(String json) {
@@ -101,6 +157,7 @@ public class TacticsBoardService {
         return new TacticsBoardResponse(
                 board.getId(),
                 board.getMatch().getId(),
+                board.getTeam() != null ? board.getTeam().getId() : null,
                 state.layers(),
                 state.activeLayerId(),
                 state.lastUpdated(),
@@ -108,10 +165,11 @@ public class TacticsBoardService {
         );
     }
 
-    private TacticsBoardResponse emptyResponse(Match match) {
+    private TacticsBoardResponse emptyResponse(Match match, Team team) {
         return new TacticsBoardResponse(
                 null,
                 match.getId(),
+                team != null ? team.getId() : null,
                 List.of(),
                 null,
                 Instant.now(),

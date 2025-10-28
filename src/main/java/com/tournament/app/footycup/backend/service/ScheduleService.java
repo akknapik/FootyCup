@@ -29,26 +29,29 @@ public class ScheduleService {
     private final MatchRepository matchRepository;
     private final ScheduleEntryRepository scheduleEntryRepository;
     private final TournamentRepository tournamentRepository;
+    private final AuthorizationService authorizationService;
 
-    public List<Schedule> getSchedules(Long tournamentId, User organizer) {
-        var tournament = tournamentRepository.findById(tournamentId)
-                .orElseThrow(() -> new NoSuchElementException("Tournament not found"));
-        if (!tournament.getOrganizer().getId().equals(organizer.getId())) throw new IllegalArgumentException();
+    public List<Schedule> getSchedules(Long tournamentId, User user) {
+        var tournament = resolveTournament(tournamentId);
+        authorizationService.ensureCanViewTournament(tournament, user);
         return scheduleRepository.findByTournamentId(tournamentId);
     }
 
-    public Schedule getScheduleById(Long tournamentId, Long scheduleId, User organizer) {
-        var tournament = tournamentRepository.findById(tournamentId)
-                .orElseThrow(() -> new NoSuchElementException("Tournament not found"));
-        if (!tournament.getOrganizer().getId().equals(organizer.getId())) throw new IllegalArgumentException();
-        return scheduleRepository.findById(scheduleId)
+    public Schedule getScheduleById(Long tournamentId, Long scheduleId, User user) {
+        var tournament = resolveTournament(tournamentId);
+        authorizationService.ensureCanViewTournament(tournament, user);
+        Schedule schedule = scheduleRepository.findById(scheduleId)
                 .orElseThrow(() -> new NoSuchElementException("Schedule not found"));
+        if (schedule.getTournament() == null || !schedule.getTournament().getId().equals(tournamentId)) {
+            throw new IllegalArgumentException("Schedule does not belong to tournament");
+        }
+        return schedule;
     }
 
     public void createEmptySchedules(Long tournamentId, User organizer) {
         var tournament = tournamentRepository.findById(tournamentId)
                 .orElseThrow(() -> new NoSuchElementException("Tournament not found"));
-        if (!tournament.getOrganizer().getId().equals(organizer.getId())) throw new IllegalArgumentException();
+        authorizationService.ensureOrganizer(tournament, organizer);
         var start = tournament.getStartDate();
         var end = tournament.getEndDate();
         List<Schedule> schedules = new ArrayList<>();
@@ -64,9 +67,8 @@ public class ScheduleService {
     public void computeSchedule(Long tournamentId, Long scheduleId, User organizer) {
         var tournament = tournamentRepository.findById(tournamentId)
                 .orElseThrow(() -> new NoSuchElementException("Tournament not found"));
-        if (!tournament.getOrganizer().getId().equals(organizer.getId())) throw new IllegalArgumentException();
-        var schedule = scheduleRepository.findById(scheduleId)
-                .orElseThrow(() -> new NoSuchElementException("Schedule not found"));
+        authorizationService.ensureOrganizer(tournament, organizer);
+        var schedule = getScheduleById(tournamentId, scheduleId, organizer);
         var cursor = schedule.getStartDateTime();
         for (var e : schedule.getEntries()) {
             e.setStartDateTime(cursor);
@@ -78,9 +80,8 @@ public class ScheduleService {
     public ScheduleEntry addMatch(Long tournamentId, Long scheduleId, AddMatchEntryRequest request, User organizer) {
         var tournament = tournamentRepository.findById(tournamentId)
                 .orElseThrow(() -> new NoSuchElementException("Tournament not found"));
-        if (!tournament.getOrganizer().getId().equals(organizer.getId())) throw new IllegalArgumentException();
-        var schedule = scheduleRepository.findById(scheduleId)
-                .orElseThrow(() -> new NoSuchElementException("Schedule not found"));
+        authorizationService.ensureOrganizer(tournament, organizer);
+        var schedule = getScheduleById(tournamentId, scheduleId, organizer);
         var match = matchRepository.findById(request.matchId())
                 .orElseThrow(() -> new NoSuchElementException("Match not found"));
         var entry = new ScheduleEntry();
@@ -101,9 +102,8 @@ public class ScheduleService {
     public void removeEntry(Long tournamentId, Long scheduleId, Long entryId, User organizer) {
         var tournament = tournamentRepository.findById(tournamentId)
                 .orElseThrow(() -> new NoSuchElementException("Tournament not found"));
-        if (!tournament.getOrganizer().getId().equals(organizer.getId())) throw new IllegalArgumentException();
-        var schedule = scheduleRepository.findById(scheduleId)
-                .orElseThrow(() -> new NoSuchElementException("Schedule not found"));
+        authorizationService.ensureOrganizer(tournament, organizer);
+        var schedule = getScheduleById(tournamentId, scheduleId, organizer);
         var entry = scheduleEntryRepository.findById(entryId)
                 .orElseThrow(() -> new NoSuchElementException("Entry not found"));
         if(entry.getType().equals(EntryType.MATCH)) {
@@ -117,9 +117,8 @@ public class ScheduleService {
     public ScheduleEntry addBreak(Long tournamentId, Long scheduleId, AddBreakRequest request, User organizer) {
         var tournament = tournamentRepository.findById(tournamentId)
                 .orElseThrow(() -> new NoSuchElementException("Tournament not found"));
-        if (!tournament.getOrganizer().getId().equals(organizer.getId())) throw new IllegalArgumentException();
-        var schedule = scheduleRepository.findById(scheduleId)
-                .orElseThrow(() -> new NoSuchElementException("Schedule not found"));
+        authorizationService.ensureOrganizer(tournament, organizer);
+        var schedule = getScheduleById(tournamentId, scheduleId, organizer);
         var entry = new ScheduleEntry();
         entry.setSchedule(schedule);
         entry.setType(EntryType.BREAK);
@@ -133,9 +132,8 @@ public class ScheduleService {
     public Schedule reorderEntries(Long tournamentId, Long scheduleId, ReorderEntriesRequest request, User user) {
         Tournament tournament = tournamentRepository.findById(tournamentId)
                 .orElseThrow(() -> new NoSuchElementException("Tournament not found"));
-        if (!tournament.getOrganizer().getId().equals(user.getId())) throw new IllegalArgumentException();
-        Schedule schedule = scheduleRepository.findById(scheduleId)
-                .orElseThrow(() -> new NoSuchElementException("Schedule not found"));
+        authorizationService.ensureOrganizer(tournament, user);
+        Schedule schedule = getScheduleById(tournamentId, scheduleId, user);
         List<ScheduleEntry> newOrder = request.orderedEntryIds().stream()
                 .map(id -> scheduleEntryRepository.findById(id)
                         .orElseThrow(() -> new NoSuchElementException("Entry not found")))
@@ -156,7 +154,7 @@ public class ScheduleService {
                                          User user) {
         Tournament tournament = tournamentRepository.findById(tournamentId)
                 .orElseThrow(() -> new NoSuchElementException("Tournament not found"));
-        if (!tournament.getOrganizer().getId().equals(user.getId())) throw new IllegalArgumentException();
+        authorizationService.ensureOrganizer(tournament, user);
         ScheduleEntry entry = scheduleEntryRepository.findById(entryId)
                 .orElseThrow(() -> new NoSuchElementException("Schedule entry not found"));
         entry.setStartDateTime(request.start());
@@ -166,7 +164,7 @@ public class ScheduleService {
     public List<Long> getAllScheduledMatchIds(Long tournamentId, User user) {
         Tournament tournament = tournamentRepository.findById(tournamentId)
                 .orElseThrow(() -> new NoSuchElementException("Tournament not found"));
-        if (!tournament.getOrganizer().getId().equals(user.getId())) throw new IllegalArgumentException();
+        authorizationService.ensureOrganizer(tournament, user);
         return scheduleEntryRepository.findAllScheduledMatchIdsByTournamentId(tournamentId);
     }
 
@@ -174,10 +172,9 @@ public class ScheduleService {
                                         User user) {
         Tournament tournament = tournamentRepository.findById(tournamentId)
                 .orElseThrow(() -> new NoSuchElementException("Tournament not found"));
-        if (!tournament.getOrganizer().getId().equals(user.getId())) throw new IllegalArgumentException();
+        authorizationService.ensureOrganizer(tournament, user);
 
-        Schedule schedule = scheduleRepository.findById(scheduleId)
-                .orElseThrow(() -> new NoSuchElementException("Schedule not found"));
+        Schedule schedule = getScheduleById(tournamentId, scheduleId, user);
         schedule.setStartDateTime(request.start());
         scheduleRepository.save(schedule);
     }
@@ -185,7 +182,7 @@ public class ScheduleService {
     public void deleteSchedules(Long tournamentId, User user) {
         Tournament tournament = tournamentRepository.findById(tournamentId)
                 .orElseThrow(() -> new NoSuchElementException("Tournament not found"));
-        if (!tournament.getOrganizer().getId().equals(user.getId())) throw new IllegalArgumentException();
+        authorizationService.ensureOrganizer(tournament, user);
 
         List<Schedule> schedules = scheduleRepository.findByTournamentId(tournamentId);
 
@@ -195,5 +192,11 @@ public class ScheduleService {
         }
 
         scheduleRepository.deleteAll(schedules);
+    }
+
+    private Tournament resolveTournament(Long tournamentId) {
+        return tournamentRepository.findWithRefereesById(tournamentId)
+                .orElseGet(() -> tournamentRepository.findById(tournamentId)
+                        .orElseThrow(() -> new NoSuchElementException("Tournament not found")));
     }
 }

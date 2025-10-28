@@ -21,52 +21,47 @@ public class MatchService {
     private final TournamentRepository tournamentRepository;
     private final BracketNodeRepository bracketNodeRepository;
     private final UserRepository userRepository;
+    private final AuthorizationService authorizationService;
 
     @Transactional(readOnly = true)
-    public List<Match> getMatches(Long tournamentId, User organizer) {
-        var tournament = tournamentRepository.findById(tournamentId)
-                .orElseThrow(() -> new NoSuchElementException("Tournament not found"));
-        if(!tournament.getOrganizer().getId().equals(organizer.getId())) {
-            throw new IllegalArgumentException("Lack of authorization");
-        }
-
-        var matches = matchRepository.findByTournamentId(tournamentId);
-        return matches;
+    public List<Match> getMatches(Long tournamentId, User user) {
+        var tournament = resolveTournament(tournamentId);
+        authorizationService.ensureCanViewTournament(tournament, user);
+        return matchRepository.findByTournamentId(tournamentId);
     }
 
     @Transactional(readOnly = true)
-    public Match getMatch(Long tournamentId, Long matchId, User organizer) {
-        var tournament = tournamentRepository.findById(tournamentId)
-                .orElseThrow(() -> new NoSuchElementException("Tournament not found"));
-        if(!tournament.getOrganizer().getId().equals(organizer.getId())) {
-            throw new IllegalArgumentException("Lack of authorization");
-        }
+    public Match getMatch(Long tournamentId, Long matchId, User user) {
+        var tournament = resolveTournament(tournamentId);
+        authorizationService.ensureCanViewTournament(tournament, user);
 
         var match = matchRepository.findById(matchId)
                 .orElseThrow(() -> new NoSuchElementException("Match not found"));
+        if (match.getTournament() == null || !match.getTournament().getId().equals(tournamentId)) {
+            throw new IllegalArgumentException("Match does not belong to tournament");
+        }
+        authorizationService.ensureCanViewMatch(match, user);
         return match;
     }
 
     @Transactional(readOnly = true)
-    public List<Match> getGroupMatches(Long tournamentId, Long groupId, User organizer) {
-        var tournament = tournamentRepository.findById(tournamentId)
-                .orElseThrow(() -> new NoSuchElementException("Tournament not found"));
-        if(!tournament.getOrganizer().getId().equals(organizer.getId())) {
-            throw new IllegalArgumentException("Lack of authorization");
-        }
+    public List<Match> getGroupMatches(Long tournamentId, Long groupId, User user) {
+        var tournament = resolveTournament(tournamentId);
+        authorizationService.ensureCanViewTournament(tournament, user);
+
         var group = groupRepository.findById(groupId)
                 .orElseThrow(() -> new NoSuchElementException("Group not found"));
-        var matches = matchRepository.findByGroupId(group.getId());
-        return matches;
+        if (group.getTournament() == null || !group.getTournament().getId().equals(tournamentId)) {
+            throw new IllegalArgumentException("Group does not belong to tournament");
+        }
+        return matchRepository.findByGroupId(group.getId());
     }
 
     @Transactional
     public void generateGroupMatches(Long tournamentId, User organizer) {
         var tournament = tournamentRepository.findById(tournamentId)
                 .orElseThrow(() -> new NoSuchElementException("Tournament not found"));
-        if(!tournament.getOrganizer().getId().equals(organizer.getId())) {
-            throw new IllegalArgumentException("Lack of authorization");
-        }
+        authorizationService.ensureOrganizer(tournament, organizer);
 
         var groups = groupRepository.findByTournamentId(tournamentId);
 
@@ -101,9 +96,7 @@ public class MatchService {
     public void deleteMatch(Long tournamentId, Long matchId, User organizer) {
         var tournament = tournamentRepository.findById(tournamentId)
                 .orElseThrow(() -> new NoSuchElementException("Tournament not found"));
-        if(!tournament.getOrganizer().getId().equals(organizer.getId())) {
-            throw new IllegalArgumentException("Lack of authorization");
-        }
+        authorizationService.ensureOrganizer(tournament, organizer);
 
         var match = getMatch(tournamentId, matchId, organizer);
         matchRepository.delete(match);
@@ -113,9 +106,7 @@ public class MatchService {
     public void deleteAllMatches(Long tournamentId, User organizer) {
         var tournament = tournamentRepository.findById(tournamentId)
                 .orElseThrow(() -> new NoSuchElementException("Tournament not found"));
-        if(!tournament.getOrganizer().getId().equals(organizer.getId())) {
-            throw new IllegalArgumentException("Lack of authorization");
-        }
+        authorizationService.ensureOrganizer(tournament, organizer);
 
         var matches = getMatches(tournamentId, organizer);
         matchRepository.deleteAll(matches);
@@ -125,9 +116,7 @@ public class MatchService {
     public void updateSingleMatchResult(Long tournamentId, Long matchId, UpdateMatchResultRequest updated, User organizer) {
         var tournament = tournamentRepository.findById(tournamentId)
                 .orElseThrow(() -> new IllegalArgumentException("Tournament not found"));
-        if(!tournament.getOrganizer().getId().equals(organizer.getId())) {
-            throw new IllegalArgumentException("Lack of authorization");
-        }
+        authorizationService.ensureOrganizer(tournament, organizer);
 
         var match = matchRepository.findById(matchId)
                 .orElseThrow(() -> new IllegalArgumentException("Match not found"));
@@ -186,9 +175,7 @@ public class MatchService {
     public Match assignReferee(Long tournamentId, Long matchId, Long refereeId, User organizer) {
         var tournament = tournamentRepository.findWithRefereesById(tournamentId)
                 .orElseThrow(() -> new NoSuchElementException("Tournament not found"));
-        if(!tournament.getOrganizer().getId().equals(organizer.getId())) {
-            throw new IllegalArgumentException("Lack of authorization");
-        }
+        authorizationService.ensureOrganizer(tournament, organizer);
 
         var match = matchRepository.findById(matchId)
                 .orElseThrow(() -> new NoSuchElementException("Match not found"));
@@ -212,4 +199,9 @@ public class MatchService {
         return saved;
     }
 
+    private Tournament resolveTournament(Long tournamentId) {
+        return tournamentRepository.findWithRefereesById(tournamentId)
+                .orElseGet(() -> tournamentRepository.findById(tournamentId)
+                        .orElseThrow(() -> new NoSuchElementException("Tournament not found")));
+    }
 }

@@ -31,16 +31,19 @@ public class MatchEventService {
     private final PlayerRepository playerRepository;
     private final TeamRepository teamRepository;
     private final FormatService formatService;
+    private final AuthorizationService authorizationService;
 
     @Transactional(readOnly = true)
     public List<MatchEvent> getEvents(Long tournamentId, Long matchId, User user) {
-        var match = resolveAuthorizedMatch(tournamentId, matchId, user);
+        var match = resolveMatch(tournamentId, matchId);
+        authorizationService.ensureCanViewMatch(match, user);
         return matchEventRepository.findByMatchIdOrderByMinuteDesc(match.getId());
     }
 
     @Transactional(readOnly = true)
     public MatchStatisticsResponse getStatistics(Long tournamentId, Long matchId, User user) {
-        var match = resolveAuthorizedMatch(tournamentId, matchId, user);
+        var match = resolveMatch(tournamentId, matchId);
+        authorizationService.ensureCanViewMatch(match, user);
         var events = matchEventRepository.findByMatchIdOrderByMinuteDesc(match.getId());
 
         var homeStats = buildTeamStatistics(match.getTeamHome(), events);
@@ -51,7 +54,8 @@ public class MatchEventService {
 
     @Transactional
     public MatchEvent addEvent(Long tournamentId, Long matchId, CreateMatchEventRequest request, User user) {
-        var match = resolveAuthorizedMatch(tournamentId, matchId, user);
+        var match = resolveMatch(tournamentId, matchId);
+        authorizationService.ensureCanManageMatchEvents(match, user);
 
         if (request.eventType() == null) {
             throw new IllegalArgumentException("Event type must be provided");
@@ -83,7 +87,8 @@ public class MatchEventService {
 
     @Transactional
     public void deleteEvent(Long tournamentId, Long matchId, Long eventId, User user) {
-        var match = resolveAuthorizedMatch(tournamentId, matchId, user);
+        var match = resolveMatch(tournamentId, matchId);
+        authorizationService.ensureCanManageMatchEvents(match, user);
         var event = matchEventRepository.findById(eventId)
                 .orElseThrow(() -> new NoSuchElementException("Match event not found"));
 
@@ -95,20 +100,12 @@ public class MatchEventService {
         updateMatchScores(match);
     }
 
-    private Match resolveAuthorizedMatch(Long tournamentId, Long matchId, User user) {
+    private Match resolveMatch(Long tournamentId, Long matchId) {
         var match = matchRepository.findById(matchId)
                 .orElseThrow(() -> new NoSuchElementException("Match not found"));
 
         if (match.getTournament() == null || !match.getTournament().getId().equals(tournamentId)) {
             throw new IllegalArgumentException("Match does not belong to tournament");
-        }
-
-        var organizer = match.getTournament().getOrganizer();
-        boolean isOrganizer = organizer != null && organizer.getId().equals(user.getId());
-        boolean isReferee = match.getReferee() != null && match.getReferee().getId().equals(user.getId());
-
-        if (!isOrganizer && !isReferee) {
-            throw new AccessDeniedException("Insufficient permissions to manage match events");
         }
 
         return match;
