@@ -1,10 +1,14 @@
-import { Component, HostListener } from '@angular/core';
+import { Component, HostListener, OnDestroy, OnInit } from '@angular/core';
 import { ActivatedRoute, Route, Router } from '@angular/router';
 import { FormatService } from '../../services/format.service';
 import { AuthService } from '../../services/auth.service';
 import { TeamService } from '../../services/team.service';
 import { NotificationService } from '../../services/notification.service';
 import { AssignTeamToSlotRequest } from '../../models/format/group/assign-team-to-slot.request';
+import { TournamentService } from '../../services/tournament.service';
+import { User } from '../../models/user.model';
+import { Subject, takeUntil } from 'rxjs';
+import { TournamentResponse } from '../../models/tournament/tournament.response';
 
 @Component({
   selector: 'app-format',
@@ -12,7 +16,7 @@ import { AssignTeamToSlotRequest } from '../../models/format/group/assign-team-t
   templateUrl: './format.component.html',
   styleUrl: './format.component.css'
 })
-export class FormatComponent {
+export class FormatComponent implements OnInit, OnDestroy {
   tournamentId!: number;
   structureExists = false;
   loading = false;
@@ -43,11 +47,26 @@ export class FormatComponent {
   nodeTeamSearch = '';
   nodeAvailableTeams: { id: number; name: string }[] = [];
 
-  constructor(private route: ActivatedRoute, public router: Router, private formatService: FormatService, private teamService: TeamService, public auth: AuthService, private notification: NotificationService) {}
+  currentUser: User | null = null;
+  private tournamentOrganizerId: number | null = null;
 
+  private destroy$ = new Subject<void>();
+
+  constructor(private route: ActivatedRoute, public router: Router, private formatService: FormatService, private teamService: TeamService, public auth: AuthService, private notification: NotificationService, private tournamentService: TournamentService) {}
+  
   ngOnInit(): void {
+    this.auth.currentUser$
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(user => this.currentUser = user);
+
     this.tournamentId = +this.route.snapshot.paramMap.get('tournamentId')!;
+    this.loadTournamentContext();
     this.checkIfStructureExists();
+  }
+
+  ngOnDestroy(): void {
+    this.destroy$.next();
+    this.destroy$.complete();
   }
 
   checkIfStructureExists() {
@@ -62,6 +81,10 @@ export class FormatComponent {
   }
 
   generateGroup() {
+  if (!this.canManageFormat) {
+    this.notification.showInfo('Only the organizer can modify the tournament format.');
+    return;
+  }
   this.loading = true;
   this.formatService.generateGroupFormat(this.tournamentId, {
     groupCount: this.groupCount,
@@ -80,6 +103,10 @@ export class FormatComponent {
 }
 
 generateBracket() {
+  if (!this.canManageFormat) {
+    this.notification.showInfo('Only the organizer can modify the tournament format.');
+    return;
+  }
   this.loading = true;
   this.formatService.generateBracketFormat(this.tournamentId, {
     totalTeams: this.bracketSize
@@ -97,6 +124,10 @@ generateBracket() {
 }
 
 generateMixed() {
+  if (!this.canManageFormat) {
+    this.notification.showInfo('Only the organizer can modify the tournament format.');
+    return;
+  }
   this.loading = true;
   this.formatService.generateMixedFormat(this.tournamentId, {
     groupCount: this.mixedGroupCount,
@@ -128,6 +159,10 @@ generateMixed() {
   }
 
   deleteStructures(tournamentId: number) {
+    if (!this.canManageFormat) {
+      this.notification.showInfo('Only the organizer can modify the tournament format.');
+      return;
+    }
     this.notification.confirm('Are you sure you want to delete the structures?').subscribe(confirmed => {
       if (confirmed) {
       this.formatService.deleteStructures(this.tournamentId).subscribe({
@@ -145,12 +180,18 @@ generateMixed() {
   }
 
   assignTeamsRandomly(tournamentId: number) {
+    if (!this.canManageFormat) {
+      return;
+    }
     this.formatService.assignTeamsRandomly(tournamentId).subscribe(() => {
-      this.loadStructure(); 
+      this.loadStructure();
     });
   }
 
 editSlot(slot: any) {
+  if (!this.canManageFormat) {
+    return;
+  }
   this.editedSlot = slot;
 
   this.teamService.getTeams(this.tournamentId).subscribe(teams => {
@@ -167,11 +208,14 @@ editSlot(slot: any) {
 }
 
 assignTeamToSlotById(slot: any, teamId: number | null) {
-  if (teamId == null) return; 
+  if (!this.canManageFormat) {
+    return;
+  }
+  if (teamId == null) return;
 
   const body: AssignTeamToSlotRequest = {
     slotId: slot.id,
-    teamId, 
+    teamId,
   };
 
   this.formatService.assignTeamToSlot(this.tournamentId, body).subscribe({
@@ -185,6 +229,10 @@ assignTeamToSlotById(slot: any, teamId: number | null) {
 }
 
  editBracketTeam(node: any, side: 'home' | 'away', event: MouseEvent) {
+  if (!this.canManageFormat) {
+    return;
+  }
+
   event.stopPropagation();
   if (node.round !== 1) return;
 
@@ -202,6 +250,10 @@ assignTeamToSlotById(slot: any, teamId: number | null) {
 }
 
 assignTeamToBracketById(node: any, side: 'home' | 'away', teamId: number) {
+  if (!this.canManageFormat) {
+    return;
+  }
+
   if (!teamId || !node) return;
 
   const body = { nodeId: node.id, teamId, homeTeam: side === 'home' };
@@ -230,31 +282,35 @@ assignTeamToBracketById(node: any, side: 'home' | 'away', teamId: number) {
 }
 
 openSlotMenu(slot: any, event: MouseEvent) {
+  if (!this.canManageFormat) {
+    return;
+  }
+
   event.stopPropagation();
   this.editedSlot = slot;
   this.slotMenuOpenForId = slot.id;
   this.teamSearch = '';
 
-  // wczytanie listy dostępnych drużyn jak wcześniej
   this.teamService.getTeams(this.tournamentId).subscribe(teams => {
     const assignedTeamIds = this.groups
       .flatMap(g => g.groupTeams)
       .map(gt => gt.team?.id)
       .filter(id => !!id);
 
-    // pozwól wybrać aktualnie przypisaną drużynę także
     this.availableTeams = teams.filter(
       t => !assignedTeamIds.includes(t.id) || t.id === slot.team?.id
     );
   });
 }
 
-// Zatwierdzenie wyboru z dropdownu (zostawiamy brak „czyszczenia” – można dodać opcję)
 pickTeamForSlot(slot: any, team: any) {
+  if (!this.canManageFormat) {
+    return;
+  }
+
   const body = { slotId: slot.id, teamId: team.id };
   this.formatService.assignTeamToSlot(this.tournamentId, body).subscribe({
     next: () => {
-      // optymistycznie aktualizujemy UI
       slot.team = { id: team.id, name: team.name };
       this.closeAllInlineMenus();
     },
@@ -269,7 +325,6 @@ closeAllInlineMenus() {
   this.editedSide = null;
 }
 
-// Zamknij panel po kliknięciu poza
 @HostListener('document:click', ['$event'])
 onClickOutside(event: MouseEvent) {
   const el = event.target as HTMLElement;
@@ -278,7 +333,6 @@ onClickOutside(event: MouseEvent) {
   }
 }
 
-// (opcjonalnie) filtrowanie listy
 get filteredAvailableTeams() {
   const q = this.teamSearch.trim().toLowerCase();
   if (!q) return this.availableTeams;
@@ -293,14 +347,17 @@ get filteredNodeTeams() {
 }
 
 openNodeMenu(node: any, side: 'home' | 'away', ev: MouseEvent) {
+  if (!this.canManageFormat) {
+    return;
+  }
+
   ev.stopPropagation();
-  if (node.round !== 1) return; // tylko pierwsza runda edytowalna
+  if (node.round !== 1) return;
 
   this.nodeMenuOpenForId = node.id;
   this.nodeMenuSide = side;
   this.nodeTeamSearch = '';
 
-  // pobierz drużyny i odfiltruj te użyte w R1 (poza aktualnym slotem)
   this.teamService.getTeams(this.tournamentId).subscribe(teams => {
     const usedIds = this.bracket
       .filter((n: any) => n.round === 1)
@@ -321,11 +378,14 @@ openNodeMenu(node: any, side: 'home' | 'away', ev: MouseEvent) {
 }
 
 pickTeamForNode(node: any, side: 'home' | 'away', team: { id: number; name: string }) {
+  if (!this.canManageFormat) {
+    return;
+  }
+
   const payload = { nodeId: node.id, teamId: team.id, homeTeam: side === 'home' };
 
   this.formatService.assignTeamToBracketNode(this.tournamentId, payload).subscribe({
     next: () => {
-      // **natychmiast** aktualizujemy lokalny widok (bez czekania na ponowne ładowanie)
       if (!node.matchRef) node.matchRef = { id: node.id, name: node.match?.name, teamHomeId: 0, teamAwayId: 0, teamHomeName: '', teamAwayName: '' };
 
       if (side === 'home') {
@@ -336,7 +396,6 @@ pickTeamForNode(node: any, side: 'home' | 'away', team: { id: number; name: stri
         node.matchRef.teamAwayName = team.name;
       }
 
-      // zamknij menu
       this.nodeMenuOpenForId = null;
       this.nodeMenuSide = null;
     },
@@ -344,7 +403,6 @@ pickTeamForNode(node: any, side: 'home' | 'away', team: { id: number; name: stri
   });
 }
 
-// zamykanie na klik poza dropdownem
 @HostListener('document:click')
 closeNodeMenus() {
   this.nodeMenuOpenForId = null;
@@ -355,5 +413,28 @@ closeNodeMenus() {
     this.auth.logout().subscribe(() => {
       this.router.navigate(['/login']); 
     });
+  }
+
+    private loadTournamentContext(): void {
+    this.tournamentService.getTournamentById(this.tournamentId)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (tournament: TournamentResponse) => {
+          this.tournamentOrganizerId = tournament.organizer?.id ?? null;
+        },
+        error: () => {
+          this.tournamentOrganizerId = null;
+        }
+      });
+  }
+
+  get canManageFormat(): boolean {
+    if (this.currentUser?.userRole === 'ADMIN') {
+      return true;
+    }
+    if (!this.currentUser || this.tournamentOrganizerId === null) {
+      return false;
+    }
+    return this.currentUser.id === this.tournamentOrganizerId;
   }
 }

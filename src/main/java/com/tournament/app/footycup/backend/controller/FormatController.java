@@ -29,8 +29,8 @@ public class FormatController {
     @GetMapping
     public ResponseEntity<Boolean> formatExits(
             @PathVariable Long tournamentId,
-            @AuthenticationPrincipal User organizer) {
-        return ResponseEntity.ok(formatService.structureExists(tournamentId, organizer));
+            @AuthenticationPrincipal User user) {
+        return ResponseEntity.ok(formatService.structureExists(tournamentId, user));
     }
 
     @PostMapping("/group")
@@ -89,8 +89,8 @@ public class FormatController {
     @GetMapping("/groups")
     public ResponseEntity<List<GroupResponse>> getGroups(
             @PathVariable Long tournamentId,
-            @AuthenticationPrincipal User organizer) {
-        var groups = formatService.getGroups(tournamentId, organizer);
+            @AuthenticationPrincipal User user) {
+        var groups = formatService.getGroups(tournamentId, user);
         var dto = groups.stream().map(groupMapper::toResponse).toList();
         return ResponseEntity.ok(dto);
     }
@@ -98,16 +98,16 @@ public class FormatController {
     @GetMapping("/groups/{groupId}")
     public ResponseEntity<GroupResponse> getGroup(@PathVariable Long tournamentId,
                                                   @PathVariable Long groupId,
-                                                  @AuthenticationPrincipal User organizer) {
-        var group = formatService.getGroup(tournamentId, groupId, organizer);
+                                                  @AuthenticationPrincipal User user) {
+        var group = formatService.getGroup(tournamentId, groupId, user);
         return ResponseEntity.ok(groupMapper.toResponse(group));
     }
 
     @GetMapping("/bracket")
     public ResponseEntity<List<BracketNodeResponse>> getBracket(
             @PathVariable Long tournamentId,
-            @AuthenticationPrincipal User organizer) {
-        var bracketNodes = formatService.getBracketNodes(tournamentId, organizer);
+            @AuthenticationPrincipal User user) {
+        var bracketNodes = formatService.getBracketNodes(tournamentId, user);
         var dto = bracketNodes.stream().map(bracketMapper::toResponse).toList();
         return ResponseEntity.ok(dto);
     }

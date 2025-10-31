@@ -223,6 +223,17 @@ html, body {
   margin: 0 auto;
 }
 
+.view-only-banner {
+  margin-bottom: 1rem;
+  padding: 0.75rem 1rem;
+  background: #ebf8ff;
+  border: 1px solid #90cdf4;
+  border-radius: 12px;
+  color: #2b6cb0;
+  font-weight: 600;
+  text-align: center;
+}
+
 .teams-header,
 .teams-row {
   display: grid;

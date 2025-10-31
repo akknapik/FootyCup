@@ -54,29 +54,36 @@
 
         <main class="content">
           <div class="page-header">
-            <h2>Edit team</h2>
+            <h2>{{ canManageTeam ? 'Manage team' : 'Team details' }}</h2>
             <button *ngIf="team" class="btn stats-btn" (click)="openTeamStatistics()">Team statistics</button>
+          </div>
+
+          <div *ngIf="!canManageTeam && canManagePlayers" class="coach-banner">
+            You can manage the player list for this team. Tournament settings are read-only.
+          </div>
+          <div *ngIf="!canManageTeam && !canManagePlayers" class="view-only-banner">
+            You can only view this team's information.
           </div>
 
           <div class="form-card" *ngIf="team as t">
             <div class="one-row">
               <div class="input-group">
                 <label>Team's name</label>
-                <input type="text" [(ngModel)]="t.name" />
+                <input type="text" [(ngModel)]="t.name" [readonly]="!canManageTeam" />
               </div>
 
               <div class="input-group">
                 <label>Coach's email</label>
-                <input type="email" [(ngModel)]="t.coach.email" />
+                <input type="email" [(ngModel)]="t.coach.email" [readonly]="!canManageTeam" />
               </div>
 
               <div class="input-group">
                 <label>Country</label>
-                <input type="text" [(ngModel)]="t.country" />
+                <input type="text" [(ngModel)]="t.country" [readonly]="!canManageTeam" />
               </div>
             </div>
 
-            <div class="form-actions">
+            <div class="form-actions" *ngIf="canManageTeam">
               <button class="btn btn-create" (click)="updateTeam()">Save</button>
             </div>
           </div>
@@ -105,18 +112,21 @@
                 <div></div>
               </div>
 
-              <div class="players-row" *ngFor="let player of paginatedPlayers" (click)="startEdit(player)">
+              <div class="players-row" *ngFor="let player of paginatedPlayers">
                 <div>{{ player.number || '—' }}</div>
                 <div>{{ player.name || '—' }}</div>
                 <div>{{ player.birthDate || '—' }}</div>
 
                 <div class="row-actions" (click)="$event.stopPropagation()">
-                  <button class="dots-btn" (click)="toggleMenu(player.id)">⋮</button>
-                  <div class="dropdown-menu" *ngIf="isMenuOpen(player.id)">
-                    <button (click)="startEdit(player)">Edit</button>
-                    <button (click)="$event.stopPropagation(); openPlayerStatistics(player)">Statistics</button>
-                    <button (click)="deletePlayer(player.id)">Delete</button>
-                  </div>
+                  <button class="stats-link" (click)="openPlayerStatistics(player)">Statistics</button>
+
+                  <ng-container *ngIf="canManagePlayers">
+                    <button class="dots-btn" (click)="toggleMenu(player.id)">⋮</button>
+                    <div class="dropdown-menu" *ngIf="isMenuOpen(player.id)">
+                      <button (click)="startEdit(player)">Edit</button>
+                      <button (click)="deletePlayer(player.id)">Delete</button>
+                    </div>
+                  </ng-container>
                 </div>
               </div>
             </ng-container>
@@ -243,7 +253,7 @@
           </div>
         </div>
 
-        <div class="edit-modal" *ngIf="editMode && selectedPlayer as sp">
+        <div class="edit-modal" *ngIf="editMode && canManagePlayers && selectedPlayer as sp">
           <h4>Edit Player</h4>
 
           <div class="input-group">

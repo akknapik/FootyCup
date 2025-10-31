@@ -55,7 +55,7 @@
         <main class="content">
           <div class="header-row">
             <h2>Format</h2>
-            <div class="actions" *ngIf="structureExists">
+            <div class="actions" *ngIf="structureExists && canManageFormat">
               <button (click)="deleteStructures(tournamentId)">Delete Format</button>
               <div *ngIf="groups.length > 0">
                 <button (click)="assignTeamsRandomly(tournamentId)">Assign Teams Randomly</button>
@@ -63,50 +63,62 @@
             </div>
           </div>
 
-          <div *ngIf="!structureExists; else showStructure" class="format-options">
-            <div class="form-card">
-              <h3>League</h3>
-              <div class="input-group">
-                <label>Number of groups:</label>
-                <input type="number" [(ngModel)]="groupCount" min="1" />
-              </div>
-              <div class="input-group">
-                <label>Teams per group:</label>
-                <input type="number" [(ngModel)]="teamsPerGroup" min="2" />
-              </div>
-              <button (click)="generateGroup()">Generate League Format</button>
-            </div>
-
-            <div class="form-card">
-              <h3>Knockout</h3>
-              <div class="input-group">
-                <label>Number of teams:</label>
-                <select [(ngModel)]="bracketSize">
-                  <option *ngFor="let size of [2,4,8,16,32]" [value]="size">{{ size }}</option>
-                </select>
-              </div>
-              <button (click)="generateBracket()">Generate Bracket</button>
-            </div>
-
-            <div class="form-card">
-              <h3>Mixed</h3>
-              <div class="input-group">
-                <label>Number of groups:</label>
-                <input type="number" [(ngModel)]="mixedGroupCount" min="1" />
-              </div>
-              <div class="input-group">
-                <label>Teams per group:</label>
-                <input type="number" [(ngModel)]="mixedTeamsPerGroup" min="2" />
-              </div>
-              <div class="input-group">
-                <label>Advancing teams:</label>
-                <select [(ngModel)]="mixedAdvancing">
-                  <option *ngFor="let option of [2, 4, 8, 16, 32]" [value]="option">{{ option }}</option>
-                </select>
-              </div>
-              <button (click)="generateMixed()">Generate Mixed Format</button>
-            </div>
+          <div *ngIf="!canManageFormat" class="view-only-banner">
+            You can view the tournament format. Only the organizer can make changes.
           </div>
+
+          <div *ngIf="!structureExists; else showStructure" class="format-options">
+            <ng-container *ngIf="canManageFormat; else noStructureInfo">
+              <div class="form-card">
+                <h3>League</h3>
+                <div class="input-group">
+                  <label>Number of groups:</label>
+                  <input type="number" [(ngModel)]="groupCount" min="1" />
+                </div>
+                <div class="input-group">
+                  <label>Teams per group:</label>
+                  <input type="number" [(ngModel)]="teamsPerGroup" min="2" />
+                </div>
+                <button (click)="generateGroup()">Generate League Format</button>
+              </div>
+
+              <div class="form-card">
+                <h3>Knockout</h3>
+                <div class="input-group">
+                  <label>Number of teams:</label>
+                  <select [(ngModel)]="bracketSize">
+                    <option *ngFor="let size of [2,4,8,16,32]" [value]="size">{{ size }}</option>
+                  </select>
+                </div>
+                <button (click)="generateBracket()">Generate Bracket</button>
+              </div>
+
+              <div class="form-card">
+                <h3>Mixed</h3>
+                <div class="input-group">
+                  <label>Number of groups:</label>
+                  <input type="number" [(ngModel)]="mixedGroupCount" min="1" />
+                </div>
+                <div class="input-group">
+                  <label>Teams per group:</label>
+                  <input type="number" [(ngModel)]="mixedTeamsPerGroup" min="2" />
+                </div>
+                <div class="input-group">
+                  <label>Advancing teams:</label>
+                  <select [(ngModel)]="mixedAdvancing">
+                    <option *ngFor="let option of [2, 4, 8, 16, 32]" [value]="option">{{ option }}</option>
+                  </select>
+                </div>
+                <button (click)="generateMixed()">Generate Mixed Format</button>
+              </div>
+            </ng-container>
+          </div>
+
+          <ng-template #noStructureInfo>
+            <div class="view-only-placeholder">
+              The tournament organizer has not configured the format yet.
+            </div>
+          </ng-template>
 
           <ng-template #showStructure>
             <div *ngIf="groups.length > 0">
@@ -117,42 +129,47 @@
                   <table>
                     <thead><tr><th>Team</th></tr></thead>
                     <tbody>
-                      <tr *ngFor="let slot of group.groupTeams" (click)="editSlot(slot)">
+                      <tr *ngFor="let slot of group.groupTeams">
                         <td>
-                          <div class="inline-picker" (click)="openSlotMenu(slot, $event)">
-                            <span class="picker-label">
-                              {{ slot.team?.name || 'Select team' }}
-                            </span>
-                            <span class="picker-caret">▾</span>
-                          </div>
+                          <ng-container *ngIf="canManageFormat; else readonlyGroupSlot">
+                            <div class="inline-picker" (click)="openSlotMenu(slot, $event)">
+                              <span class="picker-label">
+                                {{ slot.team?.name || 'Select team' }}
+                              </span>
+                              <span class="picker-caret">▾</span>
+                            </div>
 
-                          <!-- Dropdown (absolutnie pozycjonowany) -->
-                          <div
-                            class="inline-picker-menu"
-                            *ngIf="slotMenuOpenForId === slot.id"
-                          >
-                            <input
-                              type="text"
-                              class="picker-search"
-                              placeholder="Search team..."
-                              [(ngModel)]="teamSearch"
-                              (click)="$event.stopPropagation()"
-                            />
+                            <div
+                              class="inline-picker-menu"
+                              *ngIf="canManageFormat && slotMenuOpenForId === slot.id"
+                            >
+                              <input
+                                type="text"
+                                class="picker-search"
+                                placeholder="Search team..."
+                                [(ngModel)]="teamSearch"
+                                (click)="$event.stopPropagation()"
+                              />
 
-                            <div class="picker-list">
-                              <button
-                                class="picker-item"
-                                *ngFor="let team of filteredAvailableTeams"
-                                (click)="pickTeamForSlot(slot, team)"
-                              >
-                                {{ team.name }}
-                              </button>
+                              <div class="picker-list">
+                                <button
+                                  class="picker-item"
+                                  *ngFor="let team of filteredAvailableTeams"
+                                  (click)="pickTeamForSlot(slot, team)"
+                                >
+                                  {{ team.name }}
+                                </button>
 
-                              <div class="picker-empty" *ngIf="filteredAvailableTeams.length === 0">
-                                No teams
+                                <div class="picker-empty" *ngIf="filteredAvailableTeams.length === 0">
+                                  No teams
+                                </div>
                               </div>
                             </div>
-                          </div>
+                          </ng-container>
+
+                          <ng-template #readonlyGroupSlot>
+                            <span class="readonly-chip">{{ slot.team?.name || 'To be determined' }}</span>
+                          </ng-template>
                         </td>
                       </tr>
                     </tbody>
@@ -167,69 +184,76 @@
                 <div *ngFor="let node of bracket" class="bracket-match">
                 <strong>{{ node.match.name }}</strong> |
 
-                <!-- HOME -->
-                <span class="inline-picker"
-                      (click)="openNodeMenu(node, 'home', $event)">
-                  <span class="picker-label">
-                    {{
-                      node.round === 1
-                        ? (node.matchRef?.teamHomeName || 'Select team')
-                        : (node.matchRef?.teamHomeName || 'Empty slot')
-                    }}
+                <ng-container *ngIf="canManageFormat; else readonlyHome">
+                  <span class="inline-picker"
+                        (click)="openNodeMenu(node, 'home', $event)">
+                    <span class="picker-label">
+                      {{
+                        node.round === 1
+                          ? (node.match?.teamHome?.name || 'Select team')
+                          : (node.match?.teamHome?.name || 'Empty slot')
+                      }}
+                    </span>
+                    <span class="picker-caret">▾</span>
                   </span>
-                  <span class="picker-caret">▾</span>
-                </span>
-
-                <!-- HOME menu -->
-                <div class="inline-picker-menu"
-                    *ngIf="nodeMenuOpenForId === node.id && nodeMenuSide === 'home'"
-                    (click)="$event.stopPropagation()">
-                  <input type="text"
-                        class="picker-search"
-                        placeholder="Search team..."
-                        [(ngModel)]="nodeTeamSearch" />
-                  <div class="picker-list">
-                    <button class="picker-item"
-                            *ngFor="let team of filteredNodeTeams"
-                            (click)="pickTeamForNode(node, 'home', team)">
-                      {{ team.name }}
-                    </button>
-                    <div class="picker-empty" *ngIf="filteredNodeTeams.length === 0">No teams</div>
+                  <div class="inline-picker-menu"
+                      *ngIf="canManageFormat && nodeMenuOpenForId === node.id && nodeMenuSide === 'home'"
+                      (click)="$event.stopPropagation()">
+                    <input type="text"
+                          class="picker-search"
+                          placeholder="Search team..."
+                          [(ngModel)]="nodeTeamSearch" />
+                    <div class="picker-list">
+                      <button class="picker-item"
+                              *ngFor="let team of filteredNodeTeams"
+                              (click)="pickTeamForNode(node, 'home', team)">
+                        {{ team.name }}
+                      </button>
+                      <div class="picker-empty" *ngIf="filteredNodeTeams.length === 0">No teams</div>
+                    </div>
                   </div>
-                </div>
-
+                </ng-container>
+                <ng-template #readonlyHome>
+                  <span class="readonly-chip">
+                    {{ node.match?.teamHome?.name || 'To be determined' }}
+                  </span>
+                </ng-template>
                 &nbsp;vs&nbsp;
 
-                <!-- AWAY -->
-                <span class="inline-picker"
-                      (click)="openNodeMenu(node, 'away', $event)">
-                  <span class="picker-label">
-                    {{
-                      node.round === 1
-                        ? (node.matchRef?.teamAwayName || 'Select team')
-                        : (node.matchRef?.teamAwayName || 'Empty slot')
-                    }}
+                <ng-container *ngIf="canManageFormat; else readonlyAway">
+                  <span class="inline-picker"
+                        (click)="openNodeMenu(node, 'away', $event)">
+                    <span class="picker-label">
+                      {{
+                        node.round === 1
+                          ? (node.match?.teamAway?.name || 'Select team')
+                          : (node.match?.teamAway?.name || 'Empty slot')
+                      }}
+                    </span>
+                    <span class="picker-caret">▾</span>
                   </span>
-                  <span class="picker-caret">▾</span>
-                </span>
-
-                <!-- AWAY menu -->
-                <div class="inline-picker-menu"
-                    *ngIf="nodeMenuOpenForId === node.id && nodeMenuSide === 'away'"
-                    (click)="$event.stopPropagation()">
-                  <input type="text"
-                        class="picker-search"
-                        placeholder="Search team..."
-                        [(ngModel)]="nodeTeamSearch" />
-                  <div class="picker-list">
-                    <button class="picker-item"
-                            *ngFor="let team of filteredNodeTeams"
-                            (click)="pickTeamForNode(node, 'away', team)">
-                      {{ team.name }}
-                    </button>
-                    <div class="picker-empty" *ngIf="filteredNodeTeams.length === 0">No teams</div>
+                  <div class="inline-picker-menu"
+                      *ngIf="canManageFormat && nodeMenuOpenForId === node.id && nodeMenuSide === 'away'"
+                      (click)="$event.stopPropagation()">
+                    <input type="text"
+                          class="picker-search"
+                          placeholder="Search team..."
+                          [(ngModel)]="nodeTeamSearch" />
+                    <div class="picker-list">
+                      <button class="picker-item"
+                              *ngFor="let team of filteredNodeTeams"
+                              (click)="pickTeamForNode(node, 'away', team)">
+                        {{ team.name }}
+                      </button>
+                      <div class="picker-empty" *ngIf="filteredNodeTeams.length === 0">No teams</div>
+                    </div>
                   </div>
-                </div>
+                </ng-container>
+                <ng-template #readonlyAway>
+                  <span class="readonly-chip">
+                    {{ node.match?.teamAwayName || 'To be determined' }}
+                  </span>
+                </ng-template>
                 </div>
               </div>
             </div>

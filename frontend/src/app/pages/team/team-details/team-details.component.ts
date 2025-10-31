@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, OnDestroy, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { TeamService } from '../../../services/team.service';
 import { AuthService } from '../../../services/auth.service';
@@ -9,6 +9,10 @@ import { UpdatePlayerRequest } from '../../../models/team/update-player.request'
 import { UpdateTeamRequest } from '../../../models/team/update-team.request';
 import { TeamStatisticsResponse } from '../../../models/team/team-statistics.response';
 import { PlayerStatisticsResponse } from '../../../models/team/player-statistics.response';
+import { User } from '../../../models/user.model';
+import { Subject, takeUntil } from 'rxjs';
+import { TournamentService } from '../../../services/tournament.service';
+import { TournamentResponse } from '../../../models/tournament/tournament.response';
 
 interface EditablePlayer {
   id: number;
@@ -23,7 +27,7 @@ interface EditablePlayer {
   templateUrl: './team-details.component.html',
   styleUrl: './team-details.component.css'
 })
-export class TeamDetailsComponent {
+export class TeamDetailsComponent implements OnInit, OnDestroy {
   tournamentId!: number;
   teamId!: number;
 
@@ -53,28 +57,46 @@ export class TeamDetailsComponent {
   teamStatsError: string | null = null;
   teamStatistics: TeamStatisticsResponse | null = null;
 
+  currentUser: User | null = null;
+  private tournamentOrganizerId: number | null = null;
+
+  private destroy$ = new Subject<void>();
+
   constructor(
     private route: ActivatedRoute,
     private teamService: TeamService,
     private router: Router,
     public auth: AuthService,
-    private notification: NotificationService
-  ) {}
+    private notification: NotificationService,
+    private tournamentService: TournamentService
+    ) {}
 
   ngOnInit(): void {
-    this.route.paramMap.subscribe(params => {
+    this.auth.currentUser$
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(user => this.currentUser = user);
+
+    this.route.paramMap
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(params => {
       const tournamentId = params.get('tournamentId');
       const teamId = params.get('teamId');
 
       if (tournamentId && teamId) {
         this.tournamentId = +tournamentId;
         this.teamId = +teamId;
+        this.loadTournamentContext();
         this.loadTeamDetails();
       } else {
         this.notification.showError('Tournament or team ID not found!');
         this.router.navigate(['/tournaments/my']);
       }
     });
+  }
+
+  ngOnDestroy(): void {
+    this.destroy$.next();
+    this.destroy$.complete();
   }
 
   loadTeamDetails(): void {
@@ -94,7 +116,26 @@ export class TeamDetailsComponent {
     });
   }
 
+  private loadTournamentContext(): void {
+    this.tournamentService.getTournamentById(this.tournamentId)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (tournament: TournamentResponse) => {
+          this.tournamentOrganizerId = tournament.organizer?.id ?? null;
+        },
+        error: () => {
+          this.tournamentOrganizerId = null;
+        }
+      });
+  }
+
   updateTeam(): void {
+    if (!this.canManageTeam || !this.team) {
+      if (!this.canManageTeam) {
+        this.notification.showInfo('Only the organizer can update team details.');
+      }
+      return;
+    }
     if (!this.team) return;
 
     const payload: UpdateTeamRequest = {
@@ -117,10 +158,18 @@ export class TeamDetailsComponent {
   }
 
   goToAddPlayer(): void {
+    if (!this.canManagePlayers) {
+      this.notification.showInfo('You can only view players for this team.');
+      return;
+    }
     this.router.navigate(['/tournament', this.tournamentId, 'teams', this.teamId, 'add-player']);
   }
 
   deletePlayer(playerId: number): void {
+    if (!this.canManagePlayers) {
+      this.notification.showInfo('Only the organizer or the team coach can manage players.');
+      return;
+    }
     this.notification.confirm('Are you sure you want to delete this player?').subscribe(confirmed => {
       if (!confirmed) return;
 
@@ -136,10 +185,17 @@ export class TeamDetailsComponent {
     });
   }
 
-toggleMenu(playerId: number): void {
+  toggleMenu(playerId: number): void {
+    if (!this.canManagePlayers) {
+      return;
+    }
     this.openedPlayerId = (this.openedPlayerId === playerId) ? null : playerId;
   }
+
   isMenuOpen(playerId: number): boolean {
+    if (!this.canManagePlayers) {
+      return false;
+    }
     return this.openedPlayerId === playerId;
   }
   closeAllMenus(): void {
@@ -213,6 +269,10 @@ openPlayerStatistics(player: PlayerRef): void {
   }
 
   startEdit(player: PlayerRef): void {
+    if (!this.canManagePlayers) {
+      return;
+    }
+
     this.selectedPlayer = {
       id: player.id,
       name: player.name,
@@ -229,6 +289,13 @@ openPlayerStatistics(player: PlayerRef): void {
   }
 
   updatePlayer(): void {
+    if (!this.canManagePlayers || !this.selectedPlayer) {
+      if (!this.canManagePlayers) {
+        this.notification.showInfo('Only the organizer or the team coach can update players.');
+      }
+      return;
+    }
+
     if (!this.selectedPlayer) return;
 
     const body: UpdatePlayerRequest = {
@@ -274,5 +341,25 @@ openPlayerStatistics(player: PlayerRef): void {
     this.auth.logout().subscribe(() => {
       this.router.navigate(['/login']);
     });
+  }
+
+  get canManageTeam(): boolean {
+    if (this.currentUser?.userRole === 'ADMIN') {
+      return true;
+    }
+    if (!this.currentUser || this.tournamentOrganizerId === null) {
+      return false;
+    }
+    return this.currentUser.id === this.tournamentOrganizerId;
+  }
+
+  get canManagePlayers(): boolean {
+    if (this.canManageTeam) {
+      return true;
+    }
+    if (!this.currentUser || !this.team?.coach) {
+      return false;
+    }
+    return this.team.coach.id === this.currentUser.id;
   }
 }

@@ -55,9 +55,13 @@
         <main class="content">
           <div class="header-row">
             <h2>Teams</h2>
-            <div class="actions">
+            <div class="actions" *ngIf="canManageTeams">
               <button (click)="goToCreate()">New team</button>
             </div>
+          </div>
+
+          <div *ngIf="!canManageTeams" class="view-only-banner">
+            You can browse teams in this tournament, but only the organizer can manage them.
           </div>
 
           <div *ngIf="isLoading" class="loading">
@@ -65,7 +69,10 @@
           </div>
 
           <div *ngIf="!isLoading && teams.length === 0" class="empty-state">
-            <p>No teams found. Click "New team" to add one.</p>
+            <p *ngIf="canManageTeams; else viewOnlyEmpty">No teams found. Click "New team" to add one.</p>
+            <ng-template #viewOnlyEmpty>
+              <p>No teams have been added to this tournament yet.</p>
+            </ng-template>
           </div>
 
           <div *ngIf="!isLoading && teams.length > 0" class="teams-table">
@@ -86,7 +93,7 @@
                 <span *ngIf="t.playersCount !== null && t.playersCount !== undefined" class="icon-person">👤</span>
               </div>
 
-              <div class="row-actions" *ngIf="team" (click)="$event.stopPropagation()">
+              <div class="row-actions" *ngIf="team && canManageTeams" (click)="$event.stopPropagation()">
                 <button
                   class="dots-btn"
                   (click)="toggleMenu(team.id); $event.stopPropagation()"

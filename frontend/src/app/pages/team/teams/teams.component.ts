@@ -1,9 +1,13 @@
-import { Component, HostListener } from '@angular/core';
+import { Component, HostListener, OnDestroy, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { TeamService } from '../../../services/team.service';
 import { AuthService } from '../../../services/auth.service';
 import { NotificationService } from '../../../services/notification.service';
 import { TeamItemResponse } from '../../../models/team/team-item.response';
+import { User } from '../../../models/user.model';
+import { Subject, takeUntil } from 'rxjs';
+import { TournamentService } from '../../../services/tournament.service';
+import { TournamentResponse } from '../../../models/tournament/tournament.response';
 
 @Component({
   selector: 'app-teams',
@@ -11,7 +15,7 @@ import { TeamItemResponse } from '../../../models/team/team-item.response';
   templateUrl: './teams.component.html',
   styleUrl: './teams.component.css'
 })
-export class TeamsComponent {
+export class TeamsComponent implements OnInit, OnDestroy {
   teams: TeamItemResponse[] = [];
   tournamentId!: number;
 
@@ -21,25 +25,43 @@ export class TeamsComponent {
 
   openedMenuId: number | null = null;
 
+  currentUser: User | null = null;
+  private tournamentOrganizerId: number | null = null;
+
+  private destroy$ = new Subject<void>();
+
   constructor(
     private teamService: TeamService,
     private router: Router,
     private route: ActivatedRoute,
     public auth: AuthService,
-    private notification: NotificationService
-  ) {}
+    private notification: NotificationService,
+    private tournamentService: TournamentService
+    ) {}
 
   ngOnInit(): void {
-    this.route.paramMap.subscribe(params => {
+    this.auth.currentUser$
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(user => this.currentUser = user);
+
+    this.route.paramMap
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(params => {
       const tid = params.get('tournamentId');
       if (tid) {
         this.tournamentId = +tid;
+        this.loadTournamentContext();
         this.loadTeams();
       } else {
         this.notification.showError('Tournament ID not found');
         this.router.navigate(['/tournaments/my']);
       }
     });
+  }
+
+  ngOnDestroy(): void {
+    this.destroy$.next();
+    this.destroy$.complete();
   }
 
   loadTeams(): void {
@@ -58,7 +80,24 @@ export class TeamsComponent {
     });
   }
 
+  private loadTournamentContext(): void {
+    this.tournamentService.getTournamentById(this.tournamentId)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (tournament: TournamentResponse) => {
+          this.tournamentOrganizerId = tournament.organizer?.id ?? null;
+        },
+        error: () => {
+          this.tournamentOrganizerId = null;
+        }
+      });
+  }
+
   goToCreate(): void {
+    if (!this.canManageTeams) {
+      this.notification.showInfo('You can only browse teams in this tournament.');
+      return;
+    }
     this.router.navigate(['/tournament', this.tournamentId, 'teams', 'new']);
   }
 
@@ -67,6 +106,10 @@ export class TeamsComponent {
   }
 
   deleteTeam(teamId: number): void {
+    if (!this.canManageTeams) {
+      this.notification.showInfo('Only the organizer can manage teams.');
+      return;
+    }
     this.notification.confirm('Are you sure you want to delete this team?')
       .subscribe(confirmed => {
         if (!confirmed) return;
@@ -81,10 +124,16 @@ export class TeamsComponent {
   }
 
   toggleMenu(teamId: number): void {
+    if (!this.canManageTeams) {
+      return;
+    }
     this.openedMenuId = (this.openedMenuId === teamId) ? null : teamId;
   }
 
   isMenuOpen(teamId: number): boolean {
+    if (!this.canManageTeams) {
+      return false;
+    }
     return this.openedMenuId === teamId;
   }
 
@@ -123,10 +172,19 @@ export class TeamsComponent {
     if (this.currentPage < 1) this.currentPage = 1;
   }
 
-  // ----- auth -----
   logout(): void {
     this.auth.logout().subscribe(() => {
       this.router.navigate(['/login']);
     });
+  }
+
+  get canManageTeams(): boolean {
+    if (this.currentUser?.userRole === 'ADMIN') {
+      return true;
+    }
+    if (!this.currentUser || this.tournamentOrganizerId === null) {
+      return false;
+    }
+    return this.currentUser.id === this.tournamentOrganizerId;
   }
 }
