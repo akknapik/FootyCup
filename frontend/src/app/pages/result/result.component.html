@@ -53,6 +53,9 @@
         </header>
 
         <main class="content">
+            <div *ngIf="!canEditResults" class="info-banner info-banner--info">
+              You can review the schedule and standings. Only the organizer can update match scores.
+            </div>
             <ul class="tabs">
                 <li (click)="activeTab = 'schedule'" [class.active]="activeTab === 'schedule'">Schedule</li>
                 <li (click)="onTabChange('groups')" [class.active]="activeTab === 'groups'">Groups</li>
@@ -88,20 +91,30 @@
                         <td>{{ e.startDateTime | date: 'HH:mm' }}</td>
                         <td>{{ e.match.name }}</td>
                         <td>{{ e.match.teamHome?.name || '—' }}</td>
-                        <td>
-                          <input type="number"
-                                [(ngModel)]="e.match!.homeScore"
-                                (blur)="onResultChange(e.match)"
-                                min="0"
-                                class="score-input" />
+                         <td class="score-cell">
+                          <ng-container *ngIf="canEditResults; else homeScoreDisplay">
+                            <input type="number"
+                                   [(ngModel)]="e.match!.homeScore"
+                                   (blur)="onResultChange(e.match)"
+                                   min="0"
+                                   class="score-input" />
+                          </ng-container>
+                          <ng-template #homeScoreDisplay>
+                            <span class="score-display">{{ e.match.homeScore ?? '—' }}</span>
+                          </ng-template>
                         </td>
                         <td>{{ e.match.teamAway?.name || '—' }}</td>
-                        <td>
-                          <input type="number"
-                                [(ngModel)]="e.match!.awayScore"
-                                (blur)="onResultChange(e.match)"
-                                min="0"
-                                class="score-input" />
+                        <td class="score-cell">
+                          <ng-container *ngIf="canEditResults; else awayScoreDisplay">
+                            <input type="number"
+                                   [(ngModel)]="e.match!.awayScore"
+                                   (blur)="onResultChange(e.match)"
+                                   min="0"
+                                   class="score-input" />
+                          </ng-container>
+                          <ng-template #awayScoreDisplay>
+                            <span class="score-display">{{ e.match.awayScore ?? '—' }}</span>
+                          </ng-template>
                         </td>
                       </ng-container>
                       <ng-container *ngIf="e.type === 'BREAK'">

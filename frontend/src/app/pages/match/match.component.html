@@ -55,7 +55,7 @@
         <main class="content">
           <div class="header-row">
             <h2>Matches</h2>
-            <div class="actions">
+            <div class="actions" *ngIf="canManageMatches">
               <button class="btn-add">New match</button>
               <div *ngIf="groups.length > 0">
                 <button class="btn-add" (click)="generateGroupMatches()">Generate group matches</button>
@@ -63,14 +63,30 @@
             </div>
           </div>
 
-          <div class="matches-table">
+          <div *ngIf="isForbidden" class="info-banner info-banner--error">
+            You do not have access to view matches in this tournament.
+          </div>
+
+          <div *ngIf="!isForbidden && readOnlyView" class="info-banner info-banner--info">
+            You can view match information. Editing options are available only to the organizer or assigned staff.
+          </div>
+
+          <div class="matches-table" *ngIf="!isForbidden">
 
             <div *ngIf="isLoading" class="loading">
               <p>Loading matches...</p>
             </div>
 
             <div *ngIf="!isLoading && matches.length === 0" class="empty-state">
-              <p>No matches yet. You can create one or generate from groups.</p>
+              <p>
+                No matches yet.
+                <ng-container *ngIf="canManageMatches; else readonlyMessage">
+                  Generate matches from groups when you are ready.
+                </ng-container>
+              </p>
+              <ng-template #readonlyMessage>
+                Please check back later.
+              </ng-template>
             </div>
 
             <ng-container *ngIf="!isLoading && matches.length > 0">
@@ -79,6 +95,7 @@
                 <div>Teams</div>
                 <div>Status</div>
                 <div>Referee</div>
+                <div class="actions-header">Actions</div>
               </div>
 
               <div class="matches-row" *ngFor="let match of paginatedMatches">
@@ -88,42 +105,51 @@
                 </div>
                 <div class="status-column">{{ match?.status || '—' }}</div>
                 <div class="referee-column">
-                  <div *ngIf="match; else refereePlaceholder">
-                    <div class="referee-name">
-                      {{ match.referee ? match.referee.displayName : 'Not assigned' }}
-                    </div>
-                    <select *ngIf="referees.length > 0"
-                            [ngModel]="selectedReferees[match.id]"
-                            (ngModelChange)="onRefereeSelected(match, $event)"
-                            [disabled]="assigning[match.id]">
-                      <option [ngValue]="null">Select referee</option>
-                      <option *ngFor="let referee of referees" [ngValue]="referee.id">
-                        {{ referee.displayName }}
-                      </option>
-                    </select>
-                    <div *ngIf="referees.length === 0" class="no-referees">No referees available</div>
-                  </div>
+                  <ng-container *ngIf="match; else refereePlaceholder">
+                    <ng-container *ngIf="canAssignReferee(match); else refereeReadOnly">
+                      <select [ngModel]="selectedReferees[match.id]"
+                              (ngModelChange)="onRefereeSelected(match, $event)"
+                              [disabled]="assigning[match.id]">
+                        <option [ngValue]="null">Select referee</option>
+                        <option *ngFor="let referee of referees" [ngValue]="referee.id">
+                          {{ referee.displayName }}
+                        </option>
+                      </select>
+                      <div *ngIf="assigning[match.id]" class="loading-inline">Assigning...</div>
+                      <div *ngIf="!referees.length" class="no-referees">No referees available</div>
+                    </ng-container>
+                    <ng-template #refereeReadOnly>
+                      <div class="referee-hint">Only the organizer can change the referee.</div>
+                    </ng-template>
+                  </ng-container>
                   <ng-template #refereePlaceholder>—</ng-template>
                 </div>
 
-                <div class="row-actions" *ngIf="match" (click)="$event.stopPropagation()">
-                  <button class="dots-btn" (click)="toggleMenu(match)">⋮</button>
-                  <div class="dropdown-menu" *ngIf="match.showMenu">
-                    <button (click)="openTacticsBoard(match)">Tactics board</button>
-                    <button *ngIf="canManageEvents(match)" (click)="openMatchEvents(match)">Manage events</button>
-                    <button (click)="deleteMatch(match.id)">Delete</button>
-                  </div>
+                <div class="actions-column">
+                  <button class="link-btn" *ngIf="match && !canManageEvents(match)" (click)="openMatchEvents(match)">
+                    View details
+                  </button>
+                  <button class="link-btn" *ngIf="match && canManageEvents(match)" (click)="openMatchEvents(match)">
+                    Manage events
+                  </button>
+                  <button class="link-btn" *ngIf="match && canAccessTacticsBoard(match)" (click)="openTacticsBoard(match)">
+                    Tactics board
+                  </button>
+                  <button class="link-btn danger" *ngIf="match && canDeleteMatch(match)" (click)="deleteMatch(match.id)">
+                    Delete
+                  </button>
                 </div>
               </div>
             </ng-container>
           </div>
 
-          <div class="pagination" *ngIf="!isLoading && totalPages > 1">
+          <div class="pagination" *ngIf="!isLoading && !isForbidden && totalPages > 1">
             <button (click)="prevPage()" [disabled]="currentPage === 1">Prev</button>
             <span>{{ currentPage }} / {{ totalPages }}</span>
             <button (click)="nextPage()" [disabled]="currentPage === totalPages">Next</button>
           </div>
         </main>
+
         <footer class="footer">
           <p>&copy; 2025 FootyCup. All rights reserved.</p>
         </footer>

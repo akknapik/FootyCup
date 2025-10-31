@@ -5,7 +5,6 @@ import com.tournament.app.footycup.backend.enums.MatchStatus;
 import com.tournament.app.footycup.backend.model.*;
 import com.tournament.app.footycup.backend.repository.*;
 import lombok.AllArgsConstructor;
-import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 

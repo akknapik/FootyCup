@@ -10,6 +10,9 @@ import { TacticsBoardService } from '../../services/tactics-board.service';
 import { TacticsLayer } from '../../models/tactics/tactics-layer.model';
 import { TacticsToken, TacticsTokenType } from '../../models/tactics/tactics-token.model';
 import { TacticsBoardState } from '../../models/tactics/tactics-board-state.request';
+import { User } from '../../models/user.model';
+import { Subscription } from 'rxjs';
+import { TournamentService } from '../../services/tournament.service';
 
 interface DragContext {
   tokenId: string;
@@ -36,8 +39,21 @@ export class TacticsBoardComponent {
   layers: TacticsLayer[] = [];
   activeLayerId: string | null = null;
 
+  boardTeamId: number | null = null;
+  currentUser: User | null = null;
+  tournamentOrganizerId: number | null = null;
+  homeCoachId: number | null = null;
+  awayCoachId: number | null = null;
+  canManageBoard = false;
+  private homeCoachLoaded = false;
+  private awayCoachLoaded = false;
+
   private dragContext: DragContext | null = null;
   private layerDirty = false;
+
+  private accessChecked = false;
+  private userSubscription?: Subscription;
+  private lastLoadedTeamId: number | null = null;
 
   @ViewChild('pitch') pitchRef?: ElementRef<HTMLDivElement>;
 
@@ -47,11 +63,17 @@ export class TacticsBoardComponent {
     private matchService: MatchService,
     private teamService: TeamService,
     private tacticsBoardService: TacticsBoardService,
+    private tournamentService: TournamentService,
     private notification: NotificationService,
     public auth: AuthService
   ) {}
 
   ngOnInit(): void {
+    this.userSubscription = this.auth.currentUser$.subscribe(user => {
+      this.currentUser = user;
+      this.evaluateAccess(true);
+    });
+
     this.route.paramMap.subscribe(params => {
       const tournamentId = params.get('tournamentId');
       const matchId = params.get('matchId');
@@ -62,8 +84,18 @@ export class TacticsBoardComponent {
       }
       this.tournamentId = +tournamentId;
       this.matchId = +matchId;
+      this.loadTournament();
       this.loadMatch();
     });
+    this.route.queryParamMap.subscribe(query => {
+      const teamParam = query.get('teamId');
+      this.boardTeamId = teamParam !== null ? +teamParam : null;
+      this.evaluateAccess(true);
+    });
+  }
+
+  ngOnDestroy(): void {
+    this.userSubscription?.unsubscribe();
   }
 
   get activeLayer(): TacticsLayer | null {
@@ -83,8 +115,14 @@ export class TacticsBoardComponent {
     this.matchService.getMatch(this.tournamentId, this.matchId).subscribe({
       next: match => {
         this.match = match;
+        this.layers = [];
+        this.activeLayerId = null;
+        this.lastLoadedTeamId = null;
+        this.accessChecked = false;
         this.isLoading = false;
-        this.restoreState();
+        this.homeCoachLoaded = match.teamHome?.id ? false : true;
+        this.awayCoachLoaded = match.teamAway?.id ? false : true;
+        this.evaluateAccess(true);
         this.loadTeamPlayers(match.teamHome?.id ?? null, 'home');
         this.loadTeamPlayers(match.teamAway?.id ?? null, 'away');
       },
@@ -95,13 +133,31 @@ export class TacticsBoardComponent {
     });
   }
 
+  private loadTournament(): void {
+    this.tournamentService.getTournamentById(this.tournamentId).subscribe({
+      next: tournament => {
+        this.tournamentOrganizerId = tournament.organizer?.id ?? null;
+        this.evaluateAccess(true);
+      },
+      error: () => {
+        this.tournamentOrganizerId = null;
+        this.evaluateAccess(true);
+      }
+    });
+  }
+
   private loadTeamPlayers(teamId: number | null, type: TacticsTokenType): void {
     if (!teamId) {
       if (type === 'home') {
         this.homePlayers = [];
+        this.homeCoachId = null;
+        this.homeCoachLoaded = true;
       } else if (type === 'away') {
         this.awayPlayers = [];
+        this.awayCoachId = null;
+        this.awayCoachLoaded = true;
       }
+      this.evaluateAccess(true);
       return;
     }
 
@@ -109,18 +165,34 @@ export class TacticsBoardComponent {
       next: team => {
         if (type === 'home') {
           this.homePlayers = team.players ?? [];
+          this.homeCoachId = team.coach?.id ?? null;
+          this.homeCoachLoaded = true;
         } else {
           this.awayPlayers = team.players ?? [];
+          this.awayCoachId = team.coach?.id ?? null;
+          this.awayCoachLoaded = true;
         }
+        this.evaluateAccess(true);
       },
       error: () => {
         this.notification.showError('Failed to load team players.');
+        if (type === 'home') {
+          this.homeCoachId = null;
+          this.homeCoachLoaded = true;
+        } else {
+          this.awayCoachId = null;
+          this.awayCoachLoaded = true;
+        }
+        this.evaluateAccess(true);
       }
     });
   }
 
-  private restoreState(): void {
-    this.tacticsBoardService.load(this.tournamentId, this.matchId).subscribe({
+  private reloadBoardState(): void {
+    if (!this.tournamentId || !this.matchId || !this.canManageBoard) {
+      return;
+    }
+    this.tacticsBoardService.load(this.tournamentId, this.matchId, this.boardTeamId).subscribe({
       next: saved => {
         if (saved && saved.layers && saved.layers.length > 0) {
           this.layers = saved.layers.map(layer => ({
@@ -139,14 +211,87 @@ export class TacticsBoardComponent {
           this.activeLayerId = layer.id;
           this.persistState();
         }
+        this.lastLoadedTeamId = this.boardTeamId;
+
       },
-      error: () => {
+      error: (error) => {
+        if (error.status === 403) {
+          this.notification.showInfo('You do not have permission to view this tactics board.');
+          this.router.navigate([`/tournament/${this.tournamentId}/matches`]);
+          return;
+        }
         this.notification.showError('Failed to load tactics board data.');
         const layer = this.createLayer('Variant 1');
         this.layers = [layer];
         this.activeLayerId = layer.id;
       }
     });
+  }
+
+  private evaluateAccess(reloadIfChanged: boolean): void {
+    if (!this.match) {
+      return;
+    }
+
+    const user = this.currentUser;
+    if (!user) {
+      if (!this.accessChecked && !this.isLoading) {
+        this.notification.showInfo('Only the organizer or team coaches can access the tactics board.');
+        this.router.navigate([`/tournament/${this.tournamentId}/matches`]);
+        this.accessChecked = true;
+      }
+      this.canManageBoard = false;
+      return;
+    }
+
+    const isAdmin = user.userRole === 'ADMIN';
+    const isOrganizer = this.tournamentOrganizerId !== null && user.id === this.tournamentOrganizerId;
+
+    if (!isAdmin && !isOrganizer) {
+      const needsHome = !!this.match.teamHome?.id && !this.homeCoachLoaded;
+      const needsAway = !!this.match.teamAway?.id && !this.awayCoachLoaded;
+      if (needsHome || needsAway) {
+        return;
+      }
+    }
+
+    const isHomeCoach = !!this.match.teamHome?.id && this.homeCoachId === user.id;
+    const isAwayCoach = !!this.match.teamAway?.id && this.awayCoachId === user.id;
+    const allowed = isAdmin || isOrganizer || isHomeCoach || isAwayCoach;
+
+    this.canManageBoard = allowed;
+    this.accessChecked = true;
+
+    if (!allowed) {
+      this.notification.showInfo('Only the organizer or team coaches can access the tactics board.');
+      this.router.navigate([`/tournament/${this.tournamentId}/matches`]);
+      return;
+    }
+
+    let desiredTeamId: number | null = this.boardTeamId;
+    if (!isAdmin && !isOrganizer) {
+      desiredTeamId = isHomeCoach && this.match.teamHome?.id ? this.match.teamHome.id : null;
+      if (desiredTeamId === null && isAwayCoach && this.match.teamAway?.id) {
+        desiredTeamId = this.match.teamAway.id;
+      }
+
+      if (desiredTeamId === null) {
+        this.notification.showInfo('You are not assigned as a coach for this match.');
+        this.router.navigate([`/tournament/${this.tournamentId}/matches`]);
+        this.canManageBoard = false;
+        return;
+      }
+    }
+
+    const shouldReload = reloadIfChanged && (desiredTeamId !== this.boardTeamId || this.lastLoadedTeamId !== this.boardTeamId || this.layers.length === 0);
+
+    if (desiredTeamId !== this.boardTeamId) {
+      this.boardTeamId = desiredTeamId;
+    }
+
+    if (shouldReload) {
+      this.reloadBoardState();
+    }
   }
 
   addLayer(): void {
@@ -392,7 +537,7 @@ export class TacticsBoardComponent {
   }
 
   private persistState(): void {
-    if (!this.tournamentId || !this.matchId) {
+    if (!this.tournamentId || !this.matchId || !this.canManageBoard) {
       return;
     }
     const timestamp = new Date().toISOString();
@@ -409,7 +554,7 @@ export class TacticsBoardComponent {
       activeLayerId: this.activeLayerId,
       lastUpdated: timestamp
     };
-    this.tacticsBoardService.save(this.tournamentId, this.matchId, state).subscribe({
+    this.tacticsBoardService.save(this.tournamentId, this.matchId, state, this.boardTeamId).subscribe({
       error: () => this.notification.showError('Failed to save tactics board state.')
     });
   }

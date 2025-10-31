@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable, of, throwError } from 'rxjs';
 import { catchError, map } from 'rxjs/operators';
 import { TacticsBoardState } from '../models/tactics/tactics-board-state.request';
@@ -12,11 +12,16 @@ export class TacticsBoardService {
 
   constructor(private http: HttpClient) {}
 
-  load(tournamentId: number, matchId: number): Observable<TacticsBoardState | null> {
+  load(
+    tournamentId: number,
+    matchId: number,
+    teamId?: number | null
+  ): Observable<TacticsBoardState | null> {
     return this.http
-      .get<TacticsBoardResponse>(`/api/tournament/${tournamentId}/matches/${matchId}/tactics-board`, {
-        withCredentials: true
-      })
+      .get<TacticsBoardResponse>(
+        `/api/tournament/${tournamentId}/matches/${matchId}/tactics-board`,
+        this.buildOptions(teamId)
+      )
       .pipe(
         map(response => this.toState(response)),
         catchError(error => {
@@ -28,18 +33,26 @@ export class TacticsBoardService {
       );
   }
 
-  save(tournamentId: number, matchId: number, state: TacticsBoardState): Observable<TacticsBoardState> {
+  save(
+    tournamentId: number,
+    matchId: number,
+    state: TacticsBoardState,
+    teamId?: number | null
+  ): Observable<TacticsBoardState> {
     return this.http
-      .put<TacticsBoardResponse>(`/api/tournament/${tournamentId}/matches/${matchId}/tactics-board`, state, {
-        withCredentials: true
-      })
+      .put<TacticsBoardResponse>(
+        `/api/tournament/${tournamentId}/matches/${matchId}/tactics-board`,
+        state,
+        this.buildOptions(teamId)
+      )
       .pipe(map(response => this.toState(response)));
   }
 
-  clear(tournamentId: number, matchId: number): Observable<void> {
-    return this.http.delete<void>(`/api/tournament/${tournamentId}/matches/${matchId}/tactics-board`, {
-      withCredentials: true
-    });
+  clear(tournamentId: number, matchId: number, teamId?: number | null): Observable<void> {
+    return this.http.delete<void>(
+      `/api/tournament/${tournamentId}/matches/${matchId}/tactics-board`,
+      this.buildOptions(teamId)
+    );
   }
 
   private toState(response: TacticsBoardResponse): TacticsBoardState {
@@ -48,5 +61,13 @@ export class TacticsBoardService {
       activeLayerId: response.activeLayerId ?? null,
       lastUpdated: response.lastUpdated ?? new Date().toISOString()
     };
+  }
+
+  private buildOptions(teamId?: number | null) {
+    if (teamId === undefined || teamId === null) {
+      return { withCredentials: true };
+    }
+    const params = new HttpParams().set('teamId', String(teamId));
+    return { withCredentials: true, params };
   }
 }

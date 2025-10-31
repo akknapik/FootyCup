@@ -35,8 +35,9 @@ export class MatchEventsComponent implements OnInit, OnDestroy {
   eventDescription = '';
   isSubmitting = false;
   isLoading = false;
-  currentUser: User | null = null;
   canManageEvents = false;
+  currentUser: User | null = null;
+  tournamentOrganizerId: number | null = null;
 
   homePlayers: PlayerRef[] = [];
   awayPlayers: PlayerRef[] = [];
@@ -55,7 +56,8 @@ export class MatchEventsComponent implements OnInit, OnDestroy {
     private matchEventService: MatchEventService,
     private teamService: TeamService,
     private notification: NotificationService,
-    public auth: AuthService
+    public auth: AuthService,
+    private tournamentService: TournamentService
   ) {}
 
   ngOnInit(): void {
@@ -69,6 +71,7 @@ export class MatchEventsComponent implements OnInit, OnDestroy {
 
     this.loadMatch();
     this.loadEvents();
+    this.loadTournamentContext();
   }
 
   ngOnDestroy(): void {
@@ -98,6 +101,19 @@ export class MatchEventsComponent implements OnInit, OnDestroy {
     this.matchEventService.getEvents(this.tournamentId, this.matchId).subscribe({
       next: events => this.events = events,
       error: () => this.notification.showError('Failed to load match events.')
+    });
+  }
+
+    private loadTournamentContext(): void {
+    this.tournamentService.getTournamentById(this.tournamentId).subscribe({
+      next: tournament => {
+        this.tournamentOrganizerId = tournament.organizer?.id ?? null;
+        this.updatePermissions();
+      },
+      error: () => {
+        this.tournamentOrganizerId = null;
+        this.updatePermissions();
+      }
     });
   }
 
@@ -250,9 +266,10 @@ export class MatchEventsComponent implements OnInit, OnDestroy {
       return;
     }
 
-    const isReferee = this.match.referee?.id === this.currentUser.id;
     const isAdmin = this.currentUser.userRole === 'ADMIN';
-    this.canManageEvents = Boolean(isReferee || isAdmin);
+    const isOrganizer = this.tournamentOrganizerId !== null && this.currentUser.id === this.tournamentOrganizerId;
+    const isReferee = this.match.referee?.id === this.currentUser.id;
+    this.canManageEvents = isAdmin || isOrganizer || isReferee;
   }
 
   goBack(): void {

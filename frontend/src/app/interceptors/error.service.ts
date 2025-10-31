@@ -22,10 +22,17 @@ export class ErrorService implements HttpInterceptor {
           return throwError(() => error);
         }
 
-        if (error.status === 401 || error.status === 403) {
+        if (error.status === 401) {
           if (!onLoginPage && !isLoginCall && !isMeEndpoint) {
             const returnUrl = this.router.url;
             this.router.navigate(['/login'], { queryParams: { returnUrl }});
+          }
+          return throwError(() => error);
+        }
+
+        if (error.status === 403) {
+          if (req.method !== 'GET') {
+            this.notification.showInfo('You do not have permission to perform this action.');
           }
           return throwError(() => error);
         }

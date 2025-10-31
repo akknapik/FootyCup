@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnDestroy, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { ScheduleEntry } from '../../models/schedule-entry.model';
 import { Schedule } from '../../models/schedule.model';
@@ -17,6 +17,10 @@ import { ScheduleListItemResponse } from '../../models/schedule/schedule-list-it
 import { GroupResponse } from '../../models/format/group/group.response';
 import { BracketNodeResponse } from '../../models/format/bracket/bracket-node.response';
 import { MatchRef } from '../../models/common/match-ref.model';
+import { Subscription } from 'rxjs';
+import { TournamentResponse } from '../../models/tournament/tournament.response';
+import { User } from '../../models/user.model';
+import { TournamentService } from '../../services/tournament.service';
 
 
 @Component({
@@ -25,7 +29,7 @@ import { MatchRef } from '../../models/common/match-ref.model';
   templateUrl: './result.component.html',
   styleUrl: './result.component.css'
 })
-export class ResultComponent implements OnInit {
+export class ResultComponent implements OnInit, OnDestroy {
   tournamentId!: number;
   schedules: ScheduleListItemResponse[] = [];
   selectedSchedule!: ScheduleResponse;
@@ -38,22 +42,37 @@ export class ResultComponent implements OnInit {
   isLoadingSchedule: boolean = false;
   isLoadingGroups: boolean = false;
   isLoadingBracket: boolean = false;
+  tournament: TournamentResponse | null = null;
+  currentUser: User | null = null;
+  canEditResults = false;
+
+  private userSubscription?: Subscription;
 
   constructor(
     private route: ActivatedRoute,
     public router: Router,
     private scheduleService: ScheduleService,
-    private matchService: MatchService,
     public auth: AuthService,
-    private notification: NotificationService, 
-    private resultService: ResultService 
+    private notification: NotificationService,
+    private resultService: ResultService,
+    private tournamentService: TournamentService
    ) {}
 
   ngOnInit(): void {
+      this.userSubscription = this.auth.currentUser$.subscribe(user => {
+      this.currentUser = user;
+      this.updatePermissions();
+    });
+
     this.route.paramMap.subscribe(pm => {
       this.tournamentId = +pm.get('tournamentId')!;
+      this.loadTournament();
       this.loadSchedulesList();
     });
+  }
+
+  ngOnDestroy(): void {
+    this.userSubscription?.unsubscribe();
   }
 
   loadSchedulesList(): void {
@@ -95,7 +114,7 @@ selectSchedule(scheduleId: number): void {
 }
 
 onResultChange(match: MatchRef | MatchResponse | null): void {
-  if (!match) return;
+  if (!match || !this.canEditResults) return;
 
   const id = match.id!;
   const isFull = (m: any): m is MatchResponse => 'durationInMin' in m;
@@ -112,6 +131,29 @@ onResultChange(match: MatchRef | MatchResponse | null): void {
     error: () => this.notification.showError('Error saving result')
   });
 }
+
+  private loadTournament(): void {
+    this.tournamentService.getTournamentById(this.tournamentId).subscribe({
+      next: tournament => {
+        this.tournament = tournament;
+        this.updatePermissions();
+      },
+      error: err => {
+        this.tournament = null;
+        this.updatePermissions();
+        if (err.status === 403) {
+          this.notification.showInfo('You can view results, but only the organizer can update them.');
+        } else {
+          this.notification.showError('Error loading tournament details');
+        }
+      }
+    });
+  }
+
+  private updatePermissions(): void {
+    this.canEditResults = !!this.currentUser && !!this.tournament &&
+      this.tournament.organizer?.id === this.currentUser.id;
+  }
 
 loadGroups(): void {
   this.isLoadingGroups = true;
