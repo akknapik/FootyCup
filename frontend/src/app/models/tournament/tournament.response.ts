@@ -4,4 +4,5 @@ import { TournamentItemResponse } from "./tournament-item.response";
 export interface TournamentResponse extends TournamentItemResponse {
     referees: UserRef[];
     scoringRules: Record<string, number>;
+    qrCodeGenerated: boolean;
 }

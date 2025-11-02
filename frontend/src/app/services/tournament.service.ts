@@ -11,6 +11,7 @@ import { UpdateTournamentRequest } from "../models/tournament/update-tournament.
 import { UserRef } from "../models/common/user-ref.model";
 import { AddRefereeRequest } from "../models/tournament/add-referee.request";
 import { MyTournamentsResponse } from "../models/tournament/my-tournaments.response";
+import { TournamentQrCodeResponse } from "../models/tournament/tournament-qr-code.response";
 
 @Injectable({ providedIn: 'root' })
 export class TournamentService {
@@ -73,6 +74,21 @@ export class TournamentService {
 
   unfollowTournament(id: number) {
     return this.http.delete<void>(`/api/tournaments/${id}/follow`, { withCredentials: true });
+  }
+
+  generateTournamentQrCode(id: number) {
+    return this.http.post<TournamentQrCodeResponse>(`/api/tournaments/${id}/qr-code`, {}, { withCredentials: true });
+  }
+
+  getTournamentQrCode(id: number) {
+    return this.http.get<TournamentQrCodeResponse>(`/api/tournaments/${id}/qr-code`, { withCredentials: true });
+  }
+
+  downloadTournamentQrCode(id: number) {
+    return this.http.get<Blob>(`/api/tournaments/${id}/qr-code/download`, {
+      responseType: 'blob' as 'json',
+      withCredentials: true
+    });
   }
   
   get currentId(): string | null {

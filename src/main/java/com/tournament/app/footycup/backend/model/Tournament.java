@@ -93,4 +93,14 @@ public class Tournament implements Serializable {
             "DRAW", 1,
             "LOSS", 0
     ));
+
+    @Schema(description = "Indicates whether the tournament QR code has been generated")
+    @Column(name = "qr_code_generated", nullable = false)
+    private boolean qrCodeGenerated = false;
+
+    @JsonIgnore
+    @Lob
+    @Basic(fetch = FetchType.LAZY)
+    @Column(name = "qr_code_image")
+    private byte[] qrCodeImage;
 }

@@ -17,6 +17,7 @@ public record TournamentResponse(
         UserRef organizer,
         boolean publicVisible,
         boolean followed,
+        boolean qrCodeGenerated,
         List<UserRef> referees,
         Map<String, Integer> scoringRules
 ) {

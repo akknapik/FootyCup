@@ -55,15 +55,34 @@
         <main class="content">
           <div class="details-header">
             <h2>{{ tournament.name }}</h2>
-            <button
-              *ngIf="canFollowTournament"
-              class="follow-btn"
-              [class.following]="tournament.followed"
-              (click)="toggleFollow()"
-              [disabled]="isProcessingFollow"
-            >
-              {{ tournament.followed ? 'Observing' : 'Observe' }}
-            </button>
+            <div class="details-actions">
+              <button
+                *ngIf="canFollowTournament"
+                class="follow-btn"
+                [class.following]="tournament.followed"
+                (click)="toggleFollow()"
+                [disabled]="isProcessingFollow"
+              >
+                {{ tournament.followed ? 'Observing' : 'Observe' }}
+              </button>
+              <button
+                *ngIf="canManageTournament && !tournament?.qrCodeGenerated"
+                class="qr-btn"
+                type="button"
+                (click)="generateQrCode()"
+                [disabled]="isGeneratingQr"
+              >
+                {{ isGeneratingQr ? 'Generating...' : 'Generate QR Code' }}
+              </button>
+              <button
+                *ngIf="tournament?.qrCodeGenerated"
+                class="qr-btn secondary"
+                type="button"
+                (click)="openQrModal()"
+              >
+                QR Code
+              </button>
+            </div>
           </div>
           <div *ngIf="tournament" class="form-card">
             <h3 style="text-align: center; margin-bottom: 2rem;">Information</h3>
@@ -168,6 +187,30 @@
             </div>
           </div>
         </main>
+
+        <div class="modal-overlay" *ngIf="isQrModalOpen" (click)="closeQrModal()">
+          <div class="modal" (click)="$event.stopPropagation()">
+            <div class="modal-header">
+              <h4>Tournament QR code</h4>
+              <button type="button" class="close-btn" (click)="closeQrModal()" aria-label="Close">
+                &times;
+              </button>
+            </div>
+            <div class="modal-body">
+              <ng-container *ngIf="!isLoadingQr; else qrLoading">
+                <img *ngIf="qrCodeDataUrl" [src]="qrCodeDataUrl" alt="Tournament QR code" class="qr-image" />
+              </ng-container>
+              <ng-template #qrLoading>
+                <p>Loading QR code...</p>
+              </ng-template>
+            </div>
+            <div class="modal-footer">
+              <button class="btn" type="button" (click)="downloadQrCode()" [disabled]="isLoadingQr">
+                Download QR
+              </button>
+            </div>
+          </div>
+        </div>
 
         <footer class="footer">
           <p>&copy; 2025 FootyCup. All rights reserved.</p>

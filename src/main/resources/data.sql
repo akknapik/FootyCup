@@ -30,8 +30,8 @@ INSERT INTO users (firstname, lastname, email, password, user_role, locked, enab
 VALUES ('Isabella', 'Gonzalez', 'igonzalez@example.com', '$2a$10$YuYkTMf3ZwEA/8DcwqqjxeYD8QSw5HGhl7Vhnj1DtCxCkvzXxMMNi', 'USER', false, false);
 
 -- TOURNAMENT --
-INSERT INTO tournaments (name, start_date, end_date, location, id_organizer, status, is_public)
-VALUES ('Global Masters Series', '2025-06-10', '2025-06-13', 'New York, USA', 1, 'UPCOMING', TRUE);
+INSERT INTO tournaments (name, start_date, end_date, location, id_organizer, status, is_public, qr_code_generated)
+VALUES ('Global Masters Series', '2025-06-10', '2025-06-13', 'New York, USA', 1, 'UPCOMING', TRUE, FALSE);
 
 -- SCHEDULE --
 INSERT INTO schedules (id_tournament, start_date_time, break_between_matches_in_min)

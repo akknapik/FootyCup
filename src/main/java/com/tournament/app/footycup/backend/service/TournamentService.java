@@ -27,6 +27,7 @@ public class TournamentService {
     private final UserRepository userRepository;
     private final TeamRepository teamRepository;
     private final AuthorizationService authorizationService;
+    private final QrCodeService qrCodeService;
 
     @Transactional
     public Tournament createTournament(CreateTournamentRequest request, User organizer) {
@@ -192,6 +193,44 @@ public class TournamentService {
         }
         return tournament.getFollowers().stream()
                 .anyMatch(follower -> Objects.equals(follower.getId(), user.getId()));
+    }
+
+    @Transactional
+    public byte[] generateTournamentQrCode(Long tournamentId, User organizer, String baseUrl) {
+        var tournament = tournamentRepository.findById(tournamentId)
+                .orElseThrow(() -> new NoSuchElementException("Tournament not found"));
+        authorizationService.ensureOrganizer(tournament, organizer);
+
+        if (!tournament.isQrCodeGenerated() || tournament.getQrCodeImage() == null) {
+            var qrContent = buildTournamentUrl(baseUrl, tournament.getId());
+            var qrImage = qrCodeService.generateQrCode(qrContent, 512, 512);
+            tournament.setQrCodeImage(qrImage);
+            tournament.setQrCodeGenerated(true);
+            tournamentRepository.save(tournament);
+            return qrImage;
+        }
+
+        return tournament.getQrCodeImage();
+    }
+
+    @Transactional(readOnly = true)
+    public byte[] getTournamentQrCode(Long tournamentId, User organizer) {
+        var tournament = tournamentRepository.findById(tournamentId)
+                .orElseThrow(() -> new NoSuchElementException("Tournament not found"));
+
+        if (!tournament.isQrCodeGenerated() || tournament.getQrCodeImage() == null) {
+            throw new NoSuchElementException("QR code not generated");
+        }
+
+        return tournament.getQrCodeImage();
+    }
+
+    private String buildTournamentUrl(String baseUrl, Long tournamentId) {
+        if (baseUrl == null || baseUrl.isBlank()) {
+            throw new IllegalArgumentException("Base URL for QR code generation cannot be empty");
+        }
+        var normalizedBase = baseUrl.endsWith("/") ? baseUrl.substring(0, baseUrl.length() - 1) : baseUrl;
+        return normalizedBase + "/tournaments/" + tournamentId;
     }
 
     private void refreshStatuses(List<Tournament> tournaments) {

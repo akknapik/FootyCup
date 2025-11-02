@@ -20,6 +20,10 @@ export class TournamentDetailsComponent implements OnInit {
   newRefereeEmail = '';
   currentUser: User | null = null;
   isProcessingFollow = false;
+  isQrModalOpen = false;
+  isGeneratingQr = false;
+  isLoadingQr = false;
+  qrCodeDataUrl: string | null = null;
 
   constructor(
     private route: ActivatedRoute,
@@ -95,6 +99,11 @@ export class TournamentDetailsComponent implements OnInit {
   }
 
   private loadTournamentDetails(id: number): void {
+    this.isQrModalOpen = false;
+    this.qrCodeDataUrl = null;
+    this.isLoadingQr = false;
+    this.isGeneratingQr = false;
+
     const request$ = this.auth.isLoggedIn()
       ? this.tournamentService.getTournamentById(id)
       : this.tournamentService.getPublicTournamentById(id);
@@ -169,5 +178,80 @@ export class TournamentDetailsComponent implements OnInit {
       },
       complete: () => this.isProcessingFollow = false
     });
+  }
+
+  generateQrCode(): void {
+    if (!this.canManageTournament || this.isGeneratingQr) {
+      return;
+    }
+
+    this.isGeneratingQr = true;
+    this.tournamentService.generateTournamentQrCode(this.tournamentId).subscribe({
+      next: (response) => {
+        if (this.tournament) {
+          this.tournament.qrCodeGenerated = response.generated;
+        }
+        this.qrCodeDataUrl = this.buildQrCodeDataUrl(response.imageBase64);
+        this.isQrModalOpen = true;
+        this.notification.showSuccess('QR code generated successfully.');
+      },
+      error: () => {
+        this.notification.showError('Error generating QR code');
+        this.isGeneratingQr = false;
+      },
+      complete: () => this.isGeneratingQr = false
+    });
+  }
+
+  openQrModal(): void {
+    if (!this.tournament?.qrCodeGenerated) {
+      return;
+    }
+
+    if (this.qrCodeDataUrl) {
+      this.isQrModalOpen = true;
+      return;
+    }
+
+    this.isLoadingQr = true;
+    this.tournamentService.getTournamentQrCode(this.tournamentId).subscribe({
+      next: (response) => {
+        this.qrCodeDataUrl = this.buildQrCodeDataUrl(response.imageBase64);
+        this.isQrModalOpen = true;
+      },
+      error: () => {
+        this.notification.showError('Error loading QR code');
+        this.isLoadingQr = false;
+      },
+      complete: () => this.isLoadingQr = false
+    });
+  }
+
+  closeQrModal(): void {
+    this.isQrModalOpen = false;
+  }
+
+  downloadQrCode(): void {
+    if (!this.tournament?.qrCodeGenerated) {
+      return;
+    }
+
+    this.tournamentService.downloadTournamentQrCode(this.tournamentId).subscribe({
+      next: (blob) => {
+        const url = window.URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = `tournament-${this.tournamentId}-qr.png`;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        window.URL.revokeObjectURL(url);
+      },
+      error: () => this.notification.showError('Error downloading QR code')
+    });
+  }
+
+  private buildQrCodeDataUrl(imageBase64: string): string {
+    return `data:image/png;base64,${imageBase64}`;
   }
 }

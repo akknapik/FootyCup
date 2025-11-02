@@ -8,11 +8,15 @@ import com.tournament.app.footycup.backend.model.User;
 import com.tournament.app.footycup.backend.service.TournamentService;
 import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 import org.springframework.web.util.UriComponentsBuilder;
 
+import java.util.Base64;
 import java.util.List;
 
 @AllArgsConstructor
@@ -111,6 +115,39 @@ public class TournamentController {
             @AuthenticationPrincipal User organizer) {
         tournamentService.removeReferee(id, refereeId, organizer);
         return ResponseEntity.noContent().build();
+    }
+
+    @PostMapping("/{id:\\d+}/qr-code")
+    public ResponseEntity<TournamentQrCodeResponse> generateQrCode(
+            @PathVariable Long id,
+            @AuthenticationPrincipal User organizer
+    ) {
+        var baseUrl = ServletUriComponentsBuilder.fromCurrentContextPath().build().toUriString();
+        var qrImage = tournamentService.generateTournamentQrCode(id, organizer, baseUrl);
+        var body = new TournamentQrCodeResponse(true, Base64.getEncoder().encodeToString(qrImage));
+        return ResponseEntity.ok(body);
+    }
+
+    @GetMapping("/{id:\\d+}/qr-code")
+    public ResponseEntity<TournamentQrCodeResponse> getQrCode(
+            @PathVariable Long id,
+            @AuthenticationPrincipal User organizer
+    ) {
+        var qrImage = tournamentService.getTournamentQrCode(id, organizer);
+        var body = new TournamentQrCodeResponse(true, Base64.getEncoder().encodeToString(qrImage));
+        return ResponseEntity.ok(body);
+    }
+
+    @GetMapping("/{id:\\d+}/qr-code/download")
+    public ResponseEntity<byte[]> downloadQrCode(
+            @PathVariable Long id,
+            @AuthenticationPrincipal User organizer
+    ) {
+        var qrImage = tournamentService.getTournamentQrCode(id, organizer);
+        return ResponseEntity.ok()
+                .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"tournament-" + id + "-qr.png\"")
+                .contentType(MediaType.IMAGE_PNG)
+                .body(qrImage);
     }
 
     @PostMapping("/{id:\\d+}/follow")

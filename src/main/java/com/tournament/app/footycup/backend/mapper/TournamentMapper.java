@@ -25,6 +25,7 @@ public interface TournamentMapper {
     @Mapping(target = "referees", source = "tournament.referees", qualifiedByName = "toUserRefList")
     @Mapping(target = "publicVisible", source = "tournament.publicVisible")
     @Mapping(target = "followed", expression = "java(followed)")
+    @Mapping(target = "qrCodeGenerated", source = "tournament.qrCodeGenerated")
     TournamentResponse toResponse(Tournament tournament, boolean followed);
 
     default TournamentResponse toResponse(Tournament tournament) {
