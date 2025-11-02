@@ -1,5 +1,5 @@
 import { Component, HostListener, OnDestroy, OnInit } from '@angular/core';
-import { ActivatedRoute, Route, Router } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { FormatService } from '../../services/format.service';
 import { AuthService } from '../../services/auth.service';
 import { TeamService } from '../../services/team.service';
@@ -53,7 +53,7 @@ export class FormatComponent implements OnInit, OnDestroy {
   private destroy$ = new Subject<void>();
 
   constructor(private route: ActivatedRoute, public router: Router, private formatService: FormatService, private teamService: TeamService, public auth: AuthService, private notification: NotificationService, private tournamentService: TournamentService) {}
-  
+
   ngOnInit(): void {
     this.auth.currentUser$
       .pipe(takeUntil(this.destroy$))
@@ -276,6 +276,8 @@ assignTeamToBracketById(node: any, side: 'home' | 'away', teamId: number) {
 
       this.editedNode = null;
       this.editedSide = null;
+
+      this.loadStructure();
     },
     error: () => this.notification.showError('Error assigning team to bracket!')
   });
@@ -411,7 +413,7 @@ closeNodeMenus() {
 
     logout(): void {
     this.auth.logout().subscribe(() => {
-      this.router.navigate(['/login']); 
+      this.router.navigate(['/login']);
     });
   }
 

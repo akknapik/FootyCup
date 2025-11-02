@@ -193,24 +193,44 @@ html, body {
 }
 
 .input-group input {
-  padding: 0.4rem 0.6rem; 
-  border: 1px solid #ccc; 
-  border-radius: 6px; 
+  padding: 0.4rem 0.6rem;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  font-size: 0.9rem;
+}
+
+.view-info {
+  padding: 0.5rem 1rem;
+  background: rgba(47, 133, 90, 0.1);
+  color: #276749;
+  border-radius: 999px;
+  font-weight: 600;
   font-size: 0.9rem;
 }
 
 .actions button {
-  padding: 0.5rem 1rem; 
-  background: #2F855A; 
-  color: white; 
+  padding: 0.5rem 1rem;
+  background: #2F855A;
+  color: white;
   border: none; 
   border-radius: 6px;
   font-weight: 600; 
   cursor: pointer;
 }
 
-.actions button:hover { 
-  background: #276749; 
+.actions button:hover {
+  background: #276749;
+}
+
+.no-access {
+  margin: 1rem 0;
+  padding: 1rem;
+  background: #fff5f5;
+  border: 1px solid #fed7d7;
+  color: #c53030;
+  border-radius: 8px;
+  text-align: center;
+  font-weight: 600;
 }
 
 .tabs { 
@@ -250,8 +270,16 @@ html, body {
   flex: 0.4; 
 }
 
-.schedule { 
-  flex: 0.6; 
+.schedule {
+  flex: 0.6;
+}
+
+.schedule.full-width {
+  flex: 1;
+}
+
+.schedule-container.readonly {
+  justify-content: center;
 }
 
 .matches-list,

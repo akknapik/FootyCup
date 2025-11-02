@@ -55,7 +55,7 @@
         <main class="content">
           <div class="header-row">
             <h2>Schedule</h2>
-            <div class="actions">
+            <div class="actions" *ngIf="canManageSchedule; else viewModeInfo">
               <div class="input-group">
                 <input
                   type="number"
@@ -67,8 +67,19 @@
               </div>
               <button (click)="onRecompute()">Recalculate</button>
             </div>
+            <ng-template #viewModeInfo>
+              <div class="view-info" *ngIf="hasAccess">
+                <span>You are viewing the schedule in read-only mode.</span>
+              </div>
+            </ng-template>
           </div>
 
+          <div *ngIf="!hasAccess" class="no-access">
+            <p>You do not have permission to view the schedule for this tournament.</p>
+          </div>
+
+          <ng-container *ngIf="hasAccess">
+            
           <ul class="tabs" *ngIf="!isLoading && schedules.length > 0">
             <li
               *ngFor="let s of schedules"
@@ -83,7 +94,7 @@
             <p>No schedules available. Please create one in the admin panel.</p>
           </div>
 
-          <div class="start-time-control" *ngIf="selectedSchedule">
+          <div class="start-time-control" *ngIf="selectedSchedule && canManageSchedule">
             <label>Start time:</label>
             <input
               type="time"
@@ -92,8 +103,16 @@
             />
           </div>
 
-          <div class="schedule-container">
-            <div class="matches-list" cdkDropList id="allMatchesList" [cdkDropListData]="allMatches" [cdkDropListConnectedTo]="['scheduleList']" (cdkDropListDropped)="drop($event)">
+          <div class="schedule-container" [ngClass]="{ 'readonly': !canManageSchedule }">
+            <div
+              class="matches-list"
+              *ngIf="canManageSchedule"
+              cdkDropList
+              id="allMatchesList"
+              [cdkDropListData]="allMatches"
+              [cdkDropListConnectedTo]="['scheduleList']"
+              (cdkDropListDropped)="drop($event)"
+            >
               <h3>All Matches</h3>
 
               <div *ngIf="loadingMatches" class="loading">
@@ -117,10 +136,12 @@
 
             <div
               class="schedule"
+              [ngClass]="{ 'full-width': !canManageSchedule }"
               cdkDropList
               id="scheduleList"
               [cdkDropListData]="scheduleEntries"
-              [cdkDropListConnectedTo]="['allMatchesList']"
+              [cdkDropListConnectedTo]="canManageSchedule ? ['allMatchesList'] : []"
+              [cdkDropListDisabled]="!canManageSchedule"
               (cdkDropListDropped)="drop($event)"
             >
               <h3>Schedule</h3>
@@ -131,44 +152,58 @@
                     <th>Match</th>
                     <th>Team 1</th>
                     <th>Team 2</th>
-                    <th></th>
+                    <th *ngIf="canManageSchedule"></th>
                   </tr>
                 </thead>
                 <tbody>
-                  <tr *ngFor="let e of scheduleEntries" cdkDrag>
+                  <tr *ngFor="let e of scheduleEntries" cdkDrag [cdkDragDisabled]="!canManageSchedule">
                     <ng-container *ngIf="e.type === 'MATCH'">
                       <td>
-                        <input
-                          type="time"
-                          [value]="e.startDateTime | date:'HH:mm'"
-                          (change)="updateTime(e, $any($event.target).value)"
-                        />
+                        <ng-container *ngIf="canManageSchedule; else readonlyTime">
+                          <input
+                            type="time"
+                            [value]="e.startDateTime | date:'HH:mm'"
+                            (change)="updateTime(e, $any($event.target).value)"
+                          />
+                        </ng-container>
+                        <ng-template #readonlyTime>
+                          <span>{{ e.startDateTime | date:'HH:mm' }}</span>
+                        </ng-template>
                       </td>
                       <td>{{ e.match?.name }}</td>
                       <td>{{ e.match?.teamHome?.name || 'Empty slot'  }}</td>
                       <td>{{ e.match?.teamAway?.name || 'Empty slot'  }}</td>
-                      <td class="remove-cell">
+                      <td class="remove-cell" *ngIf="canManageSchedule">
                         <button class="remove-btn" (click)="removeEntry(e)">✖</button>
                       </td>
                     </ng-container>
 
                     <ng-container *ngIf="e.type === 'BREAK'">
-                      <td></td>
+                      <td>
+                        <span *ngIf="!canManageSchedule">—</span>
+                      </td>
                       <td colspan="3">Break ({{ e.durationInMin }} min)</td>
-                      <td class="remove-cell">
+                      <td class="remove-cell" *ngIf="canManageSchedule">
                         <button class="remove-btn" (click)="removeEntry(e)">✖</button>
                       </td>
                     </ng-container>
                   </tr>
                   <tr *ngIf="scheduleEntries.length === 0">
                     <td colspan="4" class="empty-placeholder">
-                      Drag a match here to add it to the schedule
+                      <ng-container *ngIf="canManageSchedule; else readonlyPlaceholder">
+                        Drag a match here to add it to the schedule
+                      </ng-container>
+                      <ng-template #readonlyPlaceholder>
+                        The organizer has not prepared the schedule yet.
+                      </ng-template>
                     </td>
                   </tr>
                 </tbody>
               </table>
             </div>
           </div>
+          </ng-container>
+
         </main>
         <footer class="footer">
           <p>&copy; 2025 FootyCup. All rights reserved.</p>
