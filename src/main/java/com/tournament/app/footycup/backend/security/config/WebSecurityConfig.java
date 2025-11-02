@@ -43,6 +43,7 @@ public class WebSecurityConfig {
                 .csrf(csrf -> csrf.disable())
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
+                        .requestMatchers("/tournaments/my", "/api/tournaments/my").authenticated()
                         .requestMatchers(
                                 "/register", "/login", "/logout",
                                 "/swagger-ui/**", "/swagger-ui.html",
@@ -54,7 +55,10 @@ public class WebSecurityConfig {
                         ).permitAll()
                         .requestMatchers(HttpMethod.GET,
                                 "/tournaments/public", "/tournaments/public/**",
-                                "/api/tournaments/public", "/api/tournaments/public/**")
+                                "/api/tournaments/public", "/api/tournaments/public/**",
+                                "/tournaments/*", "/tournaments/*/**",
+                                "/api/tournaments/*", "/api/tournaments/*/**",
+                                "/tournament/**", "/api/tournament/**")
                         .permitAll()
                         .anyRequest().authenticated()
                 )
