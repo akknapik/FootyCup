@@ -1,11 +1,15 @@
 package com.tournament.app.footycup.backend.controller;
 
+import com.tournament.app.footycup.backend.dto.export.ExportDocument;
 import com.tournament.app.footycup.backend.dto.match.MatchItemResponse;
 import com.tournament.app.footycup.backend.dto.match.MatchResponse;
+import com.tournament.app.footycup.backend.enums.ExportFormat;
 import com.tournament.app.footycup.backend.mapper.MatchMapper;
 import com.tournament.app.footycup.backend.model.User;
+import com.tournament.app.footycup.backend.service.ExportService;
 import com.tournament.app.footycup.backend.service.MatchService;
 import lombok.AllArgsConstructor;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
@@ -16,9 +20,9 @@ import java.util.List;
 @RestController
 @RequestMapping("/tournament/{tournamentId}/matches")
 public class MatchController {
-
     private final MatchService matchService;
     private final MatchMapper matchMapper;
+    private final ExportService exportService;
 
     @GetMapping
     public ResponseEntity<List<MatchItemResponse>> getMatches(
@@ -71,5 +75,20 @@ public class MatchController {
             @AuthenticationPrincipal User organizer) {
         var match = matchService.assignReferee(tournamentId, matchId, refereeId, organizer);
         return ResponseEntity.ok(matchMapper.toItem(match));
+    }
+
+    @GetMapping("/{matchId}/export")
+    public ResponseEntity<byte[]> exportMatch(
+            @PathVariable Long tournamentId,
+            @PathVariable Long matchId,
+            @RequestParam(name = "format", defaultValue = "pdf") String format,
+            @AuthenticationPrincipal User requester
+    ) {
+        ExportFormat exportFormat = ExportFormat.fromParam(format);
+        ExportDocument document = exportService.exportMatch(tournamentId, matchId, exportFormat, requester);
+        return ResponseEntity.ok()
+                .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + document.fileName() + "\"")
+                .contentType(exportFormat.mediaType())
+                .body(document.content());
     }
 }

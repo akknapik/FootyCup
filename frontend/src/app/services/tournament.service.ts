@@ -1,7 +1,7 @@
-import { HttpClient, HttpParams } from "@angular/common/http";
+import { HttpClient, HttpParams, HttpResponse } from "@angular/common/http";
 import { Injectable } from "@angular/core";
 import { Tournament } from "../models/tournament.model";
-import { BehaviorSubject, filter } from "rxjs";
+import { BehaviorSubject, filter, Observable } from "rxjs";
 import { NavigationEnd, Router } from "@angular/router";
 import { User } from "../models/user.model";
 import { TournamentItemResponse } from "../models/tournament/tournament-item.response";
@@ -91,6 +91,15 @@ export class TournamentService {
     });
   }
   
+  exportTournament(id: number, format: 'pdf' | 'csv'): Observable<HttpResponse<Blob>> {
+    return this.http.get(`/api/tournaments/${id}/export`, {
+      params: new HttpParams().set('format', format),
+      responseType: 'blob',
+      observe: 'response',
+      withCredentials: true
+    });
+  }
+
   get currentId(): string | null {
     return this.tournamentIdSubject.value;
   }

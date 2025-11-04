@@ -6,6 +6,8 @@ import { NotificationService } from '../../../services/notification.service';
 import { User } from '../../../models/user.model';
 import { TournamentResponse } from '../../../models/tournament/tournament.response';
 import { UserRef } from '../../../models/common/user-ref.model';
+import { HttpResponse } from '@angular/common/http';
+import { finalize } from 'rxjs/operators';
 
 @Component({
   selector: 'app-tournament-details',
@@ -24,6 +26,7 @@ export class TournamentDetailsComponent implements OnInit {
   isGeneratingQr = false;
   isLoadingQr = false;
   qrCodeDataUrl: string | null = null;
+  isExportingTournament: Record<'pdf' | 'csv', boolean> = { pdf: false, csv: false };
 
   constructor(
     private route: ActivatedRoute,
@@ -249,6 +252,49 @@ export class TournamentDetailsComponent implements OnInit {
       },
       error: () => this.notification.showError('Error downloading QR code')
     });
+  }
+
+  exportTournament(format: 'pdf' | 'csv'): void {
+    if (this.isExportingTournament[format]) {
+      return;
+    }
+
+    this.isExportingTournament[format] = true;
+    this.tournamentService.exportTournament(this.tournamentId, format)
+      .pipe(finalize(() => this.isExportingTournament[format] = false))
+      .subscribe({
+        next: (response) => this.handleFileDownload(response, `tournament-${this.tournamentId}.${format}`),
+        error: () => this.notification.showError('Failed to export tournament data.')
+      });
+  }
+
+  private handleFileDownload(response: HttpResponse<Blob>, fallbackName: string): void {
+    const blob = response.body;
+    if (!blob) {
+      this.notification.showError('The export response did not contain any data.');
+      return;
+    }
+
+    const filename = this.extractFilename(response.headers.get('content-disposition')) ?? fallbackName;
+    const url = window.URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = filename;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    window.URL.revokeObjectURL(url);
+  }
+
+  private extractFilename(header: string | null): string | null {
+    if (!header) {
+      return null;
+    }
+    const match = /filename\*=UTF-8''([^;]+)|filename="?([^";]+)"?/i.exec(header);
+    if (match) {
+      return decodeURIComponent(match[1] || match[2]);
+    }
+    return null;
   }
 
   private buildQrCodeDataUrl(imageBase64: string): string {

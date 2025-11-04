@@ -56,7 +56,23 @@
           <div class="header-row">
             <h2>Match event</h2>
               <div class="actions">
-                <button class="btn-add secondary" (click)="openStatistics()">Statistics</button>
+                <button class="btn-add secondary" type="button" (click)="openStatistics()">Statistics</button>
+                <button
+                  class="btn-add secondary"
+                  type="button"
+                  (click)="exportMatch('pdf')"
+                  [disabled]="isExportingMatch.pdf"
+                >
+                  {{ isExportingMatch.pdf ? 'Exporting…' : 'Export PDF' }}
+                </button>
+                <button
+                  class="btn-add secondary"
+                  type="button"
+                  (click)="exportMatch('csv')"
+                  [disabled]="isExportingMatch.csv"
+                >
+                  {{ isExportingMatch.csv ? 'Exporting…' : 'Export CSV' }}
+                </button>
               </div>
           </div>
 

@@ -1,10 +1,13 @@
 package com.tournament.app.footycup.backend.controller;
 
 import com.tournament.app.footycup.backend.dto.common.UserRef;
+import com.tournament.app.footycup.backend.dto.export.ExportDocument;
 import com.tournament.app.footycup.backend.dto.tournament.*;
+import com.tournament.app.footycup.backend.enums.ExportFormat;
 import com.tournament.app.footycup.backend.mapper.CommonMapper;
 import com.tournament.app.footycup.backend.mapper.TournamentMapper;
 import com.tournament.app.footycup.backend.model.User;
+import com.tournament.app.footycup.backend.service.ExportService;
 import com.tournament.app.footycup.backend.service.TournamentService;
 import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
@@ -26,6 +29,7 @@ public class TournamentController {
     private final TournamentService tournamentService;
     private final CommonMapper commonMapper;
     private final TournamentMapper tournamentMapper;
+    private final ExportService exportService;
 
     @GetMapping("/my")
     public ResponseEntity<MyTournamentsResponse> getMyTournaments(@AuthenticationPrincipal User organizer) {
@@ -166,5 +170,19 @@ public class TournamentController {
     ) {
         tournamentService.unfollowTournament(id, user);
         return ResponseEntity.noContent().build();
+    }
+
+    @GetMapping("/{id:\\d+}/export")
+    public ResponseEntity<byte[]> exportTournament(
+            @PathVariable Long id,
+            @RequestParam(name = "format", defaultValue = "pdf") String format,
+            @AuthenticationPrincipal User requester
+    ) {
+        ExportFormat exportFormat = ExportFormat.fromParam(format);
+        ExportDocument document = exportService.exportTournament(id, exportFormat, requester);
+        return ResponseEntity.ok()
+                .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + document.fileName() + "\"")
+                .contentType(exportFormat.mediaType())
+                .body(document.content());
     }
 }

@@ -8,12 +8,14 @@ import { TeamService } from '../../services/team.service';
 import { PlayerRef } from '../../models/common/player-ref.model';
 import { AuthService } from '../../services/auth.service';
 import { User } from '../../models/user.model';
-import { FormatService } from '../../services/format.service';
 import { TournamentService } from '../../services/tournament.service';
 import { MatchResponse } from '../../models/match/match.response';
 import { MatchEventRef } from '../../models/common/match-event-ref.model';
 import { CreateMatchEventRequest, MatchEventType } from '../../models/match/create-match-event.request';
 import { MatchStatisticsResponse } from '../../models/match/match-statistics.response';
+import { HttpResponse } from '@angular/common/http';
+import { finalize } from 'rxjs/operators';
+
 
 @Component({
   selector: 'app-match-events',
@@ -47,6 +49,7 @@ export class MatchEventsComponent implements OnInit, OnDestroy {
   statistics?: MatchStatisticsResponse;
   statisticsLoading = false;
   statisticsError: string | null = null;
+  isExportingMatch: Record<'pdf' | 'csv', boolean> = { pdf: false, csv: false };
 
   private subscription?: Subscription;
   constructor(
@@ -249,6 +252,49 @@ export class MatchEventsComponent implements OnInit, OnDestroy {
         error: () => this.notification.showError('Failed to delete event.')
       });
     });
+  }
+
+  exportMatch(format: 'pdf' | 'csv'): void {
+    if (this.isExportingMatch[format]) {
+      return;
+    }
+
+    this.isExportingMatch[format] = true;
+    this.matchService.exportMatch(this.tournamentId, this.matchId, format)
+      .pipe(finalize(() => this.isExportingMatch[format] = false))
+      .subscribe({
+        next: (response) => this.handleFileDownload(response, `match-${this.matchId}.${format}`),
+        error: () => this.notification.showError('Failed to export match data.')
+      });
+  }
+
+  private handleFileDownload(response: HttpResponse<Blob>, fallbackName: string): void {
+    const blob = response.body;
+    if (!blob) {
+      this.notification.showError('The export response did not contain any data.');
+      return;
+    }
+
+    const filename = this.extractFilename(response.headers.get('content-disposition')) ?? fallbackName;
+    const url = window.URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = filename;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    window.URL.revokeObjectURL(url);
+  }
+
+  private extractFilename(header: string | null): string | null {
+    if (!header) {
+      return null;
+    }
+    const match = /filename\*=UTF-8''([^;]+)|filename="?([^";]+)"?/i.exec(header);
+    if (match) {
+      return decodeURIComponent(match[1] || match[2]);
+    }
+    return null;
   }
 
   get formattedScore(): string {

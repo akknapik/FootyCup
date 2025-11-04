@@ -66,6 +66,22 @@
                 {{ tournament.followed ? 'Observing' : 'Observe' }}
               </button>
               <button
+                class="export-btn"
+                type="button"
+                (click)="exportTournament('pdf')"
+                [disabled]="isExportingTournament.pdf"
+              >
+                {{ isExportingTournament.pdf ? 'Exporting…' : 'Export PDF' }}
+              </button>
+              <button
+                class="export-btn secondary"
+                type="button"
+                (click)="exportTournament('csv')"
+                [disabled]="isExportingTournament.csv"
+              >
+                {{ isExportingTournament.csv ? 'Exporting…' : 'Export CSV' }}
+              </button>
+              <button
                 *ngIf="canManageTournament && !tournament?.qrCodeGenerated"
                 class="qr-btn"
                 type="button"

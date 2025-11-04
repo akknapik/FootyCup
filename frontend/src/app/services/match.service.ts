@@ -1,4 +1,4 @@
-import { HttpClient, HttpParams } from '@angular/common/http';
+import { HttpClient, HttpParams, HttpResponse } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
 import { MatchItemResponse } from '../models/match/match-item.response';
@@ -37,6 +37,15 @@ export class MatchService {
   assignReferee(tournamentId: number, matchId: number, refereeId: number): Observable<MatchItemResponse> {
     return this.http.put<MatchItemResponse>(`/api/tournament/${tournamentId}/matches/${matchId}/referee`, null, {
       params: new HttpParams().set('refereeId', refereeId),
+      withCredentials: true,
+    });
+  }
+
+  exportMatch(tournamentId: number, matchId: number, format: 'pdf' | 'csv'): Observable<HttpResponse<Blob>> {
+    return this.http.get(`/api/tournament/${tournamentId}/matches/${matchId}/export`, {
+      params: new HttpParams().set('format', format),
+      responseType: 'blob',
+      observe: 'response',
       withCredentials: true,
     });
   }
