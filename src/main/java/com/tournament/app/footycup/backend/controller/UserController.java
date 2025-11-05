@@ -1,6 +1,9 @@
 package com.tournament.app.footycup.backend.controller;
 
 import com.tournament.app.footycup.backend.dto.UserDto;
+import com.tournament.app.footycup.backend.dto.account.ChangePasswordRequest;
+import com.tournament.app.footycup.backend.dto.account.DeleteAccountRequest;
+import com.tournament.app.footycup.backend.dto.account.UpdateProfileRequest;
 import com.tournament.app.footycup.backend.model.User;
 import com.tournament.app.footycup.backend.repository.UserRepository;
 import com.tournament.app.footycup.backend.service.UserService;
@@ -10,6 +13,7 @@ import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -26,7 +30,7 @@ public class UserController {
 
     private final UserService userService;
 
-    public UserController(UserService userService, UserRepository userRepository) {
+    public UserController(UserService userService) {
         this.userService = userService;
     }
 
@@ -37,12 +41,6 @@ public class UserController {
         return ResponseEntity.ok(usersDto);
     }
 
-    @Operation(summary = "Get the currently authenticated user's details")
-    @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "User details retrieved successfully",
-                    content = @Content(mediaType = "application/json", schema = @Schema(implementation = UserDto.class))),
-            @ApiResponse(responseCode = "401", description = "Unauthorized", content = @Content)
-    })
     @GetMapping("/me")
     public ResponseEntity<UserDto> getUser(Authentication authentication) {
         User user = (User) authentication.getPrincipal();
@@ -50,13 +48,6 @@ public class UserController {
         return ResponseEntity.ok(userDto);
     }
 
-    @Operation(summary = "Update a user by ID")
-    @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "User updated successfully",
-                    content = @Content(mediaType = "application/json", schema = @Schema(implementation = UserDto.class))),
-            @ApiResponse(responseCode = "404", description = "User not found", content = @Content),
-            @ApiResponse(responseCode = "400", description = "Invalid input", content = @Content)
-    })
     @PutMapping("/{id}")
     public ResponseEntity<?> updateUser(
             @Parameter(description = "User ID") @PathVariable("id") Long id,
@@ -69,14 +60,12 @@ public class UserController {
         } catch (NoSuchElementException e) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND)
                     .body(Map.of("error", "User not found"));
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body(Map.of("error", e.getMessage()));
         }
     }
 
-    @Operation(summary = "Delete a user by ID")
-    @ApiResponses(value = {
-            @ApiResponse(responseCode = "204", description = "User deleted successfully"),
-            @ApiResponse(responseCode = "404", description = "User not found", content = @Content)
-    })
     @PreAuthorize("hasRole('ADMIN')")
     @DeleteMapping("/{id}")
     public ResponseEntity<?> deleteUser(
@@ -89,6 +78,42 @@ public class UserController {
         } catch (NoSuchElementException e) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND)
                     .body(Map.of("error", "User not found"));
+        }
+    }
+
+    @PutMapping("/me/profile")
+    public ResponseEntity<?> updateProfile(@Valid @RequestBody UpdateProfileRequest request, Authentication authentication) {
+        try {
+            User user = (User) authentication.getPrincipal();
+            var updated = userService.updateProfile(user, request);
+            return ResponseEntity.ok(updated);
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body(Map.of("error", e.getMessage()));
+        }
+    }
+
+    @PostMapping("/me/password")
+    public ResponseEntity<?> changePassword(@Valid @RequestBody ChangePasswordRequest request, Authentication authentication) {
+        try {
+            User user = (User) authentication.getPrincipal();
+            userService.changePassword(user, request);
+            return ResponseEntity.noContent().build();
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body(Map.of("error", e.getMessage()));
+        }
+    }
+
+    @DeleteMapping("/me")
+    public ResponseEntity<?> deleteAccount(@Valid @RequestBody DeleteAccountRequest request, Authentication authentication) {
+        try {
+            User user = (User) authentication.getPrincipal();
+            userService.deleteAccount(user, request);
+            return ResponseEntity.noContent().build();
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body(Map.of("error", e.getMessage()));
         }
     }
 }

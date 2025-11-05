@@ -1,11 +1,14 @@
 package com.tournament.app.footycup.backend.controller;
 
+import com.tournament.app.footycup.backend.dto.account.ForgotPasswordRequest;
+import com.tournament.app.footycup.backend.dto.account.ResetPasswordRequest;
 import com.tournament.app.footycup.backend.model.User;
 import com.tournament.app.footycup.backend.repository.UserRepository;
 import com.tournament.app.footycup.backend.requests.AuthResponse;
 import com.tournament.app.footycup.backend.requests.LoginRequest;
 import com.tournament.app.footycup.backend.requests.RegistrationRequest;
 import com.tournament.app.footycup.backend.service.EmailProducer;
+import com.tournament.app.footycup.backend.service.PasswordResetService;
 import com.tournament.app.footycup.backend.service.TokenService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -31,12 +34,13 @@ import java.util.NoSuchElementException;
 @RequestMapping("")
 @AllArgsConstructor
 public class AuthController {
-
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
     private final AuthenticationManager authManager;
     private final TokenService tokenService;
     private final EmailProducer emailProducer;
+    private final PasswordResetService passwordResetService;
+
 
     @Operation(summary = "Register a new user",
             requestBody = @io.swagger.v3.oas.annotations.parameters.RequestBody(
@@ -168,6 +172,22 @@ public class AuthController {
         deleteCookie(response, "accessToken");
         deleteCookie(response, "refreshToken");
         return ResponseEntity.ok().build();
+    }
+
+    @PostMapping("/forgot-password")
+    public ResponseEntity<String> forgotPassword(@RequestBody ForgotPasswordRequest request) {
+        passwordResetService.sendResetLink(request.email());
+        return ResponseEntity.ok("If an account exists for the provided email, password reset instructions have been sent.");
+    }
+
+    @PostMapping("/reset-password")
+    public ResponseEntity<String> resetPassword(@RequestBody ResetPasswordRequest request) {
+        try {
+            passwordResetService.resetPassword(request.token(), request.password());
+            return ResponseEntity.ok("Password has been reset successfully.");
+        } catch (IllegalArgumentException ex) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(ex.getMessage());
+        }
     }
 
     private void deleteCookie(HttpServletResponse response, String name) {

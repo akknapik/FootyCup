@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="pl">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard | FootyCup</title>
+    <link rel="stylesheet" href="settings.component.css">
+  </head>
+  <body>
+    <div class="app-container">
+      <aside class="sidebar">
+        <div class="sidebar-header">
+          <img src="assets/images/logo1_3.png" alt="FootyCup Logo" class="sidebar-logo">
+        </div>
+        <nav class="sidebar-nav">
+          <a routerLink="/dashboard" class="nav-link">Dashboard</a>
+          <a routerLink="/tournaments/my" class="nav-link">Tournaments</a>
+          <a routerLink="/settings"class="nav-link active">Settings</a>
+            <a *ngIf="(auth.currentUser$ | async)?.userRole === 'ADMIN'"
+              routerLink="/admin/users"
+              class="nav-link">
+              Admin Panel
+            </a>
+        </nav>
+        <nav class="sidebar-footer">
+          <a routerLink="/aboutus">About us</a>
+          <a routerLink="/contact">Contact</a>
+        </nav>
+      </aside>
+
+      <div class="main">
+        <header class="header">
+          <div class="header-spacer"></div>
+
+          <div class="user-info">
+            <div class="user-text">
+              <span *ngIf="auth.currentUser$ | async as user">
+                <div class="user-name">{{ user.firstname }} {{ user.lastname }}</div>
+                <button class="logout-btn" (click)="logout()">Log out</button>
+              </span>
+            </div>
+            <div class="avatar"></div>
+          </div>
+        </header>
+
+        <main class="content">
+          <div class="header-row">
+            <h2>Settings</h2>
+          </div>
+
+        <section class="settings-section">
+          <h2>Personal information</h2>
+          <div class="settings-card">
+              <div class="card-details">
+                <div class="detail-item">
+                  <span class="label">First name</span>
+                  <span class="value">{{ currentUser?.firstname || '—' }}</span>
+                </div>
+                <div class="detail-item">
+                  <span class="label">Last name</span>
+                  <span class="value">{{ currentUser?.lastname || '—' }}</span>
+                </div>
+                <div class="detail-item">
+                  <span class="label">Email</span>
+                  <span class="value">{{ currentUser?.email || '—' }}</span>
+                </div>
+              </div>
+              <button class="btn primary" (click)="openNameModal()" [disabled]="!currentUser">Update names</button>
+            </div>
+          </section>
+
+          <section class="settings-section">
+            <h2>Security</h2>
+            <div class="settings-card">
+              <div class="card-details">
+                <p>Change your password regularly to keep your account secure.</p>
+              </div>
+              <button class="btn secondary" (click)="openPasswordModal()">Change password</button>
+            </div>
+          </section>
+
+          <section class="settings-section danger">
+            <h2>Danger zone</h2>
+            <div class="settings-card danger-card">
+              <div class="card-details">
+                <h3>Delete account</h3>
+                <p>Deleting your account will remove all tournaments you organize. If you are listed as a coach or referee, those roles will be cleared.</p>
+              </div>
+              <button class="btn danger" (click)="openDeleteModal()">Delete account</button>
+            </div>
+          </section>
+
+        </main>
+        <footer class="footer">
+          <p>&copy; 2025 FootyCup. All rights reserved.</p>
+        </footer>
+      </div>
+
+    <div class="modal-backdrop" *ngIf="showNameModal" (click)="closeModals()">
+      <div class="modal" (click)="$event.stopPropagation()">
+        <div class="modal-header">
+          <h3>Update personal data</h3>
+          <button class="close-btn" (click)="closeModals()">×</button>
+        </div>
+        <div class="modal-body">
+          <label>
+            First name
+            <input type="text" [(ngModel)]="firstname" maxlength="64">
+          </label>
+          <label>
+            Last name
+            <input type="text" [(ngModel)]="lastname" maxlength="64">
+          </label>
+        </div>
+        <div class="modal-footer">
+          <button class="btn secondary" (click)="closeModals()" [disabled]="isSavingNames">Cancel</button>
+          <button class="btn primary" (click)="saveNames()" [disabled]="isSavingNames">
+            {{ isSavingNames ? 'Saving…' : 'Save changes' }}
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <div class="modal-backdrop" *ngIf="showPasswordModal" (click)="closeModals()">
+      <div class="modal" (click)="$event.stopPropagation()">
+        <div class="modal-header">
+          <h3>Change password</h3>
+          <button class="close-btn" (click)="closeModals()">×</button>
+        </div>
+        <div class="modal-body">
+          <label>
+            Current password
+            <input type="password" [(ngModel)]="currentPassword">
+          </label>
+          <label>
+            New password
+            <input type="password" [(ngModel)]="newPassword">
+          </label>
+          <label>
+            Confirm new password
+            <input type="password" [(ngModel)]="confirmPassword">
+          </label>
+        </div>
+        <div class="modal-footer">
+          <button class="btn secondary" (click)="closeModals()" [disabled]="isSavingPassword">Cancel</button>
+          <button class="btn primary" (click)="changePassword()" [disabled]="isSavingPassword">
+            {{ isSavingPassword ? 'Saving…' : 'Update password' }}
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <div class="modal-backdrop" *ngIf="showDeleteModal" (click)="closeModals()">
+      <div class="modal danger" (click)="$event.stopPropagation()">
+        <div class="modal-header">
+          <h3>Delete account</h3>
+          <button class="close-btn" (click)="closeModals()">×</button>
+        </div>
+        <div class="modal-body">
+          <p class="warning">This action is irreversible. All tournaments you organize will be removed.</p>
+          <label>
+            Confirm with password
+            <input type="password" [(ngModel)]="deletePassword">
+          </label>
+        </div>
+        <div class="modal-footer">
+          <button class="btn secondary" (click)="closeModals()" [disabled]="isDeleting">Cancel</button>
+          <button class="btn danger" (click)="deleteAccount()" [disabled]="isDeleting">
+            {{ isDeleting ? 'Deleting…' : 'Delete account' }}
+          </button>
+        </div>
+      </div>
+    </div>
+    </div>
+  </body>
+</html>

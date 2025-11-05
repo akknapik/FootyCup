@@ -18,12 +18,17 @@ import { AdminUsersComponent } from './pages/admin-users/admin-users.component';
 import { MatchEventsComponent } from './pages/match-events/match-events.component';
 import { TacticsBoardComponent } from './pages/tactics-board/tactics-board.component';
 import { DashboardComponent } from './pages/dashboard/dashboard.component';
+import { SettingsComponent } from './pages/settings/settings.component';
+import { ForgotPasswordComponent } from './pages/forgot-password/forgot-password.component';
+import { ResetPasswordComponent } from './pages/reset-password/reset-password.component';
 
 const routes: Routes = [
   { path: '', component: DashboardComponent },
   { path: 'dashboard', component: DashboardComponent },
   { path: 'register', component: RegisterComponent },
   { path: 'login', component: LoginComponent },
+  { path: 'forgot-password', component: ForgotPasswordComponent },
+  { path: 'reset-password', component: ResetPasswordComponent },
   { path: 'tournaments/my', component: MyTournamentsComponent, canActivate: [AuthGuard] },
   { path: 'tournaments/new', component: AddTournamentComponent, canActivate: [AuthGuard] },
   { path: 'tournaments/:tournamentId', component: TournamentDetailsComponent},
@@ -38,6 +43,7 @@ const routes: Routes = [
   { path: 'tournament/:tournamentId/schedule', component: ScheduleComponent },
   { path: 'tournament/:tournamentId/results', component: ResultComponent },
   { path: 'admin/users', component: AdminUsersComponent, canActivate: [AuthGuard] },
+  { path: 'settings', component: SettingsComponent, canActivate: [AuthGuard] },
   { path: '**', redirectTo: '' }
 ];
 

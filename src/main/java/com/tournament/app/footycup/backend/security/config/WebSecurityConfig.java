@@ -32,12 +32,11 @@ import java.time.LocalDateTime;
 @EnableWebSecurity
 public class WebSecurityConfig {
 
-    private final UserService userService;
     private final TokenAuthenticationFilter tokenAuthenticationFilter;
     private final ObjectMapper objectMapper;
 
     @Bean
-    public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+    public SecurityFilterChain securityFilterChain(HttpSecurity http, DaoAuthenticationProvider authenticationProvider) throws Exception {
         http
                 .cors(Customizer.withDefaults())
                 .csrf(csrf -> csrf.disable())
@@ -46,6 +45,7 @@ public class WebSecurityConfig {
                         .requestMatchers("/tournaments/my", "/api/tournaments/my").authenticated()
                         .requestMatchers(
                                 "/register", "/login", "/logout",
+                                "/forgot-password", "/reset-password",
                                 "/swagger-ui/**", "/swagger-ui.html",
                                 "/api/swagger-ui/**", "/v3/api-docs/**", "/v3/api-docs",
                                 "/api/docs", "/api/docs/**",
@@ -85,7 +85,7 @@ public class WebSecurityConfig {
                 .formLogin(AbstractHttpConfigurer::disable)
                 .httpBasic(AbstractHttpConfigurer::disable)
                 .logout(logout -> logout.disable())
-                .authenticationProvider(authenticationProvider())
+                .authenticationProvider(authenticationProvider)
                 .addFilterBefore(tokenAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
@@ -109,10 +109,10 @@ public class WebSecurityConfig {
     }
 
     @Bean
-    public DaoAuthenticationProvider authenticationProvider() {
+    public DaoAuthenticationProvider authenticationProvider(UserService userService, PasswordEncoder passwordEncoder) {
         DaoAuthenticationProvider authenticationProvider = new DaoAuthenticationProvider();
         authenticationProvider.setUserDetailsService(userService);
-        authenticationProvider.setPasswordEncoder(passwordEncoder());
+        authenticationProvider.setPasswordEncoder(passwordEncoder);
         return authenticationProvider;
     }
 

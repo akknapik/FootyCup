@@ -30,6 +30,9 @@ import { MatchEventsComponent } from './pages/match-events/match-events.componen
 import { InlinePickerComponent } from './component/inline-picker/inline-picker.component';
 import { TacticsBoardComponent } from './pages/tactics-board/tactics-board.component';
 import { DashboardComponent } from './pages/dashboard/dashboard.component';
+import { SettingsComponent } from './pages/settings/settings.component';
+import { ForgotPasswordComponent } from './pages/forgot-password/forgot-password.component';
+import { ResetPasswordComponent } from './pages/reset-password/reset-password.component';
 
 
 @NgModule({
@@ -52,7 +55,10 @@ import { DashboardComponent } from './pages/dashboard/dashboard.component';
     MatchEventsComponent,
     InlinePickerComponent,
     TacticsBoardComponent,
-    DashboardComponent
+    DashboardComponent,
+    SettingsComponent,
+    ForgotPasswordComponent,
+    ResetPasswordComponent
   ],
   imports: [
     BrowserModule,

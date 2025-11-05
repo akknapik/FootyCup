@@ -73,7 +73,15 @@ startTokenWatcher(expiresInSeconds: number) {
       }
     });
   }, warningTime);
-}
+  }
+
+  requestPasswordReset(email: string) {
+    return this.http.post('/api/forgot-password', { email }, { responseType: 'text' });
+  }
+
+  resetPassword(token: string, password: string) {
+    return this.http.post('/api/reset-password', { token, password }, { responseType: 'text' });
+  }
 
   get currentUser(): User | null {
     return this.currentUserSubject.value;
