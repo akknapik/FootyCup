@@ -293,6 +293,11 @@ table {
   color: #2D3748;
 }
 
+.card-badge.admin {
+  background: rgba(113, 128, 150, 0.2);
+  color: #1A202C;
+}
+
 .tournament-card:hover {
   transform: scale(1.02);
 }

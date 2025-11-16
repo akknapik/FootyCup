@@ -17,6 +17,7 @@ export class MyTournamentsComponent {
   refereeing: TournamentItemResponse[] = [];
   coaching: TournamentItemResponse[] = [];
   observing: TournamentItemResponse[] = [];
+  allTournaments: TournamentItemResponse[] = [];
   isLoading: boolean = false;
 
   constructor(private tournamentService: TournamentService, private router: Router, public auth: AuthService, private notification: NotificationService) {}
@@ -33,6 +34,7 @@ export class MyTournamentsComponent {
         this.refereeing = data.refereeing ?? [];
         this.coaching = data.coaching ?? [];
         this.observing = data.observing ?? [];
+        this.allTournaments = data.allTournaments ?? [];
         this.openedMenu = null;
         this.isLoading = false;
       },
@@ -73,7 +75,16 @@ export class MyTournamentsComponent {
   }
 
   get hasAnyTournaments(): boolean {
-    return this.organized.length > 0 || this.refereeing.length > 0 || this.coaching.length > 0 || this.observing.length > 0;
+    const baseLists = this.organized.length > 0 || this.refereeing.length > 0
+      || this.coaching.length > 0 || this.observing.length > 0;
+    if (this.isAdminUser()) {
+      return baseLists || this.allTournaments.length > 0;
+    }
+    return baseLists;
+  }
+
+  isAdminUser(): boolean {
+    return this.auth.currentUser?.userRole === 'ADMIN';
   }
 
   logout(): void {

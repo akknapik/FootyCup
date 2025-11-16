@@ -41,8 +41,9 @@ public class TournamentController {
                 .stream().map(tournamentMapper::toItem).toList();
         var observing = tournamentService.getFollowedTournaments(organizer)
                 .stream().map(t -> tournamentMapper.toItem(t, true)).toList();
-        return  ResponseEntity.ok(new MyTournamentsResponse(organized, refereeing, coaching, observing));
-    }
+        var allTournaments = tournamentService.getAllTournamentsForAdmin(organizer)
+                .stream().map(tournamentMapper::toItem).toList();
+        return  ResponseEntity.ok(new MyTournamentsResponse(organized, refereeing, coaching, observing, allTournaments));    }
 
     @GetMapping("/public")
     public ResponseEntity<List<TournamentItemResponse>> getPublicTournaments() {

@@ -150,9 +150,18 @@ export class TournamentDetailsComponent implements OnInit {
     });
   }
 
+  private isAdminUser(): boolean {
+    return this.currentUser?.userRole === 'ADMIN';
+  }
+  
   get canManageTournament(): boolean {
-    return !!this.currentUser && !!this.tournament &&
-      this.tournament.organizer?.id === this.currentUser.id;
+    if (!this.currentUser || !this.tournament) {
+      return false;
+    }
+    if (this.isAdminUser()) {
+      return true;
+    }
+    return this.tournament.organizer?.id === this.currentUser.id;
   }
 
   get canFollowTournament(): boolean {

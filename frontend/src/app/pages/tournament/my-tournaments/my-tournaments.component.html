@@ -130,6 +130,21 @@
               </div>
             </div>
           </section>
+
+          <section class="tournament-section" *ngIf="isAdminUser() && allTournaments.length > 0">
+            <div class="section-header">
+              <h3>All tournaments</h3>
+            </div>
+            <div class="tournament-grid">
+              <div class="tournament-card" *ngFor="let t of allTournaments" (click)="openDetails(t.id)">
+                <div class="card-date">{{ t.startDate }}</div>
+                <div class="card-title">{{ t.name }}</div>
+                <div class="card-footer">
+                  <span class="card-badge admin">Admin</span>
+                </div>
+              </div>
+            </div>
+          </section>
         </ng-container>
         </main>
         <footer class="footer">

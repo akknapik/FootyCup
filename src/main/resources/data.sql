@@ -31,20 +31,20 @@ VALUES ('Isabella', 'Gonzalez', 'igonzalez@example.com', '$2a$10$YuYkTMf3ZwEA/8D
 
 -- TOURNAMENT --
 INSERT INTO tournaments (name, start_date, end_date, location, id_organizer, status, is_public, qr_code_generated)
-VALUES ('Global Masters Series', '2025-06-10', '2025-06-13', 'New York, USA', 1, 'UPCOMING', TRUE, FALSE);
+VALUES ('Global Masters Series', '2025-11-05', '2025-11-08', 'New York, USA', 1, 'UPCOMING', TRUE, FALSE);
 
 -- SCHEDULE --
 INSERT INTO schedules (id_tournament, start_date_time, break_between_matches_in_min)
-VALUES (1, '2025-06-10T09:00:00', 0);
+VALUES (1, '2025-11-05T09:00:00', 0);
 
 INSERT INTO schedules (id_tournament, start_date_time, break_between_matches_in_min)
-VALUES (1, '2025-06-11T09:00:00', 0);
+VALUES (1, '2025-11-06T09:00:00', 0);
 
 INSERT INTO schedules (id_tournament, start_date_time, break_between_matches_in_min)
-VALUES (1, '2025-06-12T09:00:00', 0);
+VALUES (1, '2025-11-07T09:00:00', 0);
 
 INSERT INTO schedules (id_tournament, start_date_time, break_between_matches_in_min)
-VALUES (1, '2025-06-13T09:00:00', 0);
+VALUES (1, '2025-11-08T09:00:00', 0);
 
 -- TEAM --
 INSERT INTO teams (name, country, id_coach, id_tournament)

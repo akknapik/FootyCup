@@ -3,6 +3,7 @@ package com.tournament.app.footycup.backend.service;
 import com.tournament.app.footycup.backend.dto.tournament.CreateTournamentRequest;
 import com.tournament.app.footycup.backend.dto.tournament.UpdateTournamentRequest;
 import com.tournament.app.footycup.backend.enums.TournamentStatus;
+import com.tournament.app.footycup.backend.enums.UserRole;
 import com.tournament.app.footycup.backend.model.Team;
 import com.tournament.app.footycup.backend.model.Tournament;
 import com.tournament.app.footycup.backend.model.User;
@@ -69,7 +70,20 @@ public class TournamentService {
 
     @Transactional(readOnly = true)
     public List<Tournament> getTournamentsByOrganizer(User organizer) {
-        var tournaments = tournamentRepository.findByOrganizer(organizer);
+        if (organizer == null) {
+            return List.of();
+        }
+        List<Tournament> tournaments = tournamentRepository.findByOrganizer(organizer);
+        refreshStatuses(tournaments);
+        return tournaments;
+    }
+
+    @Transactional(readOnly = true)
+    public List<Tournament> getAllTournamentsForAdmin(User user) {
+        if (user == null || user.getUserRole() != UserRole.ADMIN) {
+            return List.of();
+        }
+        var tournaments = tournamentRepository.findAll();
         refreshStatuses(tournaments);
         return tournaments;
     }

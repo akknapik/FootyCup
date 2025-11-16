@@ -1,5 +1,6 @@
 package com.tournament.app.footycup.backend.service;
 
+import com.tournament.app.footycup.backend.enums.UserRole;
 import com.tournament.app.footycup.backend.model.Match;
 import com.tournament.app.footycup.backend.model.Team;
 import com.tournament.app.footycup.backend.model.Tournament;
@@ -20,6 +21,9 @@ public class AuthorizationService {
     public boolean canViewTournament(Tournament tournament, User user) {
         if (tournament == null) {
             return false;
+        }
+        if (isAdmin(user)) {
+            return true;
         }
         if (tournament.isPublicVisible()) {
             return true;
@@ -49,13 +53,22 @@ public class AuthorizationService {
     }
 
     public boolean isOrganizer(Tournament tournament, User user) {
-        return tournament != null && tournament.getOrganizer() != null && user != null
+        if (tournament == null || user == null) {
+            return false;
+        }
+        if (isAdmin(user)) {
+            return true;
+        }
+        return tournament.getOrganizer() != null
                 && Objects.equals(tournament.getOrganizer().getId(), user.getId());
     }
 
     public boolean isReferee(Tournament tournament, User user) {
         if (tournament == null || user == null) {
             return false;
+        }
+        if (isAdmin(user)) {
+            return true;
         }
         return tournament.getReferees().stream()
                 .anyMatch(ref -> Objects.equals(ref.getId(), user.getId()));
@@ -70,6 +83,9 @@ public class AuthorizationService {
         if (user == null) {
             throw new AccessDeniedException("Lack of authorization");
         }
+        if (isAdmin(user)) {
+            return;
+        }
         if (isOrganizer(team.getTournament(), user)) {
             return;
         }
@@ -83,6 +99,9 @@ public class AuthorizationService {
             return false;
         }
         Tournament tournament = match.getTournament();
+        if (isAdmin(user)) {
+            return true;
+        }
         if (canViewTournament(tournament, user)) {
             return true;
         }
@@ -109,6 +128,9 @@ public class AuthorizationService {
             throw new AccessDeniedException("Lack of authorization");
         }
         Tournament tournament = match.getTournament();
+        if (isAdmin(user)) {
+            return;
+        }
         if (isOrganizer(tournament, user)) {
             return;
         }
@@ -123,6 +145,9 @@ public class AuthorizationService {
             throw new AccessDeniedException("Lack of authorization");
         }
         Tournament tournament = match.getTournament();
+        if (isAdmin(user)) {
+            return;
+        }
         if (isOrganizer(tournament, user)) {
             return;
         }
@@ -130,6 +155,10 @@ public class AuthorizationService {
             return;
         }
         throw new AccessDeniedException("Lack of authorization");
+    }
+
+    private boolean isAdmin(User user) {
+        return user != null && user.getUserRole() == UserRole.ADMIN;
     }
 }
 

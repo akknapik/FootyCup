@@ -5,4 +5,5 @@ export interface MyTournamentsResponse {
   refereeing: TournamentItemResponse[];
   coaching: TournamentItemResponse[];
   observing: TournamentItemResponse[];
+  allTournaments: TournamentItemResponse[];
 }

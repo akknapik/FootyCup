@@ -360,9 +360,25 @@ closeMenusOutside(ev: MouseEvent) {
   if (!el.closest('.row-actions')) this.openedMenuEntryId = null;
 }
 
-  private updatePermissions(): void {
-    this.canManageSchedule = !!this.currentUser && !!this.tournament &&
+  private isAdminUser(): boolean {
+    return this.currentUser?.userRole === 'ADMIN';
+  }
+
+  private isOrganizerUser(): boolean {
+    return !!this.currentUser && !!this.tournament &&
       this.tournament.organizer?.id === this.currentUser.id;
+  }
+
+  private updatePermissions(): void {
+    if (!this.currentUser) {
+      this.canManageSchedule = false;
+      return;
+    }
+    if (this.isAdminUser()) {
+      this.canManageSchedule = true;
+      return;
+    }
+    this.canManageSchedule = this.isOrganizerUser();
   }
 
 }

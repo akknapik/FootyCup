@@ -44,7 +44,8 @@ export class ResultComponent implements OnInit, OnDestroy {
   isLoadingBracket: boolean = false;
   tournament: TournamentResponse | null = null;
   currentUser: User | null = null;
-  canEditResults = false;
+  canEditAllResults = false;
+  isTournamentReferee = false;
 
   private userSubscription?: Subscription;
 
@@ -114,7 +115,7 @@ selectSchedule(scheduleId: number): void {
 }
 
 onResultChange(match: MatchRef | MatchResponse | null): void {
-  if (!match || !this.canEditResults) return;
+  if (!match || !this.canEditMatchResult(match)) return;
 
   const id = match.id!;
   const isFull = (m: any): m is MatchResponse => 'durationInMin' in m;
@@ -142,7 +143,7 @@ onResultChange(match: MatchRef | MatchResponse | null): void {
         this.tournament = null;
         this.updatePermissions();
         if (err.status === 403) {
-          this.notification.showInfo('You can view results, but only the organizer can update them.');
+          this.notification.showInfo('You can view results, but only the organizer or assigned referees can update them.');
         } else {
           this.notification.showError('Error loading tournament details');
         }
@@ -150,9 +151,57 @@ onResultChange(match: MatchRef | MatchResponse | null): void {
     });
   }
 
-  private updatePermissions(): void {
-    this.canEditResults = !!this.currentUser && !!this.tournament &&
+  private isAdminUser(): boolean {
+    return this.currentUser?.userRole === 'ADMIN';
+  }
+
+  private isOrganizerUser(): boolean {
+    return !!this.currentUser && !!this.tournament &&
       this.tournament.organizer?.id === this.currentUser.id;
+  }
+
+  private updatePermissions(): void {
+    const currentId = this.currentUser?.id ?? null;
+    this.canEditAllResults = !!currentId && !!this.tournament &&
+      this.tournament.organizer?.id === currentId;
+    this.isTournamentReferee = !!currentId && !!this.tournament &&
+      (this.tournament.referees || []).some(ref => ref.id === currentId);
+  }
+
+  canEditMatchResult(match: MatchRef | MatchResponse | null): boolean {
+    if (!match || !this.currentUser) {
+      return false;
+    }
+    if (this.canEditAllResults) {
+      return true;
+    }
+    if (!this.isTournamentReferee) {
+      return false;
+    }
+    return this.isRefereeOfMatch(match);
+  }
+
+  isRefereeOfMatch(match: MatchRef | MatchResponse | null): boolean {
+    if (!match || !this.currentUser) {
+      return false;
+    }
+    return this.extractRefereeId(match) === this.currentUser.id;
+  }
+
+  get showReadOnlyInfo(): boolean {
+    return !this.canEditAllResults && !this.isTournamentReferee;
+  }
+
+  get showRefereeInfo(): boolean {
+    return !this.canEditAllResults && this.isTournamentReferee;
+  }
+
+  private extractRefereeId(match: MatchRef | MatchResponse | null): number | null {
+    if (!match) {
+      return null;
+    }
+    const referee = match.referee ?? null;
+    return referee?.id ?? null;
   }
 
 loadGroups(): void {
