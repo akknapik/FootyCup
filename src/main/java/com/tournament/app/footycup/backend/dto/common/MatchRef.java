@@ -6,5 +6,6 @@ public record MatchRef(
         TeamRef teamHome,
         TeamRef teamAway,
         Integer homeScore,
-        Integer awayScore) {
+        Integer awayScore,
+        UserRef referee) {
 }

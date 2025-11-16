@@ -53,8 +53,11 @@
         </header>
 
         <main class="content">
-            <div *ngIf="!canEditResults" class="info-banner info-banner--info">
-              You can review the schedule and standings. Only the organizer can update match scores.
+            <div *ngIf="showReadOnlyInfo" class="info-banner info-banner--info">
+              You can review the schedule and standings. Only the organizer or assigned referees can update match scores.
+            </div>
+            <div *ngIf="showRefereeInfo" class="info-banner info-banner--success">
+              You can update results only for matches assigned to you as the referee.
             </div>
             <ul class="tabs">
                 <li (click)="activeTab = 'schedule'" [class.active]="activeTab === 'schedule'">Schedule</li>
@@ -86,13 +89,13 @@
                     </tr>
                   </thead>
                   <tbody>
-                    <tr *ngFor="let e of scheduleEntries">
+                    <tr *ngFor="let e of scheduleEntries" [class.results-row--assigned]="isRefereeOfMatch(e.match)">
                       <ng-container *ngIf="e.type === 'MATCH' && e.match">
                         <td>{{ e.startDateTime | date: 'HH:mm' }}</td>
                         <td>{{ e.match.name }}</td>
                         <td>{{ e.match.teamHome?.name || '—' }}</td>
                          <td class="score-cell">
-                          <ng-container *ngIf="canEditResults; else homeScoreDisplay">
+                          <ng-container *ngIf="canEditMatchResult(e.match); else homeScoreDisplay">
                             <input type="number"
                                    [(ngModel)]="e.match!.homeScore"
                                    (blur)="onResultChange(e.match)"
@@ -105,7 +108,7 @@
                         </td>
                         <td>{{ e.match.teamAway?.name || '—' }}</td>
                         <td class="score-cell">
-                          <ng-container *ngIf="canEditResults; else awayScoreDisplay">
+                          <ng-container *ngIf="canEditMatchResult(e.match); else awayScoreDisplay">
                             <input type="number"
                                    [(ngModel)]="e.match!.awayScore"
                                    (blur)="onResultChange(e.match)"

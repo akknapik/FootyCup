@@ -112,10 +112,8 @@ public class MatchService {
     }
 
     @Transactional
-    public void updateSingleMatchResult(Long tournamentId, Long matchId, UpdateMatchResultRequest updated, User organizer) {
-        var tournament = tournamentRepository.findById(tournamentId)
-                .orElseThrow(() -> new IllegalArgumentException("Tournament not found"));
-        authorizationService.ensureOrganizer(tournament, organizer);
+    public void updateSingleMatchResult(Long tournamentId, Long matchId, UpdateMatchResultRequest updated, User user) {
+        var tournament = resolveTournament(tournamentId);
 
         var match = matchRepository.findById(matchId)
                 .orElseThrow(() -> new IllegalArgumentException("Match not found"));
@@ -123,6 +121,8 @@ public class MatchService {
         if (!match.getTournament().getId().equals(tournamentId)) {
             throw new IllegalArgumentException("Match does not belong to tournament");
         }
+
+        authorizationService.ensureCanManageMatchResult(tournament, match, user);
 
         match.setHomeScore(updated.homeScore());
         match.setAwayScore(updated.awayScore());

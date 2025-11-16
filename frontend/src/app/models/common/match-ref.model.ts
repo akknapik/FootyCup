@@ -1,4 +1,5 @@
 import { TeamRef } from "./team-ref.model";
+import { UserRef } from "./user-ref.model";
 
 export interface MatchRef {
     id: number;
@@ -7,4 +8,5 @@ export interface MatchRef {
     teamAway?: TeamRef;
     homeScore?: number;
     awayScore?: number;
+    referee?: UserRef | null;
 }

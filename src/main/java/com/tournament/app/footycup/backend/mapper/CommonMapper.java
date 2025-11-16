@@ -52,7 +52,8 @@ public interface CommonMapper {
                 match.getTeamHome() != null ? this.toTeamRef(match.getTeamHome()) : null,
                 match.getTeamAway() != null ? this.toTeamRef(match.getTeamAway()) : null,
                 match.getHomeScore() != null ? match.getHomeScore() : null,
-                match.getAwayScore() != null ? match.getAwayScore() : null
+                match.getAwayScore() != null ? match.getAwayScore() : null,
+                this.toUserRef(match.getReferee())
         );
     }
 

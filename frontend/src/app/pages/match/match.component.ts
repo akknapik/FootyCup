@@ -327,6 +327,13 @@ export class MatchComponent implements OnInit, OnDestroy {
     return awayCoachId === this.currentUser.id;
   }
 
+  isAssignedReferee(match: MatchItemResponse | null): boolean {
+    if (!match || !this.currentUser) {
+      return false;
+    }
+    return match.referee?.id === this.currentUser.id;
+  }
+
   private refreshTeamCoachCache(): void {
     if (!this.currentUser || this.canManageMatches || this.isAdminUser()) {
       return;

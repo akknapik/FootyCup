@@ -266,9 +266,30 @@
   background: #f9f9f9;
 }
 
+.matches-row--assigned {
+  background: #f0fff4;
+  border-left: 4px solid #38a169;
+}
+
+.matches-row--assigned:hover {
+  background: #e6fffa;
+}
+
 .status-column {
   font-size: 0.9rem;
   color: #333;
+}
+
+.referee-badge {
+  display: inline-block;
+  margin-left: 0.5rem;
+  padding: 0.15rem 0.5rem;
+  border-radius: 999px;
+  background: #38a169;
+  color: #fff;
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
 }
 
 .referee-column {

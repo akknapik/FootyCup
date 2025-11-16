@@ -98,12 +98,16 @@
                 <div class="actions-header">Actions</div>
               </div>
 
-              <div class="matches-row" *ngFor="let match of paginatedMatches">
-                <div>{{ match?.name || '—' }}</div>
+              <div class="matches-row"
+                   *ngFor="let match of paginatedMatches"
+                   [ngClass]="{ 'matches-row--assigned': isAssignedReferee(match) }">                <div>{{ match?.name || '—' }}</div>
                 <div>
                   {{ match?.teamHome?.name || '—' }} vs {{ match?.teamAway?.name || '—' }}
                 </div>
-                <div class="status-column">{{ match?.status || '—' }}</div>
+                <div class="status-column">
+                  {{ match?.status || '—' }}
+                  <span *ngIf="isAssignedReferee(match)" class="referee-badge">Your match</span>
+                </div>
                 <div class="referee-column">
                   <ng-container *ngIf="match; else refereePlaceholder">
                     <ng-container *ngIf="canAssignReferee(match); else refereeReadOnly">

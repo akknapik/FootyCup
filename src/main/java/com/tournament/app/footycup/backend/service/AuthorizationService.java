@@ -140,6 +140,16 @@ public class AuthorizationService {
         throw new AccessDeniedException("Insufficient permissions to manage match events");
     }
 
+    public void ensureCanManageMatchResult(Tournament tournament, Match match, User user) {
+        if (isOrganizer(tournament, user)) {
+            return;
+        }
+        if (isMatchReferee(match, user)) {
+            return;
+        }
+        throw new AccessDeniedException("Insufficient permissions to manage match results");
+    }
+
     public void ensureCoachForMatchTeam(Match match, User user, Team team) {
         if (match == null || team == null) {
             throw new AccessDeniedException("Lack of authorization");
