@@ -2,6 +2,7 @@ import { UserRef } from "../common/user-ref.model";
 
 export interface TournamentItemResponse {
     id: number;
+    code: string;
     name: string;
     startDate: string;
     endDate: string;

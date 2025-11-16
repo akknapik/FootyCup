@@ -48,8 +48,29 @@
             <h2>Tournaments</h2>
             <div class="actions">
               <button (click)="goToCreate()">New tournament</button>
+              <div class="code-search-inline">
+                <input
+                  type="text"
+                  maxlength="7"
+                  placeholder="Enter code"
+                  [(ngModel)]="searchCode"
+                  (input)="onSearchCodeChange()"
+                />
+                <button class="search-btn" (click)="searchByCode()" [disabled]="isSearching">
+                  {{ isSearching ? 'Searching…' : 'Search by code' }}
+                </button>
+              </div>
             </div>
           </div>
+
+          <div class="search-result" *ngIf="searchResult">
+            <span>Found:</span>
+            <button class="link-button" (click)="openDetails(searchResult.id, searchResult.code)">
+              {{ searchResult.name }}
+              <span class="code-pill">{{ searchResult.code }}</span>
+            </button>
+          </div>
+          <div class="search-error" *ngIf="searchError">{{ searchError }}</div>
 
           <div *ngIf="isLoading" class="loading">
             <p>Loading tournaments...</p>

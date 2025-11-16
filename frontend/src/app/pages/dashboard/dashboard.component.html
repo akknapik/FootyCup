@@ -70,6 +70,31 @@
         <h2>Public tournaments</h2>
         <p>Discover open competitions shared by our community.</p>
       </div>
+      <div class="code-search">
+        <div class="code-search__header">
+          <h3>Find tournament by code</h3>
+          <p>Enter the 7-character code to jump directly to a tournament.</p>
+        </div>
+        <div class="code-search__controls">
+          <input
+            type="text"
+            maxlength="7"
+            [(ngModel)]="searchCode"
+            (input)="onSearchCodeChange()"
+            placeholder="e.g. aZ19BcD"
+          />
+          <button class="btn-primary" (click)="searchByCode()" [disabled]="isSearching">
+            {{ isSearching ? 'Searching…' : 'Search' }}
+          </button>
+        </div>
+        <div class="code-search__feedback" *ngIf="searchError">{{ searchError }}</div>
+        <div class="code-search__result" *ngIf="searchResult">
+          <button class="link-button" (click)="viewDetails(searchResult.id, searchResult.code)">
+            {{ searchResult.name }}
+            <span class="code-pill">{{ searchResult.code }}</span>
+          </button>
+        </div>
+      </div>
       <div class="tournament-grid" *ngIf="!isLoading && tournaments.length > 0; else emptyState">
         <article class="tournament-card" *ngFor="let tournament of tournaments">
           <div class="card-header">

@@ -13,6 +13,7 @@ public interface TournamentMapper {
     @Mapping(target = "organizer", source = "tournament.organizer", qualifiedByName = "toUserRef")
     @Mapping(target = "publicVisible", source = "tournament.publicVisible")
     @Mapping(target = "followed", expression = "java(followed)")
+    @Mapping(target = "code", source = "tournament.code")
     TournamentItemResponse toItem(Tournament tournament, boolean followed);
 
     default TournamentItemResponse toItem(Tournament tournament) {
@@ -26,6 +27,7 @@ public interface TournamentMapper {
     @Mapping(target = "publicVisible", source = "tournament.publicVisible")
     @Mapping(target = "followed", expression = "java(followed)")
     @Mapping(target = "qrCodeGenerated", source = "tournament.qrCodeGenerated")
+    @Mapping(target = "code", source = "tournament.code")
     TournamentResponse toResponse(Tournament tournament, boolean followed);
 
     default TournamentResponse toResponse(Tournament tournament) {

@@ -124,6 +124,11 @@
             </div>
 
             <div class="input-group">
+              <label>Tournament code</label>
+              <div class="static-field">{{ tournament.code }}</div>
+            </div>
+
+            <div class="input-group">
               <label>Visibility</label>
               <div class="visibility-toggle" *ngIf="canManageTournament; else visibilityInfo">
                 <label class="toggle-label">

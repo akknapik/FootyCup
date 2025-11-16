@@ -19,6 +19,10 @@ export class MyTournamentsComponent {
   observing: TournamentItemResponse[] = [];
   allTournaments: TournamentItemResponse[] = [];
   isLoading: boolean = false;
+  searchCode = '';
+  searchResult: TournamentItemResponse | null = null;
+  isSearching = false;
+  searchError: string | null = null;
 
   constructor(private tournamentService: TournamentService, private router: Router, public auth: AuthService, private notification: NotificationService) {}
 
@@ -70,8 +74,40 @@ export class MyTournamentsComponent {
     this.openedMenu = this.openedMenu === id ? null : id;
   }
 
-  openDetails(id: number): void {
+  openDetails(id: number, code?: string): void {
+    if (code) {
+      this.router.navigate(['/tournaments', id], { queryParams: { code } });
+      return;
+    }
     this.router.navigate(['/tournaments', id]);
+  }
+
+  onSearchCodeChange(): void {
+    this.searchError = null;
+    this.searchResult = null;
+  }
+
+  searchByCode(): void {
+    const trimmed = this.searchCode.trim();
+    if (!trimmed) {
+      this.searchError = 'Enter a tournament code to search.';
+      this.searchResult = null;
+      return;
+    }
+
+    this.isSearching = true;
+    this.searchError = null;
+    this.tournamentService.searchTournamentByCode(trimmed).subscribe({
+      next: (result) => {
+        this.searchResult = result;
+        this.isSearching = false;
+      },
+      error: () => {
+        this.searchResult = null;
+        this.searchError = 'Tournament not found.';
+        this.isSearching = false;
+      }
+    });
   }
 
   get hasAnyTournaments(): boolean {

@@ -15,12 +15,17 @@ import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.security.SecureRandom;
 import java.time.LocalDate;
 import java.util.*;
 
 @AllArgsConstructor
 @Service
 public class TournamentService {
+    private static final String CODE_CHARACTERS = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+    private static final int CODE_LENGTH = 7;
+    private static final SecureRandom SECURE_RANDOM = new SecureRandom();
+
     private final TournamentRepository tournamentRepository;
     private final ScheduleService scheduleService;
     private final FormatService formatService;
@@ -37,6 +42,7 @@ public class TournamentService {
         tournament.setStartDate(request.startDate());
         tournament.setEndDate(request.endDate());
         tournament.setLocation(request.location());
+        tournament.setCode(generateUniqueTournamentCode());
         tournament.setOrganizer(organizer);
         tournament.setPublicVisible(request.publicVisible());
         var saved = tournamentRepository.save(tournament);
@@ -76,6 +82,19 @@ public class TournamentService {
         List<Tournament> tournaments = tournamentRepository.findByOrganizer(organizer);
         refreshStatuses(tournaments);
         return tournaments;
+    }
+
+    @Transactional(readOnly = true)
+    public Tournament getTournamentByCode(String code) {
+        var normalized = Optional.ofNullable(code)
+                .map(String::trim)
+                .filter(s -> !s.isEmpty())
+                .orElseThrow(() -> new IllegalArgumentException("Tournament code cannot be empty"));
+
+        var tournament = tournamentRepository.findByCode(normalized)
+                .orElseThrow(() -> new NoSuchElementException("Tournament not found"));
+        refreshStatus(tournament);
+        return tournament;
     }
 
     @Transactional(readOnly = true)
@@ -178,6 +197,24 @@ public class TournamentService {
         return tournaments;
     }
 
+    @Transactional(readOnly = true)
+    public Tournament getTournamentForPublic(Long id, String accessCode) {
+        var tournament = tournamentRepository.findWithRefereesById(id)
+                .orElseThrow(() -> new NoSuchElementException("Tournament not found"));
+        var normalizedCode = Optional.ofNullable(accessCode)
+                .map(String::trim)
+                .filter(s -> !s.isEmpty())
+                .orElse(null);
+        if (normalizedCode == null) {
+            authorizationService.ensureCanViewTournament(tournament, null);
+        } else if (!Objects.equals(tournament.getCode(), normalizedCode)) {
+            throw new AccessDeniedException("Invalid tournament code");
+        }
+
+        refreshStatus(tournament);
+        return tournament;
+    }
+
     @Transactional
     public void followTournament(Long tournamentId, User user) {
         var tournament = tournamentRepository.findById(tournamentId)
@@ -265,5 +302,22 @@ public class TournamentService {
                         (!tournament.getStartDate().isAfter(today) && !tournament.getEndDate().isBefore(today)) ? TournamentStatus.ONGOING :
                                 TournamentStatus.UPCOMING;
         tournament.setStatus(status);
+    }
+
+    private String generateUniqueTournamentCode() {
+        String code;
+        do {
+            code = randomCode();
+        } while (tournamentRepository.existsByCode(code));
+        return code;
+    }
+
+    private String randomCode() {
+        var builder = new StringBuilder(CODE_LENGTH);
+        for (int i = 0; i < CODE_LENGTH; i++) {
+            int index = SECURE_RANDOM.nextInt(CODE_CHARACTERS.length());
+            builder.append(CODE_CHARACTERS.charAt(index));
+        }
+        return builder.toString();
     }
 }

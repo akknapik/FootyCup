@@ -19,4 +19,8 @@ public interface TournamentRepository extends JpaRepositoryImplementation<Tourna
     List<Tournament> findDistinctByReferees_Id(Long refereeId);
 
     List<Tournament> findDistinctByFollowers_Id(Long userId);
+
+    Optional<Tournament> findByCode(String code);
+
+    boolean existsByCode(String code);
 }

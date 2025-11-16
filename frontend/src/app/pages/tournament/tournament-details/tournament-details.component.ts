@@ -27,6 +27,7 @@ export class TournamentDetailsComponent implements OnInit {
   isLoadingQr = false;
   qrCodeDataUrl: string | null = null;
   isExportingTournament: Record<'pdf' | 'csv', boolean> = { pdf: false, csv: false };
+  accessCode: string | null = null;
 
   constructor(
     private route: ActivatedRoute,
@@ -43,10 +44,14 @@ export class TournamentDetailsComponent implements OnInit {
     }
     );
     this.auth.currentUser$.subscribe(user => this.currentUser = user);
+    this.route.queryParamMap.subscribe(params => {
+      this.accessCode = params.get('code');
+    });
   }
 
   ngOnInit(): void {
     this.tournamentId = +this.route.snapshot.paramMap.get('tournamentId')!;
+    this.accessCode = this.route.snapshot.queryParamMap.get('code');
     this.loadTournamentDetails(this.tournamentId);
   }
 
@@ -109,7 +114,7 @@ export class TournamentDetailsComponent implements OnInit {
 
     const request$ = this.auth.isLoggedIn()
       ? this.tournamentService.getTournamentById(id)
-      : this.tournamentService.getPublicTournamentById(id);
+      : this.tournamentService.getPublicTournamentById(id, this.accessCode || undefined);
 
     request$.subscribe({
       next: (data) => {

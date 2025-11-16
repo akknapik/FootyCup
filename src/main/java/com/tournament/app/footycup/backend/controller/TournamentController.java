@@ -52,6 +52,12 @@ public class TournamentController {
         return ResponseEntity.ok(dto);
     }
 
+    @GetMapping("/code/{code}")
+    public ResponseEntity<TournamentItemResponse> getByCode(@PathVariable String code) {
+        var tournament = tournamentService.getTournamentByCode(code);
+        return ResponseEntity.ok(tournamentMapper.toItem(tournament));
+    }
+
     @PostMapping
     public ResponseEntity<TournamentResponse> createTournament(
             @RequestBody @Valid CreateTournamentRequest request,
@@ -72,8 +78,10 @@ public class TournamentController {
     }
 
     @GetMapping("/public/{id:\\d+}")
-    public ResponseEntity<TournamentResponse> getPublicById(@PathVariable Long id) {
-        var tournament = tournamentService.getTournamentById(id, null);
+    public ResponseEntity<TournamentResponse> getPublicById(
+            @PathVariable Long id,
+            @RequestParam(name = "code", required = false) String code) {
+        var tournament = tournamentService.getTournamentForPublic(id, code);
         return ResponseEntity.ok(tournamentMapper.toResponse(tournament));
     }
 

@@ -17,6 +17,10 @@ export class DashboardComponent implements OnInit {
   tournaments: TournamentItemResponse[] = [];
   isLoading = true;
   user$!: Observable<User | null>;
+  searchCode = '';
+  searchResult: TournamentItemResponse | null = null;
+  isSearching = false;
+  searchError: string | null = null;
 
   constructor(
     private tournamentService: TournamentService,
@@ -48,7 +52,39 @@ export class DashboardComponent implements OnInit {
     });
   }
 
-  viewDetails(id: number): void {
+  onSearchCodeChange(): void {
+    this.searchError = null;
+    this.searchResult = null;
+  }
+
+  searchByCode(): void {
+    const trimmed = this.searchCode.trim();
+    if (!trimmed) {
+      this.searchError = 'Please enter a tournament code.';
+      this.searchResult = null;
+      return;
+    }
+
+    this.isSearching = true;
+    this.searchError = null;
+    this.tournamentService.searchTournamentByCode(trimmed).subscribe({
+      next: (result) => {
+        this.searchResult = result;
+        this.isSearching = false;
+      },
+      error: () => {
+        this.searchResult = null;
+        this.searchError = 'Tournament not found for this code.';
+        this.isSearching = false;
+      }
+    });
+  }
+
+  viewDetails(id: number, code?: string): void {
+    if (code) {
+      this.router.navigate(['/tournaments', id], { queryParams: { code } });
+      return;
+    }
     this.router.navigate(['/tournaments', id]);
   }
 

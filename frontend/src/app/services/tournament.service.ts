@@ -35,8 +35,13 @@ export class TournamentService {
     return this.http.get<TournamentItemResponse[]>('/api/tournaments/public');
   }
 
-  getPublicTournamentById(id: number) {
-    return this.http.get<TournamentResponse>(`/api/tournaments/public/${id}`);
+  getPublicTournamentById(id: number, code?: string) {
+    const params = code ? new HttpParams().set('code', code) : undefined;
+    return this.http.get<TournamentResponse>(`/api/tournaments/public/${id}`, { params });
+  }
+
+  searchTournamentByCode(code: string) {
+    return this.http.get<TournamentItemResponse>(`/api/tournaments/code/${encodeURIComponent(code)}`);
   }
 
   createTournament(data: CreateTournamentRequest) {

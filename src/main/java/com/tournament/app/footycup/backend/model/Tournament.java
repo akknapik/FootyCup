@@ -39,6 +39,10 @@ public class Tournament implements Serializable {
     @Column(nullable = false)
     private String name;
 
+    @Schema(description = "Unique public code of the tournament", example = "aZ19BcD")
+    @Column(name = "code", nullable = false, unique = true, length = 7, updatable = false)
+    private String code;
+
     @Schema(description = "Start date of the tournament", example = "2025-06-01")
     @Column(nullable = false)
     private LocalDate startDate;

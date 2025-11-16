@@ -8,6 +8,7 @@ import java.util.Map;
 
 public record TournamentResponse(
         Long id,
+        String code,
         String name,
         LocalDate startDate,
         LocalDate endDate,
